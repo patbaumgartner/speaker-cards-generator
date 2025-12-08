@@ -352,4 +352,3 @@ public class BannerGenerationService {
     }
 }
 
-// Made with Bob

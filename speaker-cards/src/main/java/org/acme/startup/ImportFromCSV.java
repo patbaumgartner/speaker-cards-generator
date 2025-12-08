@@ -36,18 +36,18 @@ public class ImportFromCSV {
     private static final Logger LOG = Logger.getLogger(ImportFromCSV.class);
 
     // XLSX column indices from SelectedWithSchedule.xlsx
-    private static final int COL_SESSION_ID = 0;        // Session Id
-    private static final int COL_TITLE = 1;             // Title
-    private static final int COL_DESCRIPTION = 2;       // Description
-    private static final int COL_SCHEDULED_AT = 8;      // Scheduled At
+    private static final int COL_SESSION_ID = 0; // Session Id
+    private static final int COL_TITLE = 1; // Title
+    private static final int COL_DESCRIPTION = 2; // Description
+    private static final int COL_SCHEDULED_AT = 8; // Scheduled At
     private static final int COL_SCHEDULED_DURATION = 9; // Scheduled Duration
-    private static final int COL_LIVE_LINK = 10;        // Live Link
-    private static final int COL_SPEAKER_ID = 12;       // Speaker Id
-    private static final int COL_FIRST_NAME = 13;       // FirstName
-    private static final int COL_LAST_NAME = 14;        // LastName
-    private static final int COL_TAG_LINE = 16;         // TagLine
-    private static final int COL_BIO = 17;              // Bio
-    private static final int COL_PROFILE_PICTURE = 22;  // Profile Picture
+    private static final int COL_LIVE_LINK = 10; // Live Link
+    private static final int COL_SPEAKER_ID = 12; // Speaker Id
+    private static final int COL_FIRST_NAME = 13; // FirstName
+    private static final int COL_LAST_NAME = 14; // LastName
+    private static final int COL_TAG_LINE = 16; // TagLine
+    private static final int COL_BIO = 17; // Bio
+    private static final int COL_PROFILE_PICTURE = 22; // Profile Picture
 
     // EST timezone (America/New_York)
     private static final ZoneId EST_ZONE = ZoneId.of("America/New_York");
@@ -74,22 +74,22 @@ public class ImportFromCSV {
         }
 
         try (FileInputStream fis = new FileInputStream(xlsxFilePath);
-             Workbook workbook = new XSSFWorkbook(fis)) {
-            
+                Workbook workbook = new XSSFWorkbook(fis)) {
+
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
-            
+
             // Skip header row
             if (rowIterator.hasNext()) {
                 Row headerRow = rowIterator.next();
                 LOG.infof("XLSX header found with %d columns", headerRow.getLastCellNum());
             }
-            
+
             int rowNumber = 0;
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
                 rowNumber++;
-                
+
                 try {
                     String[] fields = extractRowData(row);
                     processRow(fields);
@@ -97,7 +97,7 @@ public class ImportFromCSV {
                     LOG.errorf(e, "Error processing row %d: %s", rowNumber, e.getMessage());
                 }
             }
-            
+
             LOG.infof("XLSX import completed. Processed %d rows", rowNumber);
         } catch (Exception e) {
             LOG.errorf(e, "Error reading XLSX file: %s", xlsxFilePath);
@@ -108,12 +108,12 @@ public class ImportFromCSV {
         List<String> fields = new ArrayList<>();
         // We need at least 23 columns (0-22) for Profile Picture
         int lastColumn = Math.max(row.getLastCellNum(), 23);
-        
+
         for (int i = 0; i < lastColumn; i++) {
             Cell cell = row.getCell(i);
             fields.add(getCellValueAsString(cell));
         }
-        
+
         return fields.toArray(new String[0]);
     }
 
@@ -121,7 +121,7 @@ public class ImportFromCSV {
         if (cell == null) {
             return "";
         }
-        
+
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue();
@@ -145,7 +145,7 @@ public class ImportFromCSV {
     private void processRow(String[] fields) {
         Talk talk = createOrUpdateTalk(fields);
         Speaker speaker = createOrUpdateSpeaker(fields);
-        
+
         // Establish bidirectional relationship
         if (speaker != null && talk != null) {
             if (!talk.speakers.contains(speaker)) {
@@ -167,30 +167,30 @@ public class ImportFromCSV {
             UUID speakerId = UUID.fromString(speakerIdStr);
             Speaker speaker = Speaker.findById(speakerId);
             boolean isNew = (speaker == null);
-            
+
             if (isNew) {
                 speaker = new Speaker();
                 speaker.id = speakerId;
             }
-            
+
             speaker.firstName = emptyToNull(fields[COL_FIRST_NAME]);
             speaker.lastName = emptyToNull(fields[COL_LAST_NAME]);
             speaker.title = emptyToNull(fields[COL_TAG_LINE]);
             speaker.biography = emptyToNull(fields[COL_BIO]);
             speaker.star = false;
-            
+
             if (isNew) {
                 speaker.persist();
             }
-            
+
             // Download profile picture if URL is provided
             String profilePictureUrl = emptyToNull(fields[COL_PROFILE_PICTURE]);
             if (profilePictureUrl != null) {
                 downloadProfilePicture(speakerId, profilePictureUrl);
             }
-            
+
             LOG.debugf("%s speaker: %s %s (%s)", isNew ? "Persisted" : "Updated",
-                       speaker.firstName, speaker.lastName, speakerId);
+                    speaker.firstName, speaker.lastName, speakerId);
             return speaker;
         } catch (Exception e) {
             LOG.errorf(e, "Error creating speaker: %s", e.getMessage());
@@ -200,7 +200,7 @@ public class ImportFromCSV {
 
     private Talk createOrUpdateTalk(String[] fields) {
         String sessionIdStr = fields[COL_SESSION_ID].trim();
-        
+
         if (sessionIdStr.isEmpty()) {
             return null;
         }
@@ -209,7 +209,7 @@ public class ImportFromCSV {
             Long sessionId = Long.parseLong(sessionIdStr);
             Talk talk = Talk.findById(sessionId);
             boolean isNew = (talk == null);
-            
+
             if (isNew) {
                 // For new talks, title is required
                 String title = fields[COL_TITLE].trim();
@@ -217,7 +217,7 @@ public class ImportFromCSV {
                     LOG.warnf("Skipping new talk with session ID %d: title is empty", sessionId);
                     return null;
                 }
-                
+
                 talk = new Talk();
                 talk.id = sessionId;
                 talk.title = title;
@@ -239,14 +239,15 @@ public class ImportFromCSV {
                         LOG.warnf("Could not parse date '%s' for talk %d", scheduledAt, sessionId);
                     }
                 }
-                
+
                 talk.persist();
                 LOG.debugf("Persisted talk: %s (%d)", talk.title, sessionId);
             } else {
                 // For existing talks, just return the found talk
-                LOG.debugf("Found existing talk: %s (%d) with %d speaker(s)", talk.title, sessionId, talk.speakers.size());
+                LOG.debugf("Found existing talk: %s (%d) with %d speaker(s)", talk.title, sessionId,
+                        talk.speakers.size());
             }
-            
+
             return talk;
         } catch (Exception e) {
             LOG.errorf(e, "Error creating talk: %s", e.getMessage());
@@ -306,5 +307,3 @@ public class ImportFromCSV {
         }
     }
 }
-
-// Made with Bob
