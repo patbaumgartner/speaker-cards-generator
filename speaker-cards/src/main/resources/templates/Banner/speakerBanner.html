@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC
+"-//OPENHTMLTOPDF//DOC XHTML Character Entities Only 1.0//EN" "">
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{speaker.firstName} {speaker.lastName} — Speaker Card</title>
+  <style>
+    @font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: url('/static/fonts/RobotoMonoRegular.ttf') format('truetype');
+    }
+    @font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 300;
+    src: url('/static/fonts/RobotoMonoLight.ttf') format('truetype');
+    }
+    @font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 700;
+    src: url('/static/fonts/RobotoMonoBold.ttf') format('truetype');
+    }
+
+@page {
+  size: 1280px 720px;
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+    margin: 0px;
+    padding: 0px;
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    overflow: hidden;
+    font-family: "Roboto Mono", monospace;
+    background-image: url('/static/images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #ffffff;
+}
+
+/* Top logo - Duke on left */
+#top-logo {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    z-index: 10;
+    height: 150px;
+    width: 150px;
+}
+
+#top-logo img {
+    width: auto;
+    height: 100px;
+    display: block;
+}
+
+/* Conference banner - orange rounded rectangle on top right with WHITE text */
+.conference-banner {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    z-index: 10;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background-color: #f38113;
+    font-weight: 400;
+    font-size: 54px;
+    color: #ffffff;
+    font-family: "Roboto Mono", monospace;
+    white-space: nowrap;
+}
+
+/* Speaker photo - large circular with gradient border */
+.speaker-photo-wrapper {
+    position: absolute;
+    left: 80px;
+    top: 150px;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    z-index: 150;
+    padding: 15px;
+    background-image: url('/static/images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.speaker-photo-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+/* Speaker info - right side */
+.speaker-info {
+    position: absolute;
+    left: 600px;
+    top: 200px;
+    z-index: 10;
+    width: 650px;
+}
+
+/* Role - orange text */
+#role {
+    font-size: 18px;
+    color: #ffb84d;
+    font-weight: 400;
+    margin-bottom: 12px;
+    font-family: "Roboto Mono", monospace;
+}
+
+/* Speaker name - large white text, can wrap to two lines */
+#name {
+    font-size: 68px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    font-family: "Roboto Mono", monospace;
+    word-wrap: break-word;
+}
+
+/* Talk title - white text with lightning emoji */
+#talk-title {
+    font-size: 38px;
+    font-weight: 400;
+    color: #ffffff;
+    margin-bottom: 30px;
+    line-height: 1.3;
+    font-family: "Roboto Mono", monospace;
+    word-wrap: break-word;
+}
+
+/* Schedule - bottom centered */
+.event-block {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 26px;
+    color: #ffffff;
+    text-align: center;
+    font-family: "Roboto Mono", monospace;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+#event-time {
+    font-size: 35px;
+}
+  </style>
+</head>
+
+<body>
+  <!-- Top logo - Duke -->
+  <div id="top-logo">
+    <img src="/static/images/duke_champ.png" alt="Java Champions Duke" />
+  </div>
+
+  <!-- Conference banner -->
+  <div class="conference-banner">
+    jChampions Conference
+  </div>
+
+  <!-- Speaker photo with gradient border -->
+  <div class="speaker-photo-wrapper">
+    <div class="speaker-photo-inner"
+         {#if speaker.id}
+         style="background-image: url('{uri:Banner.speakerPhoto(speaker.id)}')"
+         {#else}
+         style="background-color: #ff9800;"
+         {/if}
+    ></div>
+  </div>
+
+  <!-- Speaker info -->
+  <div class="speaker-info">
+    <!-- Role -->
+    {#if speaker.title}
+      <div id="role">{speaker.title}</div>
+    {/if}
+
+    <!-- Speaker name -->
+    <div id="name">{speaker.firstName} {speaker.lastName}</div>
+
+    <!-- Talk title -->
+    {#if talk != null && talk.title}
+      <div id="talk-title">{talk.title}</div>
+    {/if}
+  </div>
+
+  <!-- Event time - bottom centered -->
+  {#if talk != null && talk.estTime && talk.cetTime}
+    <div class="event-block" id="event-time">
+      ⏰ {str:formatDate(talk.date)} | {str:formatTime(talk.cetTime)}-{str:addHour(talk.cetTime)} CET | {str:formatTime(talk.estTime)}-{str:addHour(talk.estTime)} EST
+    </div>
+  {/if}
+</body>
+</html>
