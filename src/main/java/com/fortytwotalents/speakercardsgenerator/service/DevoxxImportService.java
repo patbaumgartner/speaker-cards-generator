@@ -23,13 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 /**
- * Imports speakers from the Devoxx / Voxxed Days mobile CFP API.
+ * Imports speakers from the Voxxed Days / CFP public API.
  *
  * <p>
  * The API endpoint format is:
  *
  * <pre>
- *   GET {baseUrl}/events/{eventId}/speakers
+ *   GET https://{eventId}.cfp.dev/api/public/speakers
  * </pre>
  *
  * <p>
@@ -42,7 +42,7 @@ public class DevoxxImportService {
 	private static final Logger log = LoggerFactory.getLogger(DevoxxImportService.class);
 
 	/**
-	 * Allowlist of characters in a Devoxx event ID (alphanumeric, hyphen, underscore, ≤50
+	 * Allowlist of characters in a CFP event ID (alphanumeric, hyphen, underscore, ≤50
 	 * chars).
 	 */
 	private static final Pattern SAFE_EVENT_ID = Pattern.compile("^[a-zA-Z0-9_-]{1,50}$");
@@ -66,9 +66,9 @@ public class DevoxxImportService {
 	/**
 	 * Configures the given {@link RestClient.Builder} to add a
 	 * {@link JacksonJsonHttpMessageConverter} that also accepts {@code text/html}
-	 * responses. Some Devoxx API endpoints return JSON with a {@code text/html}
-	 * content-type header; the additional media-type mapping allows Jackson to
-	 * deserialise such responses correctly.
+	 * responses. Some CFP API endpoints return JSON with a {@code text/html} content-type
+	 * header; the additional media-type mapping allows Jackson to deserialise such
+	 * responses correctly.
 	 * <p>
 	 * Package-private for use in tests.
 	 */
@@ -89,8 +89,8 @@ public class DevoxxImportService {
 	}
 
 	/**
-	 * Fetches speakers for the given Devoxx event ID.
-	 * @param eventId Devoxx event identifier (e.g. {@code vdz26}); must contain only
+	 * Fetches speakers for the given CFP event ID.
+	 * @param eventId CFP event identifier (e.g. {@code vdz26}); must contain only
 	 * alphanumeric characters, hyphens, or underscores (max 50 characters)
 	 * @return number of speakers imported or updated
 	 * @throws IllegalArgumentException if the eventId does not match the safe pattern
@@ -103,14 +103,14 @@ public class DevoxxImportService {
 		}
 
 		// eventId is validated above – safe to concatenate directly
-		URI uri = URI.create(devoxxApiConfig.getBaseUrl() + "/events/" + eventId + "/speakers");
-		log.info("Importing speakers from Devoxx API: {}", uri);
+		URI uri = URI.create("https://" + eventId + ".cfp.dev/api/public/speakers");
+		log.info("Importing speakers from CFP API: {}", uri);
 
 		try {
 			DevoxxSpeakerDto[] speakers = restClient.get().uri(uri).retrieve().body(DevoxxSpeakerDto[].class);
 
 			if (speakers == null || speakers.length == 0) {
-				log.warn("No speakers returned from Devoxx API for event: {}", eventId);
+				log.warn("No speakers returned from CFP API for event: {}", eventId);
 				return 0;
 			}
 
@@ -124,13 +124,13 @@ public class DevoxxImportService {
 					log.error("Error saving speaker {} {}: {}", dto.firstName, dto.lastName, e.getMessage(), e);
 				}
 			}
-			log.info("Imported {} speakers from Devoxx API for event {}", count, eventId);
+			log.info("Imported {} speakers from CFP API for event {}", count, eventId);
 			return count;
 
 		}
 		catch (Exception e) {
-			log.error("Failed to import speakers from Devoxx API: {}", e.getMessage(), e);
-			throw new RuntimeException("Devoxx API import failed for event " + eventId, e);
+			log.error("Failed to import speakers from CFP API: {}", e.getMessage(), e);
+			throw new RuntimeException("CFP API import failed for event " + eventId, e);
 		}
 	}
 
@@ -261,8 +261,8 @@ public class DevoxxImportService {
 	}
 
 	/**
-	 * JSON DTO for a speaker returned by the Devoxx mobile API. Unknown fields are
-	 * silently ignored to remain forward-compatible.
+	 * JSON DTO for a speaker returned by the CFP public API. Unknown fields are silently
+	 * ignored to remain forward-compatible.
 	 */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class DevoxxSpeakerDto {

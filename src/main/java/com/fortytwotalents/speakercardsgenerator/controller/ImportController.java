@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
  * <pre>
  *   GET /api/import/csv              – import from default XLSX file (SelectedWithSchedule.xlsx)
  *   GET /api/import/csv/{path}       – import from a custom XLSX/CSV path
- *   GET /api/import/devoxx           – import from Devoxx API (configured event)
- *   GET /api/import/devoxx/{eventId} – import from Devoxx API for a specific event ID
+ *   GET /api/import/devoxx           – import from CFP API (configured event)
+ *   GET /api/import/devoxx/{eventId} – import from CFP API for a specific event ID
  * </pre>
  */
 @RestController
@@ -75,11 +75,11 @@ public class ImportController {
 	public ResponseEntity<String> importFromDevoxx() {
 		try {
 			int count = devoxxImportService.importSpeakers();
-			return ResponseEntity.ok("Devoxx import completed. Imported/updated " + count + " speakers.");
+			return ResponseEntity.ok("CFP import completed. Imported/updated " + count + " speakers.");
 		}
 		catch (Exception e) {
-			log.error("Error during Devoxx import", e);
-			return ResponseEntity.internalServerError().body("Error during Devoxx import: " + e.getMessage());
+			log.error("Error during CFP import", e);
+			return ResponseEntity.internalServerError().body("Error during CFP import: " + e.getMessage());
 		}
 	}
 
@@ -88,12 +88,12 @@ public class ImportController {
 		try {
 			int count = devoxxImportService.importSpeakers(eventId);
 			return ResponseEntity
-				.ok("Devoxx import completed for event '" + eventId + "'. Imported/updated " + count + " speakers.");
+				.ok("CFP import completed for event '" + eventId + "'. Imported/updated " + count + " speakers.");
 		}
 		catch (Exception e) {
-			log.error("Error during Devoxx import for event {}", eventId, e);
+			log.error("Error during CFP import for event {}", eventId, e);
 			return ResponseEntity.internalServerError()
-				.body("Error during Devoxx import for event '" + eventId + "': " + e.getMessage());
+				.body("Error during CFP import for event '" + eventId + "': " + e.getMessage());
 		}
 	}
 
