@@ -14,7 +14,7 @@ import org.springframework.web.client.UnknownContentTypeException;
 /**
  * Verifies that the {@link RestClient} used inside {@link DevoxxImportService} can
  * deserialise a JSON body served with a {@code text/html} content-type header – which is
- * the actual behaviour of the Devoxx mobile API.
+ * the actual behaviour of some CFP API endpoints.
  */
 class DevoxxImportServiceRestClientTest {
 
@@ -40,11 +40,11 @@ class DevoxxImportServiceRestClientTest {
 		MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
 		RestClient restClient = builder.build();
 
-		server.expect(requestTo("https://m.devoxx.com/events/vdz26/speakers"))
+		server.expect(requestTo("https://vdz26.cfp.dev/api/public/speakers"))
 			.andRespond(withSuccess(SPEAKERS_JSON, MediaType.TEXT_HTML));
 
 		DevoxxImportService.DevoxxSpeakerDto[] speakers = restClient.get()
-			.uri("https://m.devoxx.com/events/vdz26/speakers")
+			.uri("https://vdz26.cfp.dev/api/public/speakers")
 			.retrieve()
 			.body(DevoxxImportService.DevoxxSpeakerDto[].class);
 
@@ -60,11 +60,11 @@ class DevoxxImportServiceRestClientTest {
 		MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
 		RestClient defaultRestClient = builder.build();
 
-		server.expect(requestTo("https://m.devoxx.com/events/vdz26/speakers"))
+		server.expect(requestTo("https://vdz26.cfp.dev/api/public/speakers"))
 			.andRespond(withSuccess(SPEAKERS_JSON, MediaType.TEXT_HTML));
 
 		assertThatThrownBy(() -> defaultRestClient.get()
-			.uri("https://m.devoxx.com/events/vdz26/speakers")
+			.uri("https://vdz26.cfp.dev/api/public/speakers")
 			.retrieve()
 			.body(DevoxxImportService.DevoxxSpeakerDto[].class)).isInstanceOf(UnknownContentTypeException.class);
 	}
