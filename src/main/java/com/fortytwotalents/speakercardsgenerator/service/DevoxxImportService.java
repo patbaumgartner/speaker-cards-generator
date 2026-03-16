@@ -8,12 +8,16 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.AbstractJacksonHttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -52,10 +56,31 @@ public class DevoxxImportService {
 
 	private final RestClient restClient;
 
-	public DevoxxImportService(DevoxxApiConfig devoxxApiConfig, SpeakerRepository speakerRepository) {
+	public DevoxxImportService(DevoxxApiConfig devoxxApiConfig, SpeakerRepository speakerRepository,
+			RestClient.Builder restClientBuilder) {
 		this.devoxxApiConfig = devoxxApiConfig;
 		this.speakerRepository = speakerRepository;
-		this.restClient = RestClient.create();
+		this.restClient = configureBuilder(restClientBuilder).build();
+	}
+
+	/**
+	 * Configures the given {@link RestClient.Builder} to add a
+	 * {@link JacksonJsonHttpMessageConverter} that also accepts {@code text/html}
+	 * responses. Some Devoxx API endpoints return JSON with a {@code text/html}
+	 * content-type header; the additional media-type mapping allows Jackson to
+	 * deserialise such responses correctly.
+	 * <p>
+	 * Package-private for use in tests.
+	 */
+	static RestClient.Builder configureBuilder(RestClient.Builder builder) {
+		JacksonJsonHttpMessageConverter converter = new JacksonJsonHttpMessageConverter();
+		List<MediaType> mediaTypes = new ArrayList<>(converter.getSupportedMediaTypes());
+		mediaTypes.add(MediaType.TEXT_HTML);
+		converter.setSupportedMediaTypes(mediaTypes);
+		return builder.messageConverters(converters -> {
+			converters.removeIf(c -> c instanceof AbstractJacksonHttpMessageConverter);
+			converters.add(0, converter);
+		});
 	}
 
 	@Transactional
