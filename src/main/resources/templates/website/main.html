@@ -11,20 +11,14 @@
     <!-- Bootstrap Icons via WebJars -->
     <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}">
     <!-- Custom application styles -->
-    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                     class="bi bi-people-fill me-2" viewBox="0 0 16 16">
-                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784
-                             6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5
-                             3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
-                </svg>
-                Speaker Directory
+                <i class="bi bi-people-fill me-2"></i>Speaker Directory
             </a>
             <button class="navbar-toggler" type="button"
                     data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -32,14 +26,44 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/">Speakers</a>
+                        <a class="nav-link active" href="/"><i class="bi bi-mic-fill me-1"></i>Speakers</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="importDropdown"
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-cloud-download-fill me-1"></i>Import
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="importDropdown">
+                            <li>
+                                <button class="dropdown-item" data-import-type="devoxx">
+                                    <i class="bi bi-cloud-arrow-down me-2 text-primary"></i>Import from Devoxx API
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" data-import-type="csv">
+                                    <i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>Import from XLSX
+                                </button>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Import toast notification -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;">
+        <div id="importToast" class="toast align-items-center text-white border-0" role="alert"
+             aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="importToastBody">Import complete.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content – replaced by the page-specific fragment -->
     <div class="main-content">
@@ -60,5 +84,57 @@
 
     <!-- Bootstrap JS -->
     <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Import helper: calls REST endpoint, shows toast, reloads page on success -->
+    <script>
+        var RELOAD_DELAY_MS = 2000;
+        var ALLOWED_IMPORT_TYPES = { devoxx: true, csv: true };
+
+        function triggerImport(type, btn) {
+            if (!ALLOWED_IMPORT_TYPES[type]) { return; }
+            var origHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Importing\u2026';
+
+            fetch('/api/import/' + type)
+                .then(function(r) {
+                    return r.text().then(function(text) {
+                        return { ok: r.ok, text: text };
+                    });
+                })
+                .then(function(result) {
+                    showImportToast(result.ok, result.text);
+                    if (result.ok) {
+                        setTimeout(function() { window.location.reload(); }, RELOAD_DELAY_MS);
+                    }
+                })
+                .catch(function(err) {
+                    showImportToast(false, 'Import failed: ' + err.message);
+                })
+                .finally(function() {
+                    btn.disabled = false;
+                    btn.innerHTML = origHTML;
+                });
+        }
+
+        function showImportToast(success, message) {
+            var toastEl = document.getElementById('importToast');
+            var toastBody = document.getElementById('importToastBody');
+            toastEl.classList.remove('bg-success', 'bg-danger');
+            toastEl.classList.add(success ? 'bg-success' : 'bg-danger');
+            toastBody.textContent = message;
+            var toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4000 });
+            toast.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[data-import-type]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    triggerImport(btn.dataset.importType, btn);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
