@@ -16,10 +16,13 @@
   <description>Speaker Cards Generator for Voxxed Days and similar conferences</description>
 
   <properties>
+    <bootstrap-icons.version>1.11.3</bootstrap-icons.version>
+    <bootstrap.version>5.3.3</bootstrap.version>
     <jacoco.version>0.8.14</jacoco.version>
     <java.version>21</java.version>
     <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
     <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
+    <poi.version>5.3.0</poi.version>
     <!-- Plugin versions -->
     <spring-javaformat.version>0.0.47</spring-javaformat.version>
   </properties>
@@ -71,19 +74,19 @@
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
-      <version>5.3.0</version>
+      <version>${poi.version}</version>
     </dependency>
 
     <!-- Bootstrap CSS/JS via WebJars -->
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>bootstrap</artifactId>
-      <version>5.3.3</version>
+      <version>${bootstrap.version}</version>
     </dependency>
     <dependency>
       <groupId>org.webjars.npm</groupId>
       <artifactId>bootstrap-icons</artifactId>
-      <version>1.11.3</version>
+      <version>${bootstrap-icons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.webjars</groupId>
