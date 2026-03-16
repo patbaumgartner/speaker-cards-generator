@@ -68,4 +68,4 @@ jobs:
           name: "Release ${{ github.ref_name }}"
           generate_release_notes: true
           files: |
-            target/speaker-cards-*.jar
+            target/speaker-cards-generator-*.jar
