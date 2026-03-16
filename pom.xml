@@ -41,7 +41,7 @@
         <java.version>21</java.version>
         <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
         <!-- Plugin versions -->
-        <spring-javaformat.version>0.0.44</spring-javaformat.version>
+        <spring-javaformat.version>0.0.47</spring-javaformat.version>
         <jacoco.version>0.8.13</jacoco.version>
         <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     </properties>
