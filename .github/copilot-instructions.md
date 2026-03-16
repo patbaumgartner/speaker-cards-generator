@@ -76,7 +76,6 @@ All Maven commands are run from the repository root.
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `ci.yml` | push / PR to `main`, `develop` | Build, test, JaCoCo, Spring Java Format check |
-| `codeql.yml` | push / PR + weekly schedule | CodeQL Java security scan |
 | `release.yml` | semantic-version tag push | Build Docker image → GHCR + GitHub Release |
 
 ## Key Conventions
