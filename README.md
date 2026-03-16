@@ -17,27 +17,33 @@
 - 🎛️ **Multi-event profiles** – switch between events by activating a Spring profile
 - 🌐 **Web UI** – Bootstrap-based speaker directory with one-click download
 - 🐳 **Docker-ready** – `Dockerfile` + `docker-compose.yml` included
+- 🔄 **Auto-start database** – Spring Boot Docker Compose starts PostgreSQL automatically during local development
 
 ---
 
 ## 🚀 Quick Start
 
-### With Docker Compose (recommended)
+### With Docker Compose – full-stack (recommended for production-like setup)
 
 ```shell
-# Start PostgreSQL + the application
-docker compose up -d
+# Start PostgreSQL + the application in Docker
+docker compose -f docker-compose.yml up -d
 ```
 
 Open <http://localhost:8080> in your browser.
 
-### Without Docker
+### Local development (database auto-starts)
 
-Prerequisites: Java 21+, Maven 3.9+, PostgreSQL 15+
+Prerequisites: Java 21+, Maven 3.9+, Docker
+
+Spring Boot automatically starts PostgreSQL via Docker Compose (`compose.yml`) when you run:
 
 ```shell
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz
 ```
+
+No manual `docker compose up` step is needed — the database container is started and stopped
+together with the application.
 
 ---
 
@@ -100,8 +106,9 @@ speaker-cards-generator/
 │       ├── templates/   – Thymeleaf HTML templates
 │       ├── static/      – Static assets (CSS, fonts, images)
 │       └── application*.properties – App and profile-specific config
+├── compose.yml          – Local development database (Spring Boot Docker Compose)
 ├── Dockerfile           – Multi-stage Docker build
-├── docker-compose.yml   – Local development stack
+├── docker-compose.yml   – Full-stack Docker deployment (database + application)
 ├── pom.xml
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
