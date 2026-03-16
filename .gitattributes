@@ -1,55 +1,18 @@
-# Default behavior: auto-detect text files and normalize line endings to LF
 * text=auto eol=lf
-
-# Java source files
-*.java text eol=lf
-*.class binary
-
-# Maven wrapper
-mvnw text eol=lf
-mvnw.cmd text eol=crlf
 *.cmd text eol=crlf
 
-# XML / Config files
-*.xml text eol=lf
-*.properties text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
-
-# Web / Template files
-*.html text eol=lf
-*.css text eol=lf
-*.js text eol=lf
-
-# Shell scripts
-*.sh text eol=lf
-
-# Markdown / Documentation
-*.md text eol=lf
-*.txt text eol=lf
-
-# JSON
-*.json text eol=lf
-
-# Docker
-Dockerfile text eol=lf
-.dockerignore text eol=lf
-
-# Binary / image / font files
+*.class binary
 *.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
 *.ico binary
-*.svg binary
 *.woff binary
 *.woff2 binary
 *.ttf binary
 *.eot binary
 *.otf binary
 *.pdf binary
-
-# Archive files
 *.zip binary
 *.tar binary
 *.gz binary
@@ -57,9 +20,5 @@ Dockerfile text eol=lf
 *.war binary
 *.ear binary
 *.nar binary
-
-# Excel / Office files
 *.xlsx binary
 *.xls binary
-*.docx binary
-*.pptx binary
