@@ -43,10 +43,6 @@ public class EventConfig {
 	 */
 	private String logoFile = "event-tile.png";
 
-	// -------------------------------------------------------------------------
-	// Getters / setters
-	// -------------------------------------------------------------------------
-
 	public String getName() {
 		return name;
 	}

@@ -8,7 +8,6 @@
 
 services:
 
-  # ── PostgreSQL database ──────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
     container_name: speakercards-db
@@ -27,7 +26,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── Speaker Cards Generator application ──────────────────────────────────────
   app:
     build:
       context: .
