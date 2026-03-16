@@ -133,7 +133,7 @@
                     </div>
                     <!-- Talk banner (only when speaker has talks) -->
                     <div class="btn-group btn-group-sm" role="group"
-                         th:if="${speaker.talks != null and !speaker.talks.isEmpty()}">
+                         th:if="${!#lists.isEmpty(speaker.talks)}">
                       <a th:href="@{/talk-banner/{id}(id=${speaker.talks[0].id})}"
                          target="_blank"
                          class="btn btn-outline-success"

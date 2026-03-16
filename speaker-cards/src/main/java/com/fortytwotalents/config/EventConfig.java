@@ -5,15 +5,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Conference / event branding configuration.
  *
- * <p>All properties are bound from the {@code app.event.*} namespace.
- * Override them per Spring profile to support multiple events:
+ * <p>All properties are bound from the {@code app.event.*} namespace. Override them per Spring
+ * profile to support multiple events:
+ *
  * <ul>
- *   <li>{@code application-vdz.properties} – Voxxed Days Zürich</li>
- *   <li>{@code application-vdt.properties} – Voxxed Days Ticino</li>
- *   <li>{@code application-vdcern.properties} – Voxxed Days CERN</li>
+ *   <li>{@code application-vdz.properties} – Voxxed Days Zürich
+ *   <li>{@code application-vdt.properties} – Voxxed Days Ticino
+ *   <li>{@code application-vdcern.properties} – Voxxed Days CERN
  * </ul>
  *
  * <p>Example {@code application.properties}:
+ *
  * <pre>
  * app.event.name=Voxxed Days Zürich
  * app.event.short-name=VDZ '26
@@ -24,55 +26,54 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.event")
 public class EventConfig {
 
-    /** Full display name shown on banners, e.g. "Voxxed Days Zürich". */
-    private String name = "Voxxed Days";
+  /** Full display name shown on banners, e.g. "Voxxed Days Zürich". */
+  private String name = "Voxxed Days";
 
-    /** Short / abbreviated name shown on the banner badge, e.g. "VDZ '26". */
-    private String shortName = "VDZ '26";
+  /** Short / abbreviated name shown on the banner badge, e.g. "VDZ '26". */
+  private String shortName = "VDZ '26";
 
-    /** Conference website URL shown in the social banner footer. */
-    private String url = "https://voxxeddays.com/";
+  /** Conference website URL shown in the social banner footer. */
+  private String url = "https://voxxeddays.com/";
 
-    /**
-     * Filename (relative to {@code /static/images/}) of the event image tile
-     * used as background in the generated banners.
-     * Replace with your event's own tile image.
-     */
-    private String logoFile = "event-tile.png";
+  /**
+   * Filename (relative to {@code /static/images/}) of the event image tile used as background in
+   * the generated banners. Replace with your event's own tile image.
+   */
+  private String logoFile = "event-tile.png";
 
-    // -------------------------------------------------------------------------
-    // Getters / setters
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Getters / setters
+  // -------------------------------------------------------------------------
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getShortName() {
-        return shortName;
-    }
+  public String getShortName() {
+    return shortName;
+  }
 
-    public void setShortName(String shortName) {
-        this.shortName = shortName;
-    }
+  public void setShortName(String shortName) {
+    this.shortName = shortName;
+  }
 
-    public String getUrl() {
-        return url;
-    }
+  public String getUrl() {
+    return url;
+  }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+  public void setUrl(String url) {
+    this.url = url;
+  }
 
-    public String getLogoFile() {
-        return logoFile;
-    }
+  public String getLogoFile() {
+    return logoFile;
+  }
 
-    public void setLogoFile(String logoFile) {
-        this.logoFile = logoFile;
-    }
+  public void setLogoFile(String logoFile) {
+    this.logoFile = logoFile;
+  }
 }
