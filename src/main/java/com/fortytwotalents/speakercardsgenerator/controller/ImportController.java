@@ -11,8 +11,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * REST controller that triggers data import operations.
@@ -95,6 +98,26 @@ public class ImportController {
 			log.error("Error during Devoxx import for event {}", eventId, e);
 			return ResponseEntity.internalServerError()
 				.body("Error during Devoxx import for event '" + eventId + "': " + e.getMessage());
+		}
+	}
+
+	@PostMapping(value = "/xlsx", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+	public ResponseEntity<String> importXlsxFile(@RequestParam("file") MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			return ResponseEntity.badRequest().body("No file provided or file is empty.");
+		}
+		String originalFilename = file.getOriginalFilename();
+		if (originalFilename == null || (!originalFilename.toLowerCase().endsWith(".xlsx")
+				&& !originalFilename.toLowerCase().endsWith(".xls"))) {
+			return ResponseEntity.badRequest().body("Only XLSX/XLS files are accepted.");
+		}
+		try {
+			importFromCSVService.importFromXlsx(file.getInputStream());
+			return ResponseEntity.ok("XLSX import completed successfully. Check logs for details.");
+		}
+		catch (Exception e) {
+			log.error("Error during XLSX upload import", e);
+			return ResponseEntity.internalServerError().body("Error during XLSX import: " + e.getMessage());
 		}
 	}
 

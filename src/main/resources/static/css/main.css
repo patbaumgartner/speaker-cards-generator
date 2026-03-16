@@ -1,20 +1,147 @@
+/* ====================================================================
+   Voxxed Days brand colours
+   - Primary (dark navy):  #1e2246
+   - Accent  (light blue): #40b4e5
+   ==================================================================== */
+:root {
+    --vd-primary: #1e2246;
+    --vd-primary-hover: #2a2f5e;
+    --vd-accent: #40b4e5;
+    --vd-accent-dark: #2a9ac4;
+    --vd-text-on-primary: #ffffff;
+    --vd-text-on-accent: #ffffff;
+    --vd-bg-body: #f4f6f9;
+}
+
+/* Override Bootstrap primary with Voxxed Days navy */
+.btn-primary,
+.bg-primary,
+.card-header.bg-primary,
+.table-primary {
+    background-color: var(--vd-primary) !important;
+    border-color: var(--vd-primary) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--vd-primary-hover) !important;
+    border-color: var(--vd-primary-hover) !important;
+}
+
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus {
+    color: var(--vd-text-on-primary) !important;
+}
+
+/* Accent colour used for call-to-action elements */
+.btn-accent {
+    background-color: var(--vd-accent);
+    border-color: var(--vd-accent);
+    color: var(--vd-text-on-accent);
+    font-weight: 600;
+}
+
+.btn-accent:hover,
+.btn-accent:focus {
+    background-color: var(--vd-accent-dark);
+    border-color: var(--vd-accent-dark);
+    color: var(--vd-text-on-accent);
+}
+
+.btn-outline-accent {
+    color: var(--vd-accent-dark);
+    border-color: var(--vd-accent);
+}
+
+.btn-outline-accent:hover,
+.btn-outline-accent:focus {
+    background-color: var(--vd-accent);
+    border-color: var(--vd-accent);
+    color: var(--vd-text-on-accent);
+}
+
+/* Text colour helpers */
+.text-primary {
+    color: var(--vd-primary) !important;
+}
+
+.text-accent {
+    color: var(--vd-accent-dark) !important;
+}
+
+/* Border accent */
+.border-accent {
+    border-color: var(--vd-accent) !important;
+}
+
+/* ====================================================================
+   Layout
+   ==================================================================== */
+
 body {
-    background-color: #f8f9fa;
+    background-color: var(--vd-bg-body);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Navbar */
 .navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    background-color: var(--vd-primary) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    border-bottom: 3px solid var(--vd-accent);
 }
 
+.navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-toggler-icon {
+    color: var(--vd-text-on-primary) !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .nav-link.active {
+    color: var(--vd-accent) !important;
+}
+
+/* Main content area */
 .main-content {
     padding: 2rem 0;
-    min-height: calc(100vh - 120px);
+    min-height: calc(100vh - 140px);
 }
 
+/* Cards */
+.card-header.bg-primary {
+    background-color: var(--vd-primary) !important;
+    color: var(--vd-text-on-primary);
+}
+
+/* Import card accent top border */
+.card.import-card {
+    border-top: 4px solid var(--vd-accent);
+}
+
+/* Status / feedback messages inside the import section */
+.import-status {
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+/* Footer */
 footer {
-    background-color: #343a40;
-    color: #fff;
+    background-color: var(--vd-primary);
+    color: var(--vd-text-on-primary);
     padding: 1.5rem 0;
     margin-top: 3rem;
+    border-top: 3px solid var(--vd-accent);
+}
+
+footer a {
+    color: var(--vd-accent) !important;
+    text-decoration: none;
+}
+
+footer a:hover,
+footer a:focus {
+    color: #fff !important;
+    text-decoration: underline;
 }

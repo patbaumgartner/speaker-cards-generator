@@ -122,7 +122,22 @@ public class ImportFromCSVService {
 			return;
 		}
 
-		try (FileInputStream fis = new FileInputStream(xlsxFilePath); Workbook workbook = new XSSFWorkbook(fis)) {
+		try (FileInputStream fis = new FileInputStream(xlsxFilePath)) {
+			importFromXlsx(fis);
+		}
+		catch (Exception e) {
+			log.error("Error reading XLSX file: {}", xlsxFilePath, e);
+		}
+	}
+
+	/**
+	 * Imports all rows from the given XLSX input stream.
+	 * @param inputStream input stream of the XLSX file
+	 */
+	@Transactional
+	public void importFromXlsx(InputStream inputStream) {
+		log.info("Starting XLSX import from input stream");
+		try (Workbook workbook = new XSSFWorkbook(inputStream)) {
 
 			Sheet sheet = workbook.getSheetAt(0);
 			Iterator<Row> rowIterator = sheet.iterator();
@@ -149,13 +164,15 @@ public class ImportFromCSVService {
 
 		}
 		catch (Exception e) {
-			log.error("Error reading XLSX file: {}", xlsxFilePath, e);
+			log.error("Error reading XLSX input stream", e);
 		}
 	}
 
 	private String[] extractRowData(Row row) {
 		List<String> fields = new ArrayList<>();
+
 		int lastColumn = Math.max(row.getLastCellNum(), 23);
+
 		for (int i = 0; i < lastColumn; i++) {
 			fields.add(cellToString(row.getCell(i)));
 		}

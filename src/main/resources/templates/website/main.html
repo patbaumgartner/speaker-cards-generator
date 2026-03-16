@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       th:fragment="layout(content)">
 <head>
-    <title>Speaker Cards Generator</title>
+    <title th:text="'Speaker Cards – ' + ${event.name}">Speaker Cards Generator</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap CSS via WebJars -->
@@ -11,20 +11,20 @@
     <!-- Bootstrap Icons via WebJars -->
     <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}">
     <!-- Custom application styles -->
-    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg" aria-label="Main navigation">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">
+            <a class="navbar-brand fw-bold" href="/" aria-label="Go to speaker directory">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                     class="bi bi-people-fill me-2" viewBox="0 0 16 16">
+                     class="bi bi-people-fill me-2" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                     <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784
                              6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5
                              3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
                 </svg>
-                Speaker Directory
+                <span th:text="${event.name}">Speaker Directory</span>
             </a>
             <button class="navbar-toggler" type="button"
                     data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -34,7 +34,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/">Speakers</a>
+                        <a class="nav-link active" href="/" aria-current="page">
+                            <i class="bi bi-people me-1" aria-hidden="true"></i>Speakers
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -42,18 +44,18 @@
     </nav>
 
     <!-- Main Content – replaced by the page-specific fragment -->
-    <div class="main-content">
+    <main class="main-content" id="main-content">
         <div class="container" th:insert="${content}">
             <!-- Page content is injected here -->
         </div>
-    </div>
+    </main>
 
     <!-- Footer -->
-    <footer class="text-center">
-        <div class="container">
-            <p class="mb-0">&copy; 2026 Speaker Directory — powered by
-                <a th:href="${event.url}" target="_blank" th:text="${event.name}" class="text-light">Conference</a>.
-                All rights reserved.
+    <footer role="contentinfo">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2026 Speaker Cards —
+                <a th:href="${event.url}" target="_blank" rel="noopener noreferrer"
+                   th:text="${event.name}">Conference</a>.
             </p>
         </div>
     </footer>
