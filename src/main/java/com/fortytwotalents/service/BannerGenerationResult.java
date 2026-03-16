@@ -47,51 +47,30 @@ public class BannerGenerationResult {
 		savedFiles.add(filePath);
 	}
 
-	/**
-	 * @return number of successfully generated banners
-	 */
 	public int getSuccessCount() {
 		return successes.size();
 	}
 
-	/**
-	 * @return number of failed banner generations
-	 */
 	public int getFailureCount() {
 		return failures.size();
 	}
 
-	/**
-	 * @return unmodifiable snapshot of successful entries
-	 */
 	public List<SuccessEntry> getSuccesses() {
 		return List.copyOf(successes);
 	}
 
-	/**
-	 * @return unmodifiable snapshot of failure entries
-	 */
 	public List<FailureEntry> getFailures() {
 		return List.copyOf(failures);
 	}
 
-	/**
-	 * @return unmodifiable list of saved file paths
-	 */
 	public List<String> getSavedFiles() {
 		return List.copyOf(savedFiles);
 	}
 
-	/**
-	 * @return {@code true} if at least one banner failed to generate
-	 */
 	public boolean hasFailures() {
 		return !failures.isEmpty();
 	}
 
-	/**
-	 * @return {@code true} if all banners were generated without errors
-	 */
 	public boolean isAllSuccessful() {
 		return failures.isEmpty() && !successes.isEmpty();
 	}
@@ -115,10 +94,6 @@ public class BannerGenerationResult {
 		}
 		return sb.toString();
 	}
-
-	// -------------------------------------------------------------------------
-	// Inner record types
-	// -------------------------------------------------------------------------
 
 	/** Details of a successfully generated banner. */
 	public static final class SuccessEntry {

@@ -79,16 +79,6 @@ public class BannerController {
 		this.templateUtils = templateUtils;
 	}
 
-	// -------------------------------------------------------------------------
-	// HTML preview endpoints
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Renders a speaker banner as an HTML page (browser preview).
-	 * @param id speaker UUID
-	 * @param model Spring MVC model
-	 * @return Thymeleaf view name {@code banner/speakerBanner}
-	 */
 	@GetMapping("/speaker-banner/{id}")
 	public String speakerBanner(@PathVariable UUID id, Model model) {
 		Speaker speaker = requireSpeaker(id);
@@ -99,12 +89,6 @@ public class BannerController {
 		return "banner/speakerBanner";
 	}
 
-	/**
-	 * Renders a talk banner as an HTML page (browser preview).
-	 * @param id talk / session ID
-	 * @param model Spring MVC model
-	 * @return Thymeleaf view name {@code banner/talkBanner}
-	 */
 	@GetMapping("/talk-banner/{id}")
 	public String talkBanner(@PathVariable Long id, Model model) {
 		Talk talk = requireTalk(id);
@@ -113,15 +97,6 @@ public class BannerController {
 		return "banner/talkBanner";
 	}
 
-	// -------------------------------------------------------------------------
-	// PNG download endpoints
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Generates a speaker banner PNG and returns it as {@code image/png}.
-	 * @param id speaker UUID
-	 * @return PNG byte array response
-	 */
 	@GetMapping(value = "/speaker-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
 	public byte[] speakerBannerPng(@PathVariable UUID id) {
@@ -131,11 +106,6 @@ public class BannerController {
 		return htmlToPngConverter.convertToPng(html);
 	}
 
-	/**
-	 * Generates a speaker social-media banner PNG (square, 1080×1080).
-	 * @param id speaker UUID
-	 * @return PNG byte array response
-	 */
 	@GetMapping(value = "/speaker-social/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
 	public byte[] speakerSocialPng(@PathVariable UUID id) {
@@ -145,11 +115,6 @@ public class BannerController {
 		return htmlToPngConverter.convertToPng(html);
 	}
 
-	/**
-	 * Generates a talk banner PNG.
-	 * @param id talk / session ID
-	 * @return PNG byte array response
-	 */
 	@GetMapping(value = "/talk-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
 	public byte[] talkBannerPng(@PathVariable Long id) {
@@ -158,20 +123,6 @@ public class BannerController {
 		return htmlToPngConverter.convertToPng(html);
 	}
 
-	// -------------------------------------------------------------------------
-	// Speaker photo endpoint
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Serves a speaker's profile photo.
-	 *
-	 * <p>
-	 * Looks for the photo in {@code /static/images/speaker/{id}.{jpg|png|jpeg}} on the
-	 * classpath. If no photo is found the client is redirected to the default placeholder
-	 * image.
-	 * @param id speaker UUID
-	 * @return photo response or redirect
-	 */
 	@GetMapping("/speaker-photo/{id}")
 	public ResponseEntity<byte[]> speakerPhoto(@PathVariable UUID id) {
 		requireSpeaker(id); // ensure speaker exists
@@ -195,21 +146,6 @@ public class BannerController {
 		return ResponseEntity.status(HttpStatus.FOUND).header("Location", "/static/images/duke_cool.png").build();
 	}
 
-	// -------------------------------------------------------------------------
-	// Bulk generation API
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Generates all banner types for all speakers and (optionally) saves them to the file
-	 * system.
-	 *
-	 * <p>
-	 * When {@code outputDir} is provided it is resolved relative to the working
-	 * directory. Paths that would escape the working directory are rejected with a 400
-	 * error.
-	 * @param outputDir optional file-system path where PNGs will be written
-	 * @return generation result summary as JSON
-	 */
 	@GetMapping(value = "/api/banners/generate-all", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public BannerGenerationResult generateAllBanners(@RequestParam(required = false) String outputDir) {
@@ -225,21 +161,12 @@ public class BannerController {
 		return bannerService.generateAllSpeakerBanners();
 	}
 
-	/**
-	 * Generates speaker banners for the given list of speaker UUIDs.
-	 * @param speakerIds list of speaker UUIDs in the JSON request body
-	 * @return generation result summary as JSON
-	 */
 	@PostMapping(value = "/api/banners/generate-speakers", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public BannerGenerationResult generateSpecificBanners(@RequestBody List<UUID> speakerIds) {
 		return bannerService.generateSpeakerBanners(speakerIds);
 	}
-
-	// -------------------------------------------------------------------------
-	// Private helpers
-	// -------------------------------------------------------------------------
 
 	private Speaker requireSpeaker(UUID id) {
 		return speakerRepository.findById(id)
@@ -258,13 +185,6 @@ public class BannerController {
 		return null;
 	}
 
-	/**
-	 * Renders a Thymeleaf banner template to an HTML string.
-	 * @param viewName Thymeleaf template path (e.g. {@code banner/speakerBanner})
-	 * @param speaker speaker model object (may be {@code null} for talk banners)
-	 * @param talk talk model object (may be {@code null})
-	 * @return rendered HTML string
-	 */
 	private String renderTemplate(String viewName, Speaker speaker, Talk talk) {
 		Context ctx = new Context();
 		ctx.setVariable("speaker", speaker);

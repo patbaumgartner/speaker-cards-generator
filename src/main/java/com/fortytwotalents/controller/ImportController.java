@@ -41,11 +41,6 @@ public class ImportController {
 		this.devoxxImportService = devoxxImportService;
 	}
 
-	/**
-	 * Imports speakers and talks from the default XLSX file
-	 * ({@code SelectedWithSchedule.xlsx}) located in the working directory.
-	 * @return plain-text confirmation message
-	 */
 	@GetMapping(value = "/csv", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importCsv() {
 		try {
@@ -58,16 +53,6 @@ public class ImportController {
 		}
 	}
 
-	/**
-	 * Imports speakers and talks from a custom XLSX/CSV file path.
-	 *
-	 * <p>
-	 * The path is resolved relative to the working directory. Paths that would escape the
-	 * working directory (e.g. {@code ../../etc/passwd}) are rejected with a 400 response.
-	 * @param path file path relative to the working directory (URL-encoded slashes
-	 * allowed)
-	 * @return plain-text confirmation message
-	 */
 	@GetMapping(value = "/csv/{path:.*}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importCsvFromPath(@PathVariable String path) {
 		try {
@@ -87,11 +72,6 @@ public class ImportController {
 		}
 	}
 
-	/**
-	 * Imports speakers from the Devoxx API using the event ID configured in {@code
-	 * application.properties} ({@code app.devoxx.api.event-id}).
-	 * @return plain-text confirmation with the number of speakers imported
-	 */
 	@GetMapping(value = "/devoxx", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importFromDevoxx() {
 		try {
@@ -104,20 +84,6 @@ public class ImportController {
 		}
 	}
 
-	/**
-	 * Imports speakers from the Devoxx API for a specific event ID.
-	 *
-	 * <p>
-	 * Example event IDs:
-	 *
-	 * <ul>
-	 * <li>{@code vdz26} – Voxxed Days Zürich 2026
-	 * <li>{@code vdt26} – Voxxed Days Ticino 2026
-	 * <li>{@code vdcern26} – Voxxed Days CERN 2026
-	 * </ul>
-	 * @param eventId Devoxx event identifier
-	 * @return plain-text confirmation with the number of speakers imported
-	 */
 	@GetMapping(value = "/devoxx/{eventId}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importFromDevoxxEvent(@PathVariable String eventId) {
 		try {

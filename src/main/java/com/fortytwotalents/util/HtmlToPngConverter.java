@@ -54,17 +54,6 @@ public class HtmlToPngConverter {
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Private helpers
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Renders the given HTML to PDF bytes. Absolute paths beginning with {@code /} in the
-	 * HTML are resolved against {@code http://localhost:{serverPort}}.
-	 * @param html HTML content
-	 * @return PDF bytes
-	 * @throws Exception on rendering error
-	 */
 	private byte[] renderToPdf(String html) throws Exception {
 		String baseUri = "http://localhost:" + serverPort;
 
@@ -79,13 +68,6 @@ public class HtmlToPngConverter {
 		}
 	}
 
-	/**
-	 * Converts the first page of a PDF to a PNG byte array at 72 DPI (1:1 pixel mapping
-	 * for banners sized in pixels).
-	 * @param pdfBytes PDF content
-	 * @return PNG bytes
-	 * @throws Exception on conversion error
-	 */
 	private byte[] pdfToImage(byte[] pdfBytes) throws Exception {
 		try (PDDocument pdfDoc = PDDocument.load(pdfBytes);
 				ByteArrayOutputStream pngOut = new ByteArrayOutputStream()) {

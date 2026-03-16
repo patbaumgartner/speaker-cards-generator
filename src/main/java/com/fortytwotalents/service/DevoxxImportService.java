@@ -30,15 +30,6 @@ import org.springframework.web.client.RestClient;
  * </pre>
  *
  * <p>
- * Supported event IDs:
- *
- * <ul>
- * <li>{@code vdz26} – Voxxed Days Zürich 2026
- * <li>{@code vdt26} – Voxxed Days Ticino 2026
- * <li>{@code vdcern26} – Voxxed Days CERN 2026
- * </ul>
- *
- * <p>
  * The import is idempotent: existing speakers (matched by UUID) are updated in place;
  * profile pictures are downloaded once and cached.
  */
@@ -68,16 +59,6 @@ public class DevoxxImportService {
 		this.restClient = RestClient.create();
 	}
 
-	// -------------------------------------------------------------------------
-	// Public API
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fetches speakers from the Devoxx API using the event ID configured in {@code
-	 * application.properties} ({@code app.devoxx.api.event-id}) and saves them to the
-	 * database.
-	 * @return number of speakers imported or updated
-	 */
 	@Transactional
 	public int importSpeakers() {
 		return importSpeakers(devoxxApiConfig.getEventId());
@@ -128,10 +109,6 @@ public class DevoxxImportService {
 			throw new RuntimeException("Devoxx API import failed for event " + eventId, e);
 		}
 	}
-
-	// -------------------------------------------------------------------------
-	// Private helpers
-	// -------------------------------------------------------------------------
 
 	private void saveSpeaker(DevoxxSpeakerDto dto) {
 		if (dto.uuid == null || dto.uuid.isBlank()) {
@@ -254,10 +231,6 @@ public class DevoxxImportService {
 		}
 		return "jpg";
 	}
-
-	// -------------------------------------------------------------------------
-	// DTO for Devoxx API response
-	// -------------------------------------------------------------------------
 
 	/**
 	 * JSON DTO for a speaker returned by the Devoxx mobile API. Unknown fields are
