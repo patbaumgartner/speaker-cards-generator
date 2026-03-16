@@ -1,4 +1,4 @@
-package com.fortytwotalents.config;
+package com.fortytwotalents.speakercardsgenerator.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -7,8 +7,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * <p>
  * Bound from the {@code app.devoxx.*} namespace. The API base URL and event identifier
- * are used by {@link com.fortytwotalents.service.DevoxxImportService} to fetch speakers
- * directly from the Devoxx mobile API.
+ * are used by
+ * {@link com.fortytwotalents.speakercardsgenerator.service.DevoxxImportService} to fetch
+ * speakers directly from the Devoxx mobile API.
  *
  * <p>
  * Example:

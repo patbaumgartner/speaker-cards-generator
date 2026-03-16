@@ -11,9 +11,9 @@
     </parent>
 
     <groupId>com.fortytwotalents</groupId>
-    <artifactId>speaker-cards</artifactId>
+    <artifactId>speaker-cards-generator</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>speaker-cards</name>
+    <name>speaker-cards-generator</name>
     <description>Speaker Cards Generator for Voxxed Days and similar conferences</description>
     <url>https://github.com/patbaumgartner/speaker-cards-generator</url>
     <inceptionYear>2024</inceptionYear>

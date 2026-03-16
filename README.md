@@ -90,7 +90,7 @@ speaker-cards-generator/
 │   ├── ISSUE_TEMPLATE/  – Bug report & feature request forms
 │   └── pull_request_template.md
 ├── src/                 – Spring Boot application source
-│   ├── main/java/com/fortytwotalents/
+│   ├── main/java/com/fortytwotalents/speakercardsgenerator/
 │   │   ├── config/      – Spring configuration classes
 │   │   ├── controller/  – Spring MVC controllers
 │   │   ├── model/       – JPA entity classes

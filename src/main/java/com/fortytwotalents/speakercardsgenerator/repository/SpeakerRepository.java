@@ -1,6 +1,6 @@
-package com.fortytwotalents.repository;
+package com.fortytwotalents.speakercardsgenerator.repository;
 
-import com.fortytwotalents.model.Speaker;
+import com.fortytwotalents.speakercardsgenerator.model.Speaker;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,9 +1,9 @@
-package com.fortytwotalents.service;
+package com.fortytwotalents.speakercardsgenerator.service;
 
-import com.fortytwotalents.model.Speaker;
-import com.fortytwotalents.model.Talk;
-import com.fortytwotalents.repository.SpeakerRepository;
-import com.fortytwotalents.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.model.Speaker;
+import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
+import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;

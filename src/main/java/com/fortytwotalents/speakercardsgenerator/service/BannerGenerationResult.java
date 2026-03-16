@@ -1,4 +1,4 @@
-package com.fortytwotalents.service;
+package com.fortytwotalents.speakercardsgenerator.service;
 
 import java.util.ArrayList;
 import java.util.List;

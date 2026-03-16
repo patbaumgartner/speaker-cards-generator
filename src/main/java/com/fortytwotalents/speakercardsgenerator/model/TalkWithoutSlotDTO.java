@@ -1,4 +1,4 @@
-package com.fortytwotalents.model;
+package com.fortytwotalents.speakercardsgenerator.model;
 
 import java.util.List;
 

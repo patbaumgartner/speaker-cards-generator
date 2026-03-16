@@ -1,4 +1,4 @@
-package com.fortytwotalents.config;
+package com.fortytwotalents.speakercardsgenerator.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

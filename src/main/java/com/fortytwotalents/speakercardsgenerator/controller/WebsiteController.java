@@ -1,8 +1,8 @@
-package com.fortytwotalents.controller;
+package com.fortytwotalents.speakercardsgenerator.controller;
 
-import com.fortytwotalents.config.EventConfig;
-import com.fortytwotalents.model.Speaker;
-import com.fortytwotalents.repository.SpeakerRepository;
+import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
+import com.fortytwotalents.speakercardsgenerator.model.Speaker;
+import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

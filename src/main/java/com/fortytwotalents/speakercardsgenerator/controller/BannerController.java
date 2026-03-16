@@ -1,14 +1,14 @@
-package com.fortytwotalents.controller;
+package com.fortytwotalents.speakercardsgenerator.controller;
 
-import com.fortytwotalents.config.EventConfig;
-import com.fortytwotalents.model.Speaker;
-import com.fortytwotalents.model.Talk;
-import com.fortytwotalents.repository.SpeakerRepository;
-import com.fortytwotalents.repository.TalkRepository;
-import com.fortytwotalents.service.BannerGenerationResult;
-import com.fortytwotalents.service.BannerGenerationService;
-import com.fortytwotalents.util.HtmlToPngConverter;
-import com.fortytwotalents.util.TemplateUtils;
+import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
+import com.fortytwotalents.speakercardsgenerator.model.Speaker;
+import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
+import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationResult;
+import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationService;
+import com.fortytwotalents.speakercardsgenerator.util.HtmlToPngConverter;
+import com.fortytwotalents.speakercardsgenerator.util.TemplateUtils;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
