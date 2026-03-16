@@ -20,11 +20,38 @@
   </div>
 </div>
 
+<!-- Import Section -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header card-header-vd d-flex align-items-center gap-2">
+        <i class="bi bi-cloud-download-fill"></i>
+        <h5 class="mb-0">Import Speakers</h5>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-3">
+          Load speaker data from the Devoxx CFP API or from a local XLSX file.
+        </p>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <button type="button" class="btn btn-primary" id="btnImportDevoxx"
+                  data-import-type="devoxx">
+            <i class="bi bi-cloud-arrow-down me-2"></i>Import from Devoxx API
+          </button>
+          <button type="button" class="btn btn-outline-primary" id="btnImportXlsx"
+                  data-import-type="csv">
+            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Import from XLSX
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Speakers Table -->
 <div class="row">
   <div class="col-12">
     <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
+      <div class="card-header card-header-vd">
         <h5 class="mb-0">
           <i class="bi bi-list-ul me-2"></i>Speaker List
         </h5>
