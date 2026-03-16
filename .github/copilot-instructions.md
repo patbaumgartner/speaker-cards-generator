@@ -8,7 +8,7 @@
 
 ```
 speaker-cards-generator/
-  src/main/java/com/fortytwotalents/
+  src/main/java/com/fortytwotalents/speakercardsgenerator/
     config/             # Spring configuration classes
     controller/         # Spring MVC @Controller / @RestController
     model/              # JPA @Entity classes
@@ -62,21 +62,20 @@ All Maven commands are run from the repository root.
 
 - **Spring Java Format** is enforced via the spring-javaformat-maven-plugin at `validate` phase.
 - Run `./mvnw io.spring.javaformat:spring-javaformat-maven-plugin:apply` before committing to avoid CI failures.
-- Base package: `com.fortytwotalents`
+- Base package: `com.fortytwotalents.speakercardsgenerator`
 - Follow standard Spring Boot conventions: `@Service`, `@Repository`, `@Controller`, constructor injection, etc.
 
 ## Testing
 
 - Tests use **H2 in-memory** database — no PostgreSQL or Docker needed.
 - Integration tests are annotated with `@SpringBootTest`.
-- Place tests under `src/test/java/com/fortytwotalents/`.
+- Place tests under `src/test/java/com/fortytwotalents/speakercardsgenerator/`.
 
 ## CI/CD
 
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `ci.yml` | push / PR to `main`, `develop` | Build, test, JaCoCo, Spring Java Format check |
-| `codeql.yml` | push / PR + weekly schedule | CodeQL Java security scan |
 | `release.yml` | semantic-version tag push | Build Docker image → GHCR + GitHub Release |
 
 ## Key Conventions

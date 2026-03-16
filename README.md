@@ -1,7 +1,6 @@
 # Speaker Cards Generator
 
 [![CI](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/codeql.yml/badge.svg)](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -90,7 +89,7 @@ speaker-cards-generator/
 │   ├── ISSUE_TEMPLATE/  – Bug report & feature request forms
 │   └── pull_request_template.md
 ├── src/                 – Spring Boot application source
-│   ├── main/java/com/fortytwotalents/
+│   ├── main/java/com/fortytwotalents/speakercardsgenerator/
 │   │   ├── config/      – Spring configuration classes
 │   │   ├── controller/  – Spring MVC controllers
 │   │   ├── model/       – JPA entity classes

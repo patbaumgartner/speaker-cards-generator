@@ -1,4 +1,4 @@
-package com.fortytwotalents;
+package com.fortytwotalents.speakercardsgenerator;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

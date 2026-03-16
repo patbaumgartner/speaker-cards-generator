@@ -1,4 +1,4 @@
-package com.fortytwotalents.util;
+package com.fortytwotalents.speakercardsgenerator.util;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.util.XRLog;

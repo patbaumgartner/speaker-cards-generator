@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Renamed base package from `com.fortytwotalents` to `com.fortytwotalents.speakercardsgenerator` to align namespace with the project name
+- Renamed Maven `artifactId` and `<name>` from `speaker-cards` to `speaker-cards-generator` to match the repository name
+
 ### Added
 - CI/CD pipeline with GitHub Actions (build, test, CodeQL, release)
 - Dependabot configuration for automated dependency updates

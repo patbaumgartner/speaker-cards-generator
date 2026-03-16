@@ -1,9 +1,9 @@
-package com.fortytwotalents.service;
+package com.fortytwotalents.speakercardsgenerator.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fortytwotalents.config.DevoxxApiConfig;
-import com.fortytwotalents.model.Speaker;
-import com.fortytwotalents.repository.SpeakerRepository;
+import com.fortytwotalents.speakercardsgenerator.config.DevoxxApiConfig;
+import com.fortytwotalents.speakercardsgenerator.model.Speaker;
+import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;

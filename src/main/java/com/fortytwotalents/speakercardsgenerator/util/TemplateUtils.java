@@ -1,4 +1,4 @@
-package com.fortytwotalents.util;
+package com.fortytwotalents.speakercardsgenerator.util;
 
 import org.springframework.stereotype.Component;
 
@@ -6,8 +6,9 @@ import org.springframework.stereotype.Component;
  * Template utility methods exposed to Thymeleaf templates via the {@code utils} variable.
  *
  * <p>
- * Register as a Spring bean so {@link com.fortytwotalents.controller.BannerController}
- * can inject it into every template rendering context:
+ * Register as a Spring bean so
+ * {@link com.fortytwotalents.speakercardsgenerator.controller.BannerController} can
+ * inject it into every template rendering context:
  *
  * <pre>
  *   ctx.setVariable("utils", templateUtils);

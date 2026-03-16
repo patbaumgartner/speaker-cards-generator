@@ -1,6 +1,6 @@
-package com.fortytwotalents.repository;
+package com.fortytwotalents.speakercardsgenerator.repository;
 
-import com.fortytwotalents.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.model.Talk;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -48,6 +48,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: speaker-cards-jar
-          path: target/speaker-cards-*.jar
+          name: speaker-cards-generator-jar
+          path: target/speaker-cards-generator-*.jar
           retention-days: 7

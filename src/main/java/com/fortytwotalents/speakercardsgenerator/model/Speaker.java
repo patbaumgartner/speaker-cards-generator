@@ -1,4 +1,4 @@
-package com.fortytwotalents.model;
+package com.fortytwotalents.speakercardsgenerator.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

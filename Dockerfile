@@ -15,7 +15,7 @@ COPY src/ src/
 RUN ./mvnw --no-transfer-progress package -DskipTests
 
 # Extract the layered Spring Boot JAR for optimal image layering
-RUN java -Djarmode=layertools -jar target/speaker-cards-*.jar extract --destination extracted
+RUN java -Djarmode=layertools -jar target/speaker-cards-generator-*.jar extract --destination extracted
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine AS runtime

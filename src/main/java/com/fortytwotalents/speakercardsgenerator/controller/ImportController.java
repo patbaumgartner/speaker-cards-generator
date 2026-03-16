@@ -1,7 +1,7 @@
-package com.fortytwotalents.controller;
+package com.fortytwotalents.speakercardsgenerator.controller;
 
-import com.fortytwotalents.service.DevoxxImportService;
-import com.fortytwotalents.service.ImportFromCSVService;
+import com.fortytwotalents.speakercardsgenerator.service.DevoxxImportService;
+import com.fortytwotalents.speakercardsgenerator.service.ImportFromCSVService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.slf4j.Logger;
