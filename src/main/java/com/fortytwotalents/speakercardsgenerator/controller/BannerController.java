@@ -11,7 +11,6 @@ import com.fortytwotalents.speakercardsgenerator.util.HtmlToPngConverter;
 import com.fortytwotalents.speakercardsgenerator.util.TemplateUtils;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -133,7 +132,7 @@ public class BannerController {
 			try (InputStream in = getClass().getResourceAsStream(path)) {
 				if (in != null) {
 					byte[] bytes = in.readAllBytes();
-					String mimeType = ext.equals(".png") ? "image/png" : "image/jpeg";
+					String mimeType = ".png".equals(ext) ? "image/png" : "image/jpeg";
 					return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(bytes);
 				}
 			}
@@ -150,7 +149,7 @@ public class BannerController {
 	@ResponseBody
 	public BannerGenerationResult generateAllBanners(@RequestParam(required = false) String outputDir) {
 		if (outputDir != null && !outputDir.isBlank()) {
-			Path base = Paths.get("").toAbsolutePath();
+			Path base = Path.of("").toAbsolutePath();
 			Path resolved = base.resolve(outputDir.trim()).normalize();
 			if (!resolved.startsWith(base)) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

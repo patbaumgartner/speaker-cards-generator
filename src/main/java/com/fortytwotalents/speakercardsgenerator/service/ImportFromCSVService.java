@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -116,7 +115,7 @@ public class ImportFromCSVService {
 	public void importFromXlsx(String xlsxFilePath) {
 		log.info("Starting XLSX import from: {}", xlsxFilePath);
 
-		Path path = Paths.get(xlsxFilePath);
+		Path path = Path.of(xlsxFilePath);
 		if (!Files.exists(path)) {
 			log.error("XLSX file not found: {}", xlsxFilePath);
 			return;
@@ -218,8 +217,12 @@ public class ImportFromCSVService {
 				downloadProfilePicture(speakerId, pictureUrl);
 			}
 
-			log.debug("{} speaker: {} {} ({})", isNew ? "Persisted" : "Updated", speaker.firstName, speaker.lastName,
-					speakerId);
+			log.atDebug()
+				.addArgument(() -> isNew ? "Persisted" : "Updated")
+				.addArgument(speaker.firstName)
+				.addArgument(speaker.lastName)
+				.addArgument(speakerId)
+				.log("{} speaker: {} {} ({})");
 			return speaker;
 		}
 		catch (Exception e) {
@@ -319,12 +322,12 @@ public class ImportFromCSVService {
 				if (queryIdx > 0) {
 					urlExt = urlExt.substring(0, queryIdx);
 				}
-				if (urlExt.equals("jpg") || urlExt.equals("jpeg") || urlExt.equals("png") || urlExt.equals("gif")) {
+				if ("jpg".equals(urlExt) || "jpeg".equals(urlExt) || "png".equals(urlExt) || "gif".equals(urlExt)) {
 					extension = urlExt;
 				}
 			}
 
-			Path resourcesPath = Paths.get("src/main/resources/static/images/speaker");
+			Path resourcesPath = Path.of("src/main/resources/static/images/speaker");
 			Files.createDirectories(resourcesPath);
 
 			Path imagePath = resourcesPath.resolve(speakerId + "." + extension);

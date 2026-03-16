@@ -3,7 +3,6 @@ package com.fortytwotalents.speakercardsgenerator.controller;
 import com.fortytwotalents.speakercardsgenerator.service.DevoxxImportService;
 import com.fortytwotalents.speakercardsgenerator.service.ImportFromCSVService;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -56,7 +55,7 @@ public class ImportController {
 	@GetMapping(value = "/csv/{path:.*}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importCsvFromPath(@PathVariable String path) {
 		try {
-			Path base = Paths.get("").toAbsolutePath();
+			Path base = Path.of("").toAbsolutePath();
 			Path resolved = base.resolve(path).normalize();
 			if (!resolved.startsWith(base)) {
 				log.warn("Rejected path traversal attempt: {}", path);

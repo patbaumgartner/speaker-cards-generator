@@ -81,15 +81,15 @@ public class BannerGenerationResult {
 	 */
 	public String getSummary() {
 		StringBuilder sb = new StringBuilder("Banner Generation Summary:\n");
-		sb.append(String.format("- Successful: %d%n", getSuccessCount()));
-		sb.append(String.format("- Failed: %d%n", getFailureCount()));
+		sb.append("- Successful: %d%n".formatted(getSuccessCount()));
+		sb.append("- Failed: %d%n".formatted(getFailureCount()));
 		if (!savedFiles.isEmpty()) {
-			sb.append(String.format("- Files saved: %d%n", savedFiles.size()));
+			sb.append("- Files saved: %d%n".formatted(savedFiles.size()));
 		}
 		if (hasFailures()) {
 			sb.append("\nFailures:\n");
 			for (FailureEntry f : failures) {
-				sb.append(String.format("- %s (%s): %s%n", f.displayName, f.speakerId, f.errorMessage));
+				sb.append("- %s (%s): %s%n".formatted(f.displayName, f.speakerId, f.errorMessage));
 			}
 		}
 		return sb.toString();

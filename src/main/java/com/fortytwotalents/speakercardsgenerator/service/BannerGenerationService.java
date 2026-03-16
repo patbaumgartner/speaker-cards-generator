@@ -11,7 +11,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -54,7 +53,7 @@ public class BannerGenerationService {
 	@Transactional(readOnly = true)
 	public BannerGenerationResult generateAllSpeakerBanners() {
 		List<Speaker> speakers = speakerRepository.findAll();
-		log.info("Starting banner generation for {} speakers", speakers.size());
+		log.atInfo().addArgument(() -> speakers.size()).log("Starting banner generation for {} speakers");
 
 		BannerGenerationResult result = new BannerGenerationResult();
 		for (Speaker speaker : speakers) {
@@ -78,7 +77,7 @@ public class BannerGenerationService {
 	 */
 	@Transactional(readOnly = true)
 	public BannerGenerationResult generateSpeakerBanners(List<UUID> speakerIds) {
-		log.info("Starting banner generation for {} specific speakers", speakerIds.size());
+		log.atInfo().addArgument(() -> speakerIds.size()).log("Starting banner generation for {} specific speakers");
 		BannerGenerationResult result = new BannerGenerationResult();
 		for (UUID id : speakerIds) {
 			Speaker speaker = speakerRepository.findById(id).orElse(null);
@@ -118,12 +117,15 @@ public class BannerGenerationService {
 	public BannerGenerationResult generateAllBanners(String outputDirectory) {
 		List<Speaker> speakers = speakerRepository.findAll();
 		List<Talk> talks = talkRepository.findAll();
-		log.info("Starting banner generation for {} speakers and {} talks to {}", speakers.size(), talks.size(),
-				outputDirectory);
+		log.atInfo()
+			.addArgument(() -> speakers.size())
+			.addArgument(() -> talks.size())
+			.addArgument(outputDirectory)
+			.log("Starting banner generation for {} speakers and {} talks to {}");
 
-		Path speakerDir = Paths.get(outputDirectory, "speaker");
-		Path talksDir = Paths.get(outputDirectory, "talks");
-		Path socialDir = Paths.get(outputDirectory, "social");
+		Path speakerDir = Path.of(outputDirectory, "speaker");
+		Path talksDir = Path.of(outputDirectory, "talks");
+		Path socialDir = Path.of(outputDirectory, "social");
 
 		try {
 			Files.createDirectories(speakerDir);
@@ -191,15 +193,15 @@ public class BannerGenerationService {
 	}
 
 	private byte[] fetchSpeakerBannerPng(UUID id) throws Exception {
-		return fetch(String.format("http://%s:%d/speaker-banner/%s.png", serverHost, serverPort, id));
+		return fetch("http://%s:%d/speaker-banner/%s.png".formatted(serverHost, serverPort, id));
 	}
 
 	private byte[] fetchTalkBannerPng(Long id) throws Exception {
-		return fetch(String.format("http://%s:%d/talk-banner/%d.png", serverHost, serverPort, id));
+		return fetch("http://%s:%d/talk-banner/%d.png".formatted(serverHost, serverPort, id));
 	}
 
 	private byte[] fetchSpeakerSocialPng(UUID id) throws Exception {
-		return fetch(String.format("http://%s:%d/speaker-social/%s.png", serverHost, serverPort, id));
+		return fetch("http://%s:%d/speaker-social/%s.png".formatted(serverHost, serverPort, id));
 	}
 
 	private byte[] fetch(String url) throws Exception {

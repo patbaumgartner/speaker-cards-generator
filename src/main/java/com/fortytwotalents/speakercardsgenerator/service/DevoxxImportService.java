@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -149,8 +148,12 @@ public class DevoxxImportService {
 		}
 
 		speakerRepository.save(speaker);
-		log.debug("{} speaker: {} {} ({})", isNew ? "Saved" : "Updated", speaker.firstName, speaker.lastName,
-				speakerId);
+		log.atDebug()
+			.addArgument(() -> isNew ? "Saved" : "Updated")
+			.addArgument(speaker.firstName)
+			.addArgument(speaker.lastName)
+			.addArgument(speakerId)
+			.log("{} speaker: {} {} ({})");
 
 		if (dto.imageUrl != null && !dto.imageUrl.isBlank()) {
 			downloadProfilePicture(speakerId, dto.imageUrl);
@@ -174,7 +177,7 @@ public class DevoxxImportService {
 	}
 
 	private static String blankToNull(String value) {
-		return (value == null || value.isBlank()) ? null : value.trim();
+		return value == null || value.isBlank() ? null : value.trim();
 	}
 
 	/**
@@ -198,7 +201,7 @@ public class DevoxxImportService {
 			}
 
 			String extension = deriveExtension(pictureUrl);
-			Path dir = Paths.get("src/main/resources/static/images/speaker");
+			Path dir = Path.of("src/main/resources/static/images/speaker");
 			Files.createDirectories(dir);
 
 			Path target = dir.resolve(speakerId + "." + extension);

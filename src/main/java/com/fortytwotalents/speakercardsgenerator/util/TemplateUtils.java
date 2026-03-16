@@ -79,7 +79,7 @@ public final class TemplateUtils {
 				int hour = Integer.parseInt(parts[0]);
 				int minute = Integer.parseInt(parts[1]);
 				hour = (hour + 1) % 24;
-				return String.format("%02d:%02d", hour, minute);
+				return "%02d:%02d".formatted(hour, minute);
 			}
 		}
 		catch (Exception ignored) {
@@ -141,6 +141,9 @@ public final class TemplateUtils {
 			case 3 -> "rd";
 			default -> "th";
 		};
+	}
+
+	private TemplateUtils() {
 	}
 
 }
