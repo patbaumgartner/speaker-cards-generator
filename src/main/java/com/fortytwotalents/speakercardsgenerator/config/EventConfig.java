@@ -35,7 +35,7 @@ public class EventConfig {
 	private String shortName = "VDZ '26";
 
 	/** Conference website URL shown in the social banner footer. */
-	private String url = "https://voxxeddays.com/";
+	private String url = "https://voxxeddays.ch/";
 
 	/**
 	 * Filename (relative to {@code /static/images/}) of the event image tile used as
