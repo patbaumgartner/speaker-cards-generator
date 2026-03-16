@@ -2,8 +2,11 @@ package com.fortytwotalents.controller;
 
 import com.fortytwotalents.service.DevoxxImportService;
 import com.fortytwotalents.service.ImportFromCSVService;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,13 +62,23 @@ public class ImportController {
   /**
    * Imports speakers and talks from a custom XLSX/CSV file path.
    *
+   * <p>The path is resolved relative to the working directory. Paths that would escape the working
+   * directory (e.g. {@code ../../etc/passwd}) are rejected with a 400 response.
+   *
    * @param path file path relative to the working directory (URL-encoded slashes allowed)
    * @return plain-text confirmation message
    */
   @GetMapping(value = "/csv/{path:.*}", produces = MediaType.TEXT_PLAIN_VALUE)
   public ResponseEntity<String> importCsvFromPath(@PathVariable String path) {
     try {
-      importFromCSVService.importFromXlsx(path);
+      Path base = Paths.get("").toAbsolutePath();
+      Path resolved = base.resolve(path).normalize();
+      if (!resolved.startsWith(base)) {
+        log.warn("Rejected path traversal attempt: {}", path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Invalid file path: must be within the working directory");
+      }
+      importFromCSVService.importFromXlsx(resolved.toString());
       return ResponseEntity.ok("XLSX import completed successfully. Check logs for details.");
     } catch (Exception e) {
       log.error("Error during XLSX import from path: {}", path, e);

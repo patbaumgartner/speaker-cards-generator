@@ -10,7 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,12 @@ public class DevoxxImportService {
 
   private static final Logger log = LoggerFactory.getLogger(DevoxxImportService.class);
 
+  /** Allowlist of characters in a Devoxx event ID (alphanumeric, hyphen, underscore, ≤50 chars). */
+  private static final Pattern SAFE_EVENT_ID = Pattern.compile("^[a-zA-Z0-9_-]{1,50}$");
+
+  /** URL schemes allowed when downloading profile pictures from external sources. */
+  private static final Set<String> ALLOWED_PICTURE_SCHEMES = Set.of("http", "https");
+
   private final DevoxxApiConfig devoxxApiConfig;
   private final SpeakerRepository speakerRepository;
   private final RestClient restClient;
@@ -70,17 +78,25 @@ public class DevoxxImportService {
   /**
    * Fetches speakers for the given Devoxx event ID.
    *
-   * @param eventId Devoxx event identifier (e.g. {@code vdz26})
+   * @param eventId Devoxx event identifier (e.g. {@code vdz26}); must contain only alphanumeric
+   *     characters, hyphens, or underscores (max 50 characters)
    * @return number of speakers imported or updated
+   * @throws IllegalArgumentException if the eventId does not match the safe pattern
    */
   @Transactional
   public int importSpeakers(String eventId) {
-    String url = devoxxApiConfig.getBaseUrl() + "/events/" + eventId + "/speakers";
-    log.info("Importing speakers from Devoxx API: {}", url);
+    if (eventId == null || !SAFE_EVENT_ID.matcher(eventId).matches()) {
+      throw new IllegalArgumentException(
+          "Invalid event ID – must be alphanumeric/hyphen/underscore, max 50 chars: " + eventId);
+    }
+
+    // eventId is validated above – safe to concatenate directly
+    URI uri = URI.create(devoxxApiConfig.getBaseUrl() + "/events/" + eventId + "/speakers");
+    log.info("Importing speakers from Devoxx API: {}", uri);
 
     try {
       DevoxxSpeakerDto[] speakers =
-          restClient.get().uri(url).retrieve().body(DevoxxSpeakerDto[].class);
+          restClient.get().uri(uri).retrieve().body(DevoxxSpeakerDto[].class);
 
       if (speakers == null || speakers.length == 0) {
         log.warn("No speakers returned from Devoxx API for event: {}", eventId);
@@ -184,11 +200,23 @@ public class DevoxxImportService {
    * Downloads a profile picture from the given URL and stores it under {@code
    * src/main/resources/static/images/speaker/{speakerId}.{ext}}.
    *
+   * <p>Only {@code http} and {@code https} URL schemes are permitted to prevent SSRF attacks.
+   *
    * @param speakerId speaker UUID (used as file name)
    * @param pictureUrl URL of the profile image
    */
   private void downloadProfilePicture(UUID speakerId, String pictureUrl) {
     try {
+      URI uri = URI.create(pictureUrl);
+      String scheme = uri.getScheme();
+      if (scheme == null || !ALLOWED_PICTURE_SCHEMES.contains(scheme.toLowerCase())) {
+        log.warn(
+            "Skipping profile picture download for speaker {}: disallowed URL scheme in '{}'",
+            speakerId,
+            pictureUrl);
+        return;
+      }
+
       String extension = deriveExtension(pictureUrl);
       Path dir = Paths.get("src/main/resources/static/images/speaker");
       Files.createDirectories(dir);
@@ -199,7 +227,7 @@ public class DevoxxImportService {
         return;
       }
       log.info("Downloading profile picture for speaker {} from {}", speakerId, pictureUrl);
-      try (InputStream in = URI.create(pictureUrl).toURL().openStream()) {
+      try (InputStream in = uri.toURL().openStream()) {
         Files.copy(in, target);
         log.info("Downloaded profile picture to {}", target);
       }

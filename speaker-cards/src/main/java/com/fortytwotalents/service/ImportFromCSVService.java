@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -58,6 +59,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class ImportFromCSVService {
 
   private static final Logger log = LoggerFactory.getLogger(ImportFromCSVService.class);
+
+  /** URL schemes allowed when downloading profile pictures from external sources. */
+  private static final Set<String> ALLOWED_PICTURE_SCHEMES = Set.of("http", "https");
 
   // XLSX column indices from SelectedWithSchedule.xlsx
   private static final int COL_SESSION_ID = 0;
@@ -280,6 +284,8 @@ public class ImportFromCSVService {
    * Downloads a speaker profile picture from the given URL and stores it under {@code
    * src/main/resources/static/images/speaker/{speakerId}.{ext}}.
    *
+   * <p>Only {@code http} and {@code https} URL schemes are permitted to prevent SSRF attacks.
+   *
    * @param speakerId speaker UUID (used as filename)
    * @param pictureUrl URL of the profile picture
    */
@@ -288,6 +294,16 @@ public class ImportFromCSVService {
       return;
     }
     try {
+      URI uri = URI.create(pictureUrl);
+      String scheme = uri.getScheme();
+      if (scheme == null || !ALLOWED_PICTURE_SCHEMES.contains(scheme.toLowerCase())) {
+        log.warn(
+            "Skipping profile picture download for speaker {}: disallowed URL scheme in '{}'",
+            speakerId,
+            pictureUrl);
+        return;
+      }
+
       String extension = "jpg";
       int lastDot = pictureUrl.lastIndexOf('.');
       if (lastDot > 0) {
@@ -314,7 +330,7 @@ public class ImportFromCSVService {
       }
 
       log.info("Downloading profile picture for speaker {} from {}", speakerId, pictureUrl);
-      try (InputStream in = URI.create(pictureUrl).toURL().openStream()) {
+      try (InputStream in = uri.toURL().openStream()) {
         Files.copy(in, imagePath);
         log.info("Downloaded profile picture for speaker {} to {}", speakerId, imagePath);
       }

@@ -10,6 +10,8 @@ import com.fortytwotalents.service.BannerGenerationService;
 import com.fortytwotalents.util.HtmlToPngConverter;
 import com.fortytwotalents.util.TemplateUtils;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -203,6 +205,9 @@ public class BannerController {
   /**
    * Generates all banner types for all speakers and (optionally) saves them to the file system.
    *
+   * <p>When {@code outputDir} is provided it is resolved relative to the working directory. Paths
+   * that would escape the working directory are rejected with a 400 error.
+   *
    * @param outputDir optional file-system path where PNGs will be written
    * @return generation result summary as JSON
    */
@@ -211,7 +216,14 @@ public class BannerController {
   public BannerGenerationResult generateAllBanners(
       @RequestParam(required = false) String outputDir) {
     if (outputDir != null && !outputDir.isBlank()) {
-      return bannerService.generateAllBanners(outputDir.trim());
+      Path base = Paths.get("").toAbsolutePath();
+      Path resolved = base.resolve(outputDir.trim()).normalize();
+      if (!resolved.startsWith(base)) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Invalid output directory: must be within the working directory");
+      }
+      return bannerService.generateAllBanners(resolved.toString());
     }
     return bannerService.generateAllSpeakerBanners();
   }
