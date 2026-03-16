@@ -1,0 +1,102 @@
+name: Bug Report
+description: Report a reproducible bug or unexpected behaviour
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug. Please fill in the form below as completely as possible.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug.
+      placeholder: "When I click the Download button for a speaker, the generated PNG is blank."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps to reproduce the issue.
+      placeholder: |
+        1. Import speakers via `GET /api/import/devoxx/vdz26`
+        2. Open the speaker list at `http://localhost:8080`
+        3. Click the Download button next to a speaker
+        4. Observe the downloaded PNG
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behaviour
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behaviour
+      description: What actually happened? Include any error messages or stack traces.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: event
+    attributes:
+      label: Conference Profile
+      description: Which Spring profile / event were you using?
+      options:
+        - "vdz (Voxxed Days Zürich)"
+        - "vdt (Voxxed Days Ticino)"
+        - "vdcern (Voxxed Days CERN)"
+        - "default (no profile)"
+        - "Other / not applicable"
+    validations:
+      required: true
+
+  - type: input
+    id: java-version
+    attributes:
+      label: Java Version
+      placeholder: "e.g. OpenJDK 21.0.3"
+    validations:
+      required: true
+
+  - type: input
+    id: spring-boot-version
+    attributes:
+      label: Spring Boot Version
+      placeholder: "e.g. 4.0.3"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      placeholder: "e.g. macOS 14.4, Ubuntu 22.04, Windows 11"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Paste any relevant application logs here.
+      render: text
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true
+        - label: I am running the latest version of the application.
+          required: true

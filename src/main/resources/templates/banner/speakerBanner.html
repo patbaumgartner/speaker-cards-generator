@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${speaker.firstName} + ' ' + ${speaker.lastName} + ' — Speaker Card'">Speaker Card</title>
+  <style>
+    @font-face {
+      font-family: 'Roboto Mono';
+      font-style: normal;
+      font-weight: 400;
+      src: url('/static/fonts/RobotoMonoRegular.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'Roboto Mono';
+      font-style: normal;
+      font-weight: 300;
+      src: url('/static/fonts/RobotoMonoLight.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'Roboto Mono';
+      font-style: normal;
+      font-weight: 700;
+      src: url('/static/fonts/RobotoMonoBold.ttf') format('truetype');
+    }
+
+    @page {
+      size: 1280px 720px;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1280px;
+      height: 720px;
+      position: relative;
+      overflow: hidden;
+      font-family: "Roboto Mono", monospace;
+      background-image: url('/static/images/background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: #ffffff;
+    }
+
+    /* Top logo – event tile on the left */
+    #top-logo {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      z-index: 10;
+      height: 150px;
+      width: 150px;
+    }
+
+    #top-logo img {
+      width: auto;
+      height: 100px;
+      display: block;
+    }
+
+    /* Conference badge – orange rounded rectangle, top right */
+    .conference-banner {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      z-index: 10;
+      padding: 12px 24px;
+      border-radius: 12px;
+      background-color: #f38113;
+      font-weight: 400;
+      font-size: 54px;
+      color: #ffffff;
+      font-family: "Roboto Mono", monospace;
+      white-space: nowrap;
+    }
+
+    /* Speaker photo – large circle with background border */
+    .speaker-photo-wrapper {
+      position: absolute;
+      left: 80px;
+      top: 150px;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      z-index: 150;
+      padding: 15px;
+      background-image: url('/static/images/background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .speaker-photo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+    }
+
+    /* Speaker info – right side */
+    .speaker-info {
+      position: absolute;
+      left: 600px;
+      top: 200px;
+      z-index: 10;
+      width: 650px;
+    }
+
+    /* Title / tag-line */
+    #role {
+      font-size: 18px;
+      color: #ffb84d;
+      font-weight: 400;
+      margin-bottom: 12px;
+      font-family: "Roboto Mono", monospace;
+    }
+
+    /* Speaker name */
+    #name {
+      font-size: 68px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 20px;
+      line-height: 1.2;
+      font-family: "Roboto Mono", monospace;
+      word-wrap: break-word;
+    }
+
+    /* Talk title */
+    #talk-title {
+      font-size: 38px;
+      font-weight: 400;
+      color: #ffffff;
+      margin-bottom: 30px;
+      line-height: 1.3;
+      font-family: "Roboto Mono", monospace;
+      word-wrap: break-word;
+    }
+
+    /* Schedule – bottom centred */
+    .event-block {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 26px;
+      color: #ffffff;
+      text-align: center;
+      font-family: "Roboto Mono", monospace;
+      z-index: 10;
+      white-space: nowrap;
+    }
+
+    #event-time {
+      font-size: 35px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Event logo / tile -->
+  <div id="top-logo">
+    <img th:src="@{/static/images/} + ${event.logoFile}" alt="Event Logo" />
+  </div>
+
+  <!-- Conference badge -->
+  <div class="conference-banner" th:text="${event.shortName}">VDZ '26</div>
+
+  <!-- Speaker photo with gradient border -->
+  <div class="speaker-photo-wrapper">
+    <div class="speaker-photo-inner"
+         th:style="${speaker.id != null}
+             ? 'background-image: url(/speaker-photo/' + ${speaker.id} + ')'
+             : 'background-color: #ff9800;'">
+    </div>
+  </div>
+
+  <!-- Speaker info -->
+  <div class="speaker-info">
+    <div id="role"
+         th:if="${speaker.title != null and !#strings.isEmpty(speaker.title)}"
+         th:text="${speaker.title}">Speaker Title</div>
+
+    <div id="name"
+         th:text="${speaker.firstName} + ' ' + ${speaker.lastName}">Speaker Name</div>
+
+    <div id="talk-title"
+         th:if="${talk != null and talk.title != null}"
+         th:text="${talk.title}">Talk Title</div>
+  </div>
+
+  <!-- Schedule block – only shown when date/time data is available -->
+  <div class="event-block" id="event-time"
+       th:if="${talk != null and talk.estTime != null and talk.cetTime != null}">
+    ⏰ <span th:text="${utils.formatDate(talk.date)}"></span>
+    &nbsp;|&nbsp;
+    <span th:text="${utils.formatTime(talk.cetTime)}"></span>
+    -<span th:text="${utils.addHour(talk.cetTime)}"></span> CET
+    &nbsp;|&nbsp;
+    <span th:text="${utils.formatTime(talk.estTime)}"></span>
+    -<span th:text="${utils.addHour(talk.estTime)}"></span> EST
+  </div>
+</body>
+</html>
