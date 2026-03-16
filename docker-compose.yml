@@ -1,10 +1,14 @@
-# Docker Compose – local development stack
+# Docker Compose – full-stack Docker deployment (database + application container)
+#
+# Use this file when you want to run both PostgreSQL and the application in Docker.
+# For local development with "mvnw spring-boot:run", use compose.yml instead
+# (Spring Boot Docker Compose will start the database automatically).
 #
 # Usage:
-#   docker compose up -d           # start PostgreSQL + app (default: vdz profile)
-#   docker compose up -d db        # start PostgreSQL only
-#   docker compose logs -f app     # tail application logs
-#   docker compose down -v         # stop and remove volumes
+#   docker compose -f docker-compose.yml up -d           # start PostgreSQL + app (default: vdz profile)
+#   docker compose -f docker-compose.yml up -d db        # start PostgreSQL only
+#   docker compose -f docker-compose.yml logs -f app     # tail application logs
+#   docker compose -f docker-compose.yml down -v         # stop and remove volumes
 
 services:
 

@@ -112,6 +112,14 @@
             <artifactId>webjars-locator-lite</artifactId>
         </dependency>
 
+        <!-- Docker Compose – auto-starts compose services during local development -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-docker-compose</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

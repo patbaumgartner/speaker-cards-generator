@@ -1,0 +1,33 @@
+# Docker Compose – local development database
+#
+# This file is picked up automatically by Spring Boot Docker Compose when you run:
+#   ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz
+#
+# Spring Boot will start (and stop) the PostgreSQL service for you.
+# No manual "docker compose up" step is required for local development.
+#
+# For the full-stack Docker deployment (database + application container), use:
+#   docker compose -f docker-compose.yml up -d
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: speakercards-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: speakercards
+      POSTGRES_USER: speakercards
+      POSTGRES_PASSWORD: speakercards
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U speakercards"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
