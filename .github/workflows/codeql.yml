@@ -37,7 +37,6 @@ jobs:
           queries: security-and-quality
 
       - name: Build for CodeQL
-        working-directory: speaker-cards
         run: ./mvnw --no-transfer-progress compile -DskipTests
 
       - name: Perform CodeQL Analysis

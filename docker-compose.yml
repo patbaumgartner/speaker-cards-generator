@@ -30,7 +30,7 @@ services:
   # ── Speaker Cards Generator application ──────────────────────────────────────
   app:
     build:
-      context: speaker-cards
+      context: .
       dockerfile: Dockerfile
     container_name: speakercards-app
     restart: unless-stopped

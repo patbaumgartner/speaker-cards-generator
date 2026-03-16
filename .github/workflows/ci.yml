@@ -26,7 +26,6 @@ jobs:
           cache: maven
 
       - name: Build and run tests
-        working-directory: speaker-cards
         run: ./mvnw --no-transfer-progress verify
 
       - name: Upload test reports
@@ -34,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: speaker-cards/target/surefire-reports/
+          path: target/surefire-reports/
           retention-days: 7
 
       - name: Upload JaCoCo coverage report
@@ -42,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: speaker-cards/target/site/jacoco/
+          path: target/site/jacoco/
           retention-days: 7
 
       - name: Upload JAR artifact
@@ -50,5 +49,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: speaker-cards-jar
-          path: speaker-cards/target/speaker-cards-*.jar
+          path: target/speaker-cards-*.jar
           retention-days: 7
