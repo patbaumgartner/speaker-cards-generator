@@ -7,7 +7,7 @@
 ## Repository Layout
 
 ```
-speaker-cards/          # Maven module – the runnable Spring Boot application
+speaker-cards-generator/
   src/main/java/com/fortytwotalents/
     config/             # Spring configuration classes
     controller/         # Spring MVC @Controller / @RestController
@@ -18,7 +18,8 @@ speaker-cards/          # Maven module – the runnable Spring Boot application
   src/main/resources/
     templates/          # Thymeleaf HTML templates
     static/             # Static assets
-    application*.yml    # Application and profile-specific properties
+    application*.properties  # Application and profile-specific properties
+  Dockerfile
   pom.xml
 .github/
   workflows/            # CI/CD GitHub Actions workflows
@@ -38,15 +39,16 @@ speaker-cards/          # Maven module – the runnable Spring Boot application
 | Frontend | Bootstrap 5.3.3 + Bootstrap Icons 1.11.3 (via WebJars) |
 | Java version | 21 |
 | Tests | JUnit 5 + H2 in-memory (no PostgreSQL required) |
+| Code style | Spring Java Format via spring-javaformat-maven-plugin |
 
 ## Build & Quality
 
 ```bash
-# Build, run all tests, JaCoCo coverage, and Spotless format check
+# Build, run all tests, JaCoCo coverage, and Spring Java Format check
 JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./mvnw verify
 
-# Auto-format all Java sources with Google Java Format
-JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./mvnw spotless:apply
+# Auto-format all Java sources with Spring Java Format
+JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./mvnw io.spring.javaformat:spring-javaformat-maven-plugin:apply
 
 # Run the app against a specific event profile
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz    # Voxxed Days Zürich
@@ -54,12 +56,12 @@ JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./mvnw spotless:apply
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdcern # Voxxed Days CERN
 ```
 
-The Maven wrapper is in `speaker-cards/`. Always run Maven commands from that directory.
+All Maven commands are run from the repository root.
 
 ## Code Style
 
-- **Google Java Format** is enforced via the Spotless Maven plugin at `verify` phase.
-- Run `./mvnw spotless:apply` before committing to avoid CI failures.
+- **Spring Java Format** is enforced via the spring-javaformat-maven-plugin at `validate` phase.
+- Run `./mvnw io.spring.javaformat:spring-javaformat-maven-plugin:apply` before committing to avoid CI failures.
 - Base package: `com.fortytwotalents`
 - Follow standard Spring Boot conventions: `@Service`, `@Repository`, `@Controller`, constructor injection, etc.
 
@@ -73,7 +75,7 @@ The Maven wrapper is in `speaker-cards/`. Always run Maven commands from that di
 
 | Workflow | Trigger | Purpose |
 |---|---|---|
-| `ci.yml` | push / PR to `main`, `develop` | Build, test, JaCoCo, Spotless check |
+| `ci.yml` | push / PR to `main`, `develop` | Build, test, JaCoCo, Spring Java Format check |
 | `codeql.yml` | push / PR + weekly schedule | CodeQL Java security scan |
 | `release.yml` | semantic-version tag push | Build Docker image → GHCR + GitHub Release |
 
@@ -82,4 +84,4 @@ The Maven wrapper is in `speaker-cards/`. Always run Maven commands from that di
 - Banner generation entry point: `HtmlToPngConverter` service — Thymeleaf renders the HTML template, OpenHTMLtoPDF converts to PDF, PDFBox rasterises to PNG.
 - `TemplateUtils` is a `@Component` registered as `${utils.*}` in Thymeleaf templates.
 - Devoxx CFP import endpoint: `GET /api/import/devoxx/{eventId}` (e.g. `vdz26`).
-- Event-specific configuration lives in `application-{profile}.yml` files.
+- Event-specific configuration lives in `application-{profile}.properties` files.

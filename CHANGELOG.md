@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.editorconfig` for consistent editor formatting across IDEs
 - JaCoCo code-coverage reporting integrated into the Maven build
 - Maven Enforcer plugin enforcing Java 21+ and Maven 3.9+
-- Spotless plugin (Google Java Format) for consistent code style
+- Spring Java Format plugin (spring-javaformat-maven-plugin) for consistent code style
 
 ---
 

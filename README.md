@@ -37,11 +37,8 @@ Open <http://localhost:8080> in your browser.
 Prerequisites: Java 21+, Maven 3.9+, PostgreSQL 15+
 
 ```shell
-cd speaker-cards
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz
 ```
-
-Full setup instructions are in [`speaker-cards/README.md`](speaker-cards/README.md).
 
 ---
 
@@ -59,7 +56,7 @@ Full setup instructions are in [`speaker-cards/README.md`](speaker-cards/README.
 ```
 
 Adding support for a new event takes less than a minute –
-see [Adding a New Event](speaker-cards/README.md#adding-a-new-event).
+create a new `application-{profile}.properties` file with the event-specific branding.
 
 ---
 
@@ -92,11 +89,21 @@ speaker-cards-generator/
 │   ├── workflows/       – CI, CodeQL, Release pipelines
 │   ├── ISSUE_TEMPLATE/  – Bug report & feature request forms
 │   └── pull_request_template.md
-├── speaker-cards/       – Spring Boot application module
-│   ├── src/
-│   ├── Dockerfile
-│   └── README.md        – Full developer documentation
+├── src/                 – Spring Boot application source
+│   ├── main/java/com/fortytwotalents/
+│   │   ├── config/      – Spring configuration classes
+│   │   ├── controller/  – Spring MVC controllers
+│   │   ├── model/       – JPA entity classes
+│   │   ├── repository/  – Spring Data JPA repositories
+│   │   ├── service/     – Business-logic services
+│   │   └── util/        – Utility helpers
+│   └── main/resources/
+│       ├── templates/   – Thymeleaf HTML templates
+│       ├── static/      – Static assets (CSS, fonts, images)
+│       └── application*.properties – App and profile-specific config
+├── Dockerfile           – Multi-stage Docker build
 ├── docker-compose.yml   – Local development stack
+├── pom.xml
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
