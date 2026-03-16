@@ -1,0 +1,135 @@
+package com.fortytwotalents.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Holds the result of a bulk banner generation run.
+ *
+ * <p>Tracks which speakers/talks were processed successfully, which failed,
+ * and the list of files saved to the output directory (if requested).
+ */
+public class BannerGenerationResult {
+
+    private final List<SuccessEntry> successes = new ArrayList<>();
+    private final List<FailureEntry> failures = new ArrayList<>();
+    private final List<String> savedFiles = new ArrayList<>();
+
+    /**
+     * Records a successful banner generation.
+     *
+     * @param speakerId   speaker UUID (may be {@code null} for talk-only banners)
+     * @param displayName human-readable name of the speaker or talk
+     * @param bannerSize  size of the generated PNG in bytes
+     */
+    public void addSuccess(UUID speakerId, String displayName, int bannerSize) {
+        successes.add(new SuccessEntry(speakerId, displayName, bannerSize));
+    }
+
+    /**
+     * Records a failed banner generation.
+     *
+     * @param speakerId    speaker UUID (may be {@code null})
+     * @param displayName  human-readable name
+     * @param errorMessage description of the failure
+     */
+    public void addFailure(UUID speakerId, String displayName, String errorMessage) {
+        failures.add(new FailureEntry(speakerId, displayName, errorMessage));
+    }
+
+    /**
+     * Records the path of a saved banner file.
+     *
+     * @param filePath absolute path of the saved file
+     */
+    public void addSavedFile(String filePath) {
+        savedFiles.add(filePath);
+    }
+
+    /** @return number of successfully generated banners */
+    public int getSuccessCount() {
+        return successes.size();
+    }
+
+    /** @return number of failed banner generations */
+    public int getFailureCount() {
+        return failures.size();
+    }
+
+    /** @return unmodifiable snapshot of successful entries */
+    public List<SuccessEntry> getSuccesses() {
+        return List.copyOf(successes);
+    }
+
+    /** @return unmodifiable snapshot of failure entries */
+    public List<FailureEntry> getFailures() {
+        return List.copyOf(failures);
+    }
+
+    /** @return unmodifiable list of saved file paths */
+    public List<String> getSavedFiles() {
+        return List.copyOf(savedFiles);
+    }
+
+    /** @return {@code true} if at least one banner failed to generate */
+    public boolean hasFailures() {
+        return !failures.isEmpty();
+    }
+
+    /** @return {@code true} if all banners were generated without errors */
+    public boolean isAllSuccessful() {
+        return failures.isEmpty() && !successes.isEmpty();
+    }
+
+    /**
+     * Produces a human-readable summary of the generation run.
+     *
+     * @return multi-line summary string
+     */
+    public String getSummary() {
+        StringBuilder sb = new StringBuilder("Banner Generation Summary:\n");
+        sb.append(String.format("- Successful: %d%n", getSuccessCount()));
+        sb.append(String.format("- Failed: %d%n", getFailureCount()));
+        if (!savedFiles.isEmpty()) {
+            sb.append(String.format("- Files saved: %d%n", savedFiles.size()));
+        }
+        if (hasFailures()) {
+            sb.append("\nFailures:\n");
+            for (FailureEntry f : failures) {
+                sb.append(String.format("- %s (%s): %s%n", f.displayName, f.speakerId, f.errorMessage));
+            }
+        }
+        return sb.toString();
+    }
+
+    // -------------------------------------------------------------------------
+    // Inner record types
+    // -------------------------------------------------------------------------
+
+    /** Details of a successfully generated banner. */
+    public static final class SuccessEntry {
+        public final UUID speakerId;
+        public final String displayName;
+        public final int bannerSize;
+
+        SuccessEntry(UUID speakerId, String displayName, int bannerSize) {
+            this.speakerId = speakerId;
+            this.displayName = displayName;
+            this.bannerSize = bannerSize;
+        }
+    }
+
+    /** Details of a banner that failed to generate. */
+    public static final class FailureEntry {
+        public final UUID speakerId;
+        public final String displayName;
+        public final String errorMessage;
+
+        FailureEntry(UUID speakerId, String displayName, String errorMessage) {
+            this.speakerId = speakerId;
+            this.displayName = displayName;
+            this.errorMessage = errorMessage;
+        }
+    }
+}
