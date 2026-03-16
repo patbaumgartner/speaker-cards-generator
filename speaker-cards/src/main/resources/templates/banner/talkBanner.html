@@ -197,13 +197,13 @@
   <!-- Schedule block -->
   <div class="event-block" id="event-time"
        th:if="${talk != null and talk.estTime != null and talk.cetTime != null}">
-    ⏰ <span th:text="${T(com.fortytwotalents.util.TemplateUtils).formatDate(talk.date)}"></span>
+    ⏰ <span th:text="${utils.formatDate(talk.date)}"></span>
     &nbsp;|&nbsp;
-    <span th:text="${T(com.fortytwotalents.util.TemplateUtils).formatTime(talk.cetTime)}"></span>
-    -<span th:text="${T(com.fortytwotalents.util.TemplateUtils).addHour(talk.cetTime)}"></span> CET
+    <span th:text="${utils.formatTime(talk.cetTime)}"></span>
+    -<span th:text="${utils.addHour(talk.cetTime)}"></span> CET
     &nbsp;|&nbsp;
-    <span th:text="${T(com.fortytwotalents.util.TemplateUtils).formatTime(talk.estTime)}"></span>
-    -<span th:text="${T(com.fortytwotalents.util.TemplateUtils).addHour(talk.estTime)}"></span> EST
+    <span th:text="${utils.formatTime(talk.estTime)}"></span>
+    -<span th:text="${utils.addHour(talk.estTime)}"></span> EST
   </div>
 </body>
 </html>

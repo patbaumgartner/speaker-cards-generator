@@ -27,6 +27,7 @@ import com.fortytwotalents.repository.TalkRepository;
 import com.fortytwotalents.service.BannerGenerationResult;
 import com.fortytwotalents.service.BannerGenerationService;
 import com.fortytwotalents.util.HtmlToPngConverter;
+import com.fortytwotalents.util.TemplateUtils;
 
 /**
  * Spring MVC controller for banner HTML preview and PNG generation.
@@ -57,19 +58,22 @@ public class BannerController {
     private final HtmlToPngConverter htmlToPngConverter;
     private final SpringTemplateEngine templateEngine;
     private final EventConfig eventConfig;
+    private final TemplateUtils templateUtils;
 
     public BannerController(SpeakerRepository speakerRepository,
                             TalkRepository talkRepository,
                             BannerGenerationService bannerService,
                             HtmlToPngConverter htmlToPngConverter,
                             SpringTemplateEngine templateEngine,
-                            EventConfig eventConfig) {
+                            EventConfig eventConfig,
+                            TemplateUtils templateUtils) {
         this.speakerRepository = speakerRepository;
         this.talkRepository = talkRepository;
         this.bannerService = bannerService;
         this.htmlToPngConverter = htmlToPngConverter;
         this.templateEngine = templateEngine;
         this.eventConfig = eventConfig;
+        this.templateUtils = templateUtils;
     }
 
     // -------------------------------------------------------------------------
@@ -268,6 +272,7 @@ public class BannerController {
         ctx.setVariable("speaker", speaker);
         ctx.setVariable("talk", talk);
         ctx.setVariable("event", eventConfig);
+        ctx.setVariable("utils", templateUtils);
         return templateEngine.process(viewName, ctx);
     }
 }

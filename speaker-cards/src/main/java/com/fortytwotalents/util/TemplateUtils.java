@@ -1,13 +1,25 @@
 package com.fortytwotalents.util;
 
+import org.springframework.stereotype.Component;
+
 /**
- * Template utility methods used inside Thymeleaf expressions via
- * {@code ${T(com.fortytwotalents.util.TemplateUtils).formatTime(time)}}.
+ * Template utility methods exposed to Thymeleaf templates via the {@code utils} variable.
  *
- * <p>All methods are {@code static} so they can be called from both Java code
- * and Thymeleaf Spring Expression Language (SpEL) without needing a bean
- * reference.
+ * <p>Register as a Spring bean so {@link com.fortytwotalents.controller.BannerController}
+ * can inject it into every template rendering context:
+ * <pre>
+ *   ctx.setVariable("utils", templateUtils);
+ * </pre>
+ *
+ * <p>In templates use:
+ * <pre>
+ *   ${utils.formatDate(talk.date)}
+ *   ${utils.formatTime(talk.cetTime)}
+ *   ${utils.addHour(talk.cetTime)}
+ *   ${utils.capitalise(speaker.title)}
+ * </pre>
  */
+@Component
 public final class TemplateUtils {
 
     private TemplateUtils() {
