@@ -29,7 +29,7 @@ By participating you agree to abide by its terms.
 2. **Clone** your fork locally:
    ```shell
    git clone https://github.com/<your-username>/speaker-cards-generator.git
-   cd speaker-cards-generator/speaker-cards
+   cd speaker-cards-generator
    ```
 3. Create a **feature branch**:
    ```shell
@@ -56,28 +56,25 @@ By participating you agree to abide by its terms.
 docker compose up -d
 
 # Then run the app against the Docker PostgreSQL
-cd speaker-cards
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz
 ```
 
 ### Run tests (H2 in-memory – no database required)
 
 ```shell
-cd speaker-cards
 ./mvnw test
 ```
 
 ### Check code style
 
 ```shell
-cd speaker-cards
-./mvnw spotless:check
+./mvnw io.spring.javaformat:spring-javaformat-maven-plugin:validate
 ```
 
 To auto-fix formatting:
 
 ```shell
-./mvnw spotless:apply
+./mvnw io.spring.javaformat:spring-javaformat-maven-plugin:apply
 ```
 
 ---
@@ -106,14 +103,14 @@ Use the [Feature Request issue template](.github/ISSUE_TEMPLATE/feature_request.
 
 ## Code Style
 
-This project uses **Google Java Format** enforced by the
-[Spotless Maven plugin](https://github.com/diffplug/spotless).
+This project uses **Spring Java Format** enforced by the
+[spring-javaformat-maven-plugin](https://github.com/spring-io/spring-javaformat).
 
-Run `./mvnw spotless:apply` before committing to auto-format your code.
+Run `./mvnw io.spring.javaformat:spring-javaformat-maven-plugin:apply` before committing to auto-format your code.
 
 Key style notes:
 
-- Indentation: 2 spaces (enforced by Google Java Format)
+- Indentation: 4 spaces (enforced by Spring Java Format)
 - Line length: 120 characters
 - Javadoc on all `public` classes and methods
 - `final` fields and parameters where possible
