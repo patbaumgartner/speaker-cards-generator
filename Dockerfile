@@ -1,11 +1,4 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Multi-stage Docker build for Speaker Cards Generator
-#
-# Stage 1 (builder): compile and package the Spring Boot JAR
-# Stage 2 (runtime): minimal JRE image that runs the JAR
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ── Stage 1: Build ────────────────────────────────────────────────────────────
+# Stage 1: Build
 FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /build
@@ -24,7 +17,7 @@ RUN ./mvnw --no-transfer-progress package -DskipTests
 # Extract the layered Spring Boot JAR for optimal image layering
 RUN java -Djarmode=layertools -jar target/speaker-cards-*.jar extract --destination extracted
 
-# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
+# Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine AS runtime
 
 # Non-root user for security

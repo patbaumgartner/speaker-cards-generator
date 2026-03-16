@@ -51,15 +51,6 @@ public class BannerGenerationService {
 		this.talkRepository = talkRepository;
 	}
 
-	// -------------------------------------------------------------------------
-	// Public API
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Generates speaker banners for all speakers in the database and returns the result
-	 * (no files are written to disk).
-	 * @return aggregated result containing success/failure counts
-	 */
 	@Transactional(readOnly = true)
 	public BannerGenerationResult generateAllSpeakerBanners() {
 		List<Speaker> speakers = speakerRepository.findAll();
@@ -198,10 +189,6 @@ public class BannerGenerationService {
 				result.getFailureCount());
 		return result;
 	}
-
-	// -------------------------------------------------------------------------
-	// Private HTTP helpers
-	// -------------------------------------------------------------------------
 
 	private byte[] fetchSpeakerBannerPng(UUID id) throws Exception {
 		return fetch(String.format("http://%s:%d/speaker-banner/%s.png", serverHost, serverPort, id));

@@ -153,10 +153,6 @@ public class ImportFromCSVService {
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Private helpers
-	// -------------------------------------------------------------------------
-
 	private String[] extractRowData(Row row) {
 		List<String> fields = new ArrayList<>();
 		int lastColumn = Math.max(row.getLastCellNum(), 23);

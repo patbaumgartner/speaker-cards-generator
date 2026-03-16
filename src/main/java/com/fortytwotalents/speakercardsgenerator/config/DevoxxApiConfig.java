@@ -32,10 +32,6 @@ public class DevoxxApiConfig {
 	 */
 	private String eventId = "vdz26";
 
-	// -------------------------------------------------------------------------
-	// Getters / setters
-	// -------------------------------------------------------------------------
-
 	public String getBaseUrl() {
 		return baseUrl;
 	}

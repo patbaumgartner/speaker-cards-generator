@@ -134,7 +134,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- ── Enforce minimum Java and Maven versions ───────────────────── -->
+            <!-- Enforce minimum Java and Maven versions -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -161,7 +161,7 @@
                 </executions>
             </plugin>
 
-            <!-- ── JaCoCo code-coverage ──────────────────────────────────────── -->
+            <!-- JaCoCo code-coverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -183,7 +183,7 @@
                 </executions>
             </plugin>
 
-            <!-- ── Spring Java Format ────────────────────────────────────────── -->
+            <!-- Spring Java Format -->
             <plugin>
                 <groupId>io.spring.javaformat</groupId>
                 <artifactId>spring-javaformat-maven-plugin</artifactId>
