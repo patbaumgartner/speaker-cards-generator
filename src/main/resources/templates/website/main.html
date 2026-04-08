@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
+
+<head>
+    <title>Speaker Cards Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+    <!-- Bootstrap CSS via WebJars -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <!-- Bootstrap Icons via WebJars -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}">
+    <!-- Custom application styles -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+                <img th:src="@{/favicon.svg}" alt="Logo" width="28" height="28" class="me-2">Speaker Directory
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                    <li class="nav-item">
+                        <a class="nav-link active d-flex align-items-center" href="/"><img th:src="@{/favicon.svg}"
+                                alt="" width="18" height="18" class="me-1">Speakers</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="importDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-cloud-download-fill me-1"></i>Import
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="importDropdown">
+                            <li>
+                                <button class="dropdown-item" data-import-type="devoxx"
+                                    th:disabled="${!devoxxApiEnabled}"
+                                    th:classappend="${!devoxxApiEnabled} ? 'disabled'">
+                                    <i class="bi bi-cloud-arrow-down me-2 text-primary"></i>Import from CFP.dev API
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" data-import-type="csv" th:disabled="${devoxxApiEnabled}"
+                                    th:classappend="${devoxxApiEnabled} ? 'disabled'">
+                                    <i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>Import from
+                                    Sessionize (XLSX)
+                                </button>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider" />
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" id="btnAuthorize"
+                                    th:classappend="${!devoxxApiEnabled} ? 'disabled'"
+                                    th:data-bs-toggle="${devoxxApiEnabled} ? 'modal'"
+                                    th:data-bs-target="${devoxxApiEnabled} ? '#apiTokenModal'">
+                                    <i class="bi bi-key-fill me-2" id="authIcon"></i>Authorize
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- API Token Modal -->
+    <div class="modal fade" id="apiTokenModal" tabindex="-1" aria-labelledby="apiTokenModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="apiTokenModalLabel">
+                        <i class="bi bi-key-fill me-2"></i>CFP.dev API Token
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Enter a Bearer token for the authenticated CFP.dev API to import
+                        speaker job titles. The token is stored in-memory only for this session.</p>
+                    <div class="mb-3">
+                        <label for="apiTokenInput" class="form-label">Bearer Token</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control font-monospace" id="apiTokenInput"
+                                placeholder="eyJhbGciOiJSUzI1NiIs…" />
+                        </div>
+                    </div>
+                    <div id="tokenStatus" class="small"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" id="btnClearToken">
+                        <i class="bi bi-x-circle me-1"></i>Clear
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i>Close
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnSaveToken">
+                        <i class="bi bi-check-circle me-1"></i>Authorize
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import toast notification -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;">
+        <div id="importToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="importToastBody">Import complete.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content – replaced by the page-specific fragment -->
+    <div class="main-content">
+        <div class="container" th:insert="${content}">
+            <!-- Page content is injected here -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Speaker Directory — powered by
+                <a th:href="${event.url}" target="_blank" th:text="${event.name}" class="text-light">Conference</a>.
+                All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Import helper: calls REST endpoint, shows toast, reloads page on success -->
+    <script>
+        var RELOAD_DELAY_MS = 2000;
+        var ALLOWED_IMPORT_TYPES = { devoxx: true, csv: true };
+
+        function triggerImport(type, btn) {
+            if (btn.disabled || btn.classList.contains('disabled')) { return; }
+            if (!ALLOWED_IMPORT_TYPES[type]) { return; }
+            var origHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Importing\u2026';
+
+            fetch('/api/import/' + type)
+                .then(function (r) {
+                    return r.text().then(function (text) {
+                        return { ok: r.ok, text: text };
+                    });
+                })
+                .then(function (result) {
+                    showImportToast(result.ok, result.text);
+                    if (result.ok) {
+                        setTimeout(function () { window.location.reload(); }, RELOAD_DELAY_MS);
+                    }
+                })
+                .catch(function (err) {
+                    showImportToast(false, 'Import failed: ' + err.message);
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                    btn.innerHTML = origHTML;
+                });
+        }
+
+        function showImportToast(success, message) {
+            var toastEl = document.getElementById('importToast');
+            var toastBody = document.getElementById('importToastBody');
+            toastEl.classList.remove('bg-success', 'bg-danger');
+            toastEl.classList.add(success ? 'bg-success' : 'bg-danger');
+            toastBody.textContent = message;
+            var toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4000 });
+            toast.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-import-type]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    triggerImport(btn.dataset.importType, btn);
+                });
+            });
+
+            /* ---- API Token modal ---- */
+            var tokenInput = document.getElementById('apiTokenInput');
+            var tokenStatus = document.getElementById('tokenStatus');
+            var authIcon = document.getElementById('authIcon');
+
+            function updateTokenStatus() {
+                fetch('/api/config/api-token/status')
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.configured) {
+                            tokenStatus.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Token is configured.</span>';
+                            authIcon.classList.add('text-success');
+                        } else {
+                            tokenStatus.innerHTML = '<span class="text-muted"><i class="bi bi-info-circle me-1"></i>No token configured.</span>';
+                            authIcon.classList.remove('text-success');
+                        }
+                    })
+                    .catch(function () {
+                        tokenStatus.innerHTML = '';
+                    });
+            }
+
+            document.getElementById('apiTokenModal').addEventListener('show.bs.modal', function () {
+                tokenInput.value = '';
+                updateTokenStatus();
+            });
+
+            tokenInput.addEventListener('input', function () {
+                var v = tokenInput.value;
+                if (v.toLowerCase().startsWith('bearer ')) {
+                    tokenInput.value = v.substring(7).trim();
+                }
+            });
+
+            document.getElementById('btnSaveToken').addEventListener('click', function () {
+                var token = tokenInput.value.trim();
+                if (!token) { return; }
+                fetch('/api/config/api-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                }).then(function (r) {
+                    if (r.ok) {
+                        tokenInput.value = '';
+                        updateTokenStatus();
+                        showImportToast(true, 'API token configured successfully.');
+                    } else {
+                        showImportToast(false, 'Failed to save token.');
+                    }
+                });
+            });
+
+            document.getElementById('btnClearToken').addEventListener('click', function () {
+                fetch('/api/config/api-token', { method: 'DELETE' })
+                    .then(function (r) {
+                        if (r.ok) {
+                            tokenInput.value = '';
+                            updateTokenStatus();
+                            showImportToast(true, 'API token cleared.');
+                        }
+                    });
+            });
+
+            updateTokenStatus();
+        });
+    </script>
+</body>
+
+</html>

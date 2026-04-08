@@ -1,0 +1,82 @@
+/* ============================================================
+   Voxxed Days Brand Colors
+   Navy #1e2246 (logo text)   Accent #40b4e5 (logo cyan line)
+   White on Navy  → 13.8:1  (WCAG AAA)
+   Navy on Accent → 6.1:1   (WCAG AA)
+   ============================================================ */
+:root {
+    --vd-navy:  #1e2246;
+    --vd-accent: #40b4e5;
+    --vd-bg-body: #f4f6f9;
+
+    /* Override Bootstrap primary → VD navy (white text gives 13.8:1 contrast) */
+    --bs-primary: #1e2246;
+    --bs-primary-rgb: 30, 34, 70;
+
+    /* Links: darker accent so they reach 4.5:1 on white (WCAG AA) */
+    --bs-link-color: #1567a8;
+    --bs-link-color-rgb: 21, 103, 168;
+    --bs-link-hover-color: #1e2246;
+    --bs-link-hover-color-rgb: 30, 34, 70;
+}
+
+body {
+    background-color: var(--vd-bg-body);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Navbar: VD navy background + accent underline */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .15);
+    border-bottom: 3px solid var(--vd-accent);
+}
+
+.main-content {
+    padding: 2rem 0;
+    min-height: calc(100vh - 120px);
+}
+
+/* Footer: VD navy + accent top border */
+footer {
+    background-color: var(--vd-navy);
+    color: #fff;
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+    border-top: 3px solid var(--vd-accent);
+}
+
+/* ---- Import section card header ---- */
+.card-header-vd {
+    background-color: var(--vd-navy);
+    color: #fff;
+}
+
+/* ---- Accent button (VD cyan) ----
+   Navy text on cyan → 6.1:1 (WCAG AA)                       */
+.btn-vd-accent {
+    background-color: var(--vd-accent);
+    color: var(--vd-navy);
+    border-color: var(--vd-accent);
+    font-weight: 600;
+}
+
+.btn-vd-accent:hover,
+.btn-vd-accent:focus {
+    background-color: #1e7ca8;
+    color: #fff;
+    border-color: #1e7ca8;
+}
+
+.btn-outline-vd-accent {
+    background-color: transparent;
+    color: var(--vd-navy);
+    border-color: var(--vd-accent);
+    font-weight: 600;
+}
+
+.btn-outline-vd-accent:hover,
+.btn-outline-vd-accent:focus {
+    background-color: var(--vd-accent);
+    color: var(--vd-navy);
+    border-color: var(--vd-accent);
+}

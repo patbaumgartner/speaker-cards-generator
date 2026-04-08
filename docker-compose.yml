@@ -1,0 +1,57 @@
+# Docker Compose – full-stack Docker deployment (database + application container)
+#
+# Use this file when you want to run both PostgreSQL and the application in Docker.
+# For local development with "mvnw spring-boot:run", use compose.yml instead
+# (Spring Boot Docker Compose will start the database automatically).
+#
+# Usage:
+#   docker compose -f docker-compose.yml up -d           # start PostgreSQL + app (default: vdz profile)
+#   docker compose -f docker-compose.yml up -d db        # start PostgreSQL only
+#   docker compose -f docker-compose.yml logs -f app     # tail application logs
+#   docker compose -f docker-compose.yml down -v         # stop and remove volumes
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: speakercards-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: speakercards
+      POSTGRES_USER: speakercards
+      POSTGRES_PASSWORD: speakercards
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U speakercards"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: speakercards-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/speakercards
+      SPRING_DATASOURCE_USERNAME: speakercards
+      SPRING_DATASOURCE_PASSWORD: speakercards
+      SPRING_PROFILES_ACTIVE: vdz
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+
+volumes:
+  postgres_data:

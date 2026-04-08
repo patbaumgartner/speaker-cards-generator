@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{website/main :: layout(~{::section#main-content})}">
+
+<section id="main-content">
+
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="bg-white rounded shadow-sm p-4">
+        <h1 class="display-5 fw-bold text-primary mb-2">
+          <img th:src="@{/favicon.svg}" alt="Logo" width="48" height="48" class="me-3">
+          <span th:text="${event.name}">Conference</span> – Speakers
+        </h1>
+        <p class="lead text-muted mb-0">
+          Browse our distinguished speakers and their professional profiles
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header card-header-vd d-flex align-items-center gap-2">
+          <i class="bi bi-cloud-download-fill"></i>
+          <h5 class="mb-0">Import Speakers</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            Load speaker data from the CFP.dev API or from a Sessionize XLSX file.
+          </p>
+          <div class="d-flex flex-wrap gap-3 align-items-center">
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-primary" id="btnImportDevoxx" data-import-type="devoxx"
+                th:disabled="${!devoxxApiEnabled}" th:classappend="${!devoxxApiEnabled} ? 'disabled'">
+                <i class="bi bi-cloud-arrow-down me-2"></i>Import from CFP.dev API
+              </button>
+              <button type="button" class="btn btn-outline-primary" th:disabled="${!devoxxApiEnabled}"
+                th:classappend="${!devoxxApiEnabled} ? 'disabled'" th:data-bs-toggle="${devoxxApiEnabled} ? 'modal'"
+                th:data-bs-target="${devoxxApiEnabled} ? '#apiTokenModal'">
+                <i class="bi bi-key-fill me-1"></i>Authorize
+              </button>
+            </div>
+            <button type="button" class="btn btn-outline-primary" id="btnImportXlsx" data-import-type="csv"
+              th:disabled="${devoxxApiEnabled}" th:classappend="${devoxxApiEnabled} ? 'disabled'">
+              <i class="bi bi-file-earmark-spreadsheet me-2"></i>Import from Sessionize (XLSX)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download Banners Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header card-header-vd d-flex align-items-center gap-2">
+          <i class="bi bi-download"></i>
+          <h5 class="mb-0">Download Banners</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            Download all generated banners as ZIP files.
+          </p>
+          <div class="d-flex flex-wrap gap-3 align-items-center">
+            <a th:href="@{/api/banners/download/all}" class="btn btn-primary">
+              <i class="bi bi-file-earmark-zip me-2"></i>Download All Banners
+            </a>
+            <a th:href="@{/api/banners/download/speakers}" class="btn btn-outline-primary">
+              <i class="bi bi-person-badge me-2"></i>Speaker Banners
+            </a>
+            <a th:href="@{/api/banners/download/talks}" class="btn btn-outline-primary">
+              <i class="bi bi-easel me-2"></i>Talk Banners
+            </a>
+            <a th:href="@{/api/banners/download/social}" class="btn btn-outline-primary">
+              <i class="bi bi-share me-2"></i>Social Banners
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Speakers Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header card-header-vd d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>Speaker List
+          </h5>
+          <div class="ms-3" style="max-width: 300px; width: 100%;">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+              <input type="text" id="speakerSearch" class="form-control border-start-0"
+                placeholder="Search name, company, talk…" aria-label="Search speakers" />
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" class="text-center" style="width: 80px;">Photo</th>
+                  <th scope="col" class="sortable" data-sort-col="1" role="button">First Name <i
+                      class="bi bi-arrow-down-up text-muted" style="font-size: .75rem;"></i></th>
+                  <th scope="col" class="sortable" data-sort-col="2" role="button">Last Name <i
+                      class="bi bi-arrow-down-up text-muted" style="font-size: .75rem;"></i></th>
+                  <th scope="col" class="sortable" data-sort-col="3" role="button">Company <i
+                      class="bi bi-arrow-down-up text-muted" style="font-size: .75rem;"></i></th>
+                  <th scope="col" class="sortable" data-sort-col="4" role="button">Talk <i
+                      class="bi bi-arrow-down-up text-muted" style="font-size: .75rem;"></i></th>
+                  <th scope="col" class="text-center">Social Links</th>
+                  <th scope="col" class="text-center" style="width: 200px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="speaker : ${speakers}">
+
+                  <!-- Photo -->
+                  <td class="text-center align-middle">
+                    <img th:src="@{/speaker-photo/{id}(id=${speaker.id})}"
+                      th:alt="${speaker.firstName} + ' ' + ${speaker.lastName}" class="rounded-circle"
+                      style="width: 50px; height: 50px; object-fit: cover;" />
+                  </td>
+
+                  <!-- First Name -->
+                  <td class="align-middle">
+                    <div class="fw-bold text-dark" th:text="${speaker.firstName}">First</div>
+                  </td>
+
+                  <!-- Last Name -->
+                  <td class="align-middle">
+                    <div class="fw-bold text-dark" th:text="${speaker.lastName}">Last</div>
+                  </td>
+
+                  <!-- Company -->
+                  <td class="align-middle">
+                    <a th:if="${speaker.companyURL != null}" th:href="${speaker.companyURL}" target="_blank"
+                      class="text-decoration-none text-primary" title="Visit company website">
+                      <span th:text="${speaker.company}"></span>
+                      <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 12px;"></i>
+                    </a>
+                    <span th:unless="${speaker.companyURL != null}" class="text-dark"
+                      th:text="${speaker.company}"></span>
+                  </td>
+
+                  <!-- Talk -->
+                  <td class="align-middle">
+                    <span th:if="${!#lists.isEmpty(speaker.talks)}" th:each="talk, iterStat : ${speaker.talks}">
+                      <span class="d-inline-flex align-items-center gap-1">
+                        <span th:text="${talk.title}"></span>
+                        <button type="button" class="btn btn-sm btn-link p-0 text-muted title-edit-btn"
+                          th:data-talk-id="${talk.id}" th:data-talk-title="${talk.title}"
+                          th:data-formatted-title="${talk.formattedTitle}" title="Edit title formatting">
+                          <i class="bi bi-pencil" style="font-size: .75rem;"></i>
+                        </button>
+                      </span>
+                      <br th:if="${!iterStat.last}" />
+                    </span>
+                  </td>
+
+                  <!-- Social Links -->
+                  <td class="align-middle text-center">
+                    <div class="btn-group" role="group">
+                      <a th:if="${speaker.twitterAccount != null}"
+                        th:href="'https://twitter.com/' + ${speaker.twitterAccount}" target="_blank"
+                        class="btn btn-sm btn-outline-info" title="X / Twitter">
+                        <i class="bi bi-twitter-x"></i>
+                      </a>
+                      <a th:if="${speaker.linkedInAccount != null}"
+                        th:href="'https://linkedin.com/in/' + ${speaker.linkedInAccount}" target="_blank"
+                        class="btn btn-sm btn-outline-primary" title="LinkedIn">
+                        <i class="bi bi-linkedin"></i>
+                      </a>
+                      <a th:if="${speaker.blueskyAccount != null}"
+                        th:href="'https://bsky.app/profile/' + ${speaker.blueskyAccount}" target="_blank"
+                        class="btn btn-sm btn-outline-info" title="Bluesky">
+                        <i class="bi bi-cloud"></i>
+                      </a>
+                      <a th:if="${speaker.mastodonAccount != null}" th:href="${speaker.mastodonAccount}" target="_blank"
+                        class="btn btn-sm btn-outline-secondary" title="Mastodon">
+                        <i class="bi bi-mastodon"></i>
+                      </a>
+                      <a th:if="${speaker.githubAccount != null}"
+                        th:href="'https://github.com/' + ${speaker.githubAccount}" target="_blank"
+                        class="btn btn-sm btn-outline-dark" title="GitHub">
+                        <i class="bi bi-github"></i>
+                      </a>
+                      <a th:if="${speaker.blogURL != null}" th:href="${speaker.blogURL}" target="_blank"
+                        class="btn btn-sm btn-outline-success" title="Blog">
+                        <i class="bi bi-globe"></i>
+                      </a>
+                    </div>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="align-middle text-center">
+                    <div class="d-flex flex-column gap-1">
+                      <!-- Speaker banner -->
+                      <div class="btn-group btn-group-sm" role="group">
+                        <a th:href="@{/speaker-banner/{id}(id=${speaker.id})}" target="_blank"
+                          class="btn btn-outline-primary" title="Preview Speaker Banner">
+                          <i class="bi bi-eye me-1"></i>View
+                        </a>
+                        <a th:href="@{/speaker-banner/{id}.png(id=${speaker.id})}"
+                          th:attr="download='speaker-' + ${speaker.id} + '.png'" class="btn btn-outline-primary"
+                          title="Download Speaker Banner PNG">
+                          <i class="bi bi-download"></i>
+                        </a>
+                      </div>
+                      <!-- Talk banner (only when speaker has talks) -->
+                      <div class="btn-group btn-group-sm" role="group" th:if="${!#lists.isEmpty(speaker.talks)}">
+                        <a th:href="@{/talk-banner/{id}(id=${speaker.talks[0].id})}" target="_blank"
+                          class="btn btn-outline-success" title="Preview Talk Banner">
+                          <i class="bi bi-eye me-1"></i>View
+                        </a>
+                        <a th:href="@{/talk-banner/{id}.png(id=${speaker.talks[0].id})}"
+                          th:attr="download='talk-' + ${speaker.talks[0].id} + '.png'" class="btn btn-outline-success"
+                          title="Download Talk Banner PNG">
+                          <i class="bi bi-download"></i>
+                        </a>
+                      </div>
+                      <!-- Social banner -->
+                      <div class="btn-group btn-group-sm" role="group">
+                        <a th:href="@{/speaker-social/{id}(id=${speaker.id})}" target="_blank"
+                          class="btn btn-outline-info" title="Preview Social Banner">
+                          <i class="bi bi-eye me-1"></i>View
+                        </a>
+                        <a th:href="@{/speaker-social/{id}.png(id=${speaker.id})}"
+                          th:attr="download='social-' + ${speaker.id} + '.png'" class="btn btn-outline-info"
+                          title="Download Social Banner PNG">
+                          <i class="bi bi-download"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </td>
+
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer text-muted text-center">
+          <small>Total Speakers: <strong th:text="${#lists.size(speakers)}">0</strong>
+            | Showing: <strong id="visibleCount">0</strong></small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .sortable {
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .sortable:hover {
+      background-color: rgba(255, 255, 255, .15);
+    }
+
+    #speakerSearch:focus {
+      box-shadow: none;
+      border-color: var(--vd-accent);
+    }
+
+    .title-edit-btn:hover {
+      color: var(--bs-primary) !important;
+    }
+
+    #titleEditor {
+      min-height: 120px;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      border: 1px solid #dee2e6;
+      border-radius: .375rem;
+      padding: .75rem;
+      outline: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    #titleEditor:focus {
+      border-color: var(--vd-accent, #0d6efd);
+      box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .15);
+    }
+
+    .badge-formatted {
+      font-size: .65rem;
+      vertical-align: middle;
+    }
+  </style>
+
+  <!-- Title Editor Modal -->
+  <div class="modal fade" id="titleEditorModal" tabindex="-1" aria-labelledby="titleEditorModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="titleEditorModalLabel">
+            <i class="bi bi-pencil-square me-2"></i>Edit Title Formatting
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-2">
+            Press <kbd>Enter</kbd> to insert line breaks. The text below will appear exactly as formatted on the banner.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Original title</label>
+            <div id="originalTitle" class="text-muted small bg-light rounded px-3 py-2"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Formatted title</label>
+            <div id="titleEditor" contenteditable="true"></div>
+          </div>
+          <div id="titleEditorStatus" class="small"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-warning" id="btnResetTitle">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Original
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-primary" id="btnSaveTitle">
+            <i class="bi bi-check-circle me-1"></i>Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      var table = document.querySelector('.table');
+      var tbody = table.querySelector('tbody');
+      var searchInput = document.getElementById('speakerSearch');
+      var visibleCount = document.getElementById('visibleCount');
+      var sortState = { col: null, asc: true };
+
+      function cellText(row, colIdx) {
+        var cell = row.cells[colIdx];
+        return cell ? cell.textContent.trim().toLowerCase() : '';
+      }
+
+      function updateVisibleCount() {
+        var rows = tbody.querySelectorAll('tr');
+        var count = 0;
+        rows.forEach(function (r) { if (r.style.display !== 'none') count++; });
+        visibleCount.textContent = count;
+      }
+
+      /* ---- Search ---- */
+      searchInput.addEventListener('input', function () {
+        var term = searchInput.value.trim().toLowerCase();
+        var rows = tbody.querySelectorAll('tr');
+        rows.forEach(function (row) {
+          /* Search in First Name (1), Last Name (2), Company (3), Talk (4) */
+          var text = cellText(row, 1) + ' ' + cellText(row, 2) + ' ' + cellText(row, 3) + ' ' + cellText(row, 4);
+          row.style.display = text.indexOf(term) !== -1 ? '' : 'none';
+        });
+        updateVisibleCount();
+      });
+
+      /* ---- Sort ---- */
+      function updateSortIcons(activeHeader) {
+        table.querySelectorAll('.sortable i').forEach(function (icon) {
+          icon.className = 'bi bi-arrow-down-up text-muted';
+          icon.style.fontSize = '.75rem';
+        });
+        var icon = activeHeader.querySelector('i');
+        icon.className = sortState.asc
+          ? 'bi bi-sort-alpha-down text-white'
+          : 'bi bi-sort-alpha-up text-white';
+        icon.style.fontSize = '.75rem';
+      }
+
+      table.querySelectorAll('.sortable').forEach(function (header) {
+        header.addEventListener('click', function () {
+          var colIdx = parseInt(header.dataset.sortCol);
+          if (sortState.col === colIdx) {
+            sortState.asc = !sortState.asc;
+          } else {
+            sortState.col = colIdx;
+            sortState.asc = true;
+          }
+          updateSortIcons(header);
+
+          var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+          rows.sort(function (a, b) {
+            var vA = cellText(a, colIdx);
+            var vB = cellText(b, colIdx);
+            if (vA < vB) return sortState.asc ? -1 : 1;
+            if (vA > vB) return sortState.asc ? 1 : -1;
+            return 0;
+          });
+          rows.forEach(function (row) { tbody.appendChild(row); });
+        });
+      });
+
+      updateVisibleCount();
+
+      /* ---- Title Editor ---- */
+      var currentTalkId = null;
+      var titleEditorModal = document.getElementById('titleEditorModal');
+      var titleEditor = document.getElementById('titleEditor');
+      var originalTitle = document.getElementById('originalTitle');
+      var titleEditorStatus = document.getElementById('titleEditorStatus');
+
+      document.querySelectorAll('.title-edit-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentTalkId = btn.dataset.talkId;
+          var title = btn.dataset.talkTitle || '';
+          var formatted = btn.dataset.formattedTitle || '';
+          originalTitle.textContent = title;
+          titleEditor.innerHTML = formatted || escapeHtml(title);
+          titleEditorStatus.innerHTML = '';
+          var modal = bootstrap.Modal.getOrCreateInstance(titleEditorModal);
+          modal.show();
+        });
+      });
+
+      function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      document.getElementById('btnSaveTitle').addEventListener('click', function () {
+        if (!currentTalkId) return;
+        var html = titleEditor.innerHTML;
+        fetch('/api/talks/' + currentTalkId + '/formatted-title', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ formattedTitle: html })
+        }).then(function (r) {
+          if (r.ok) {
+            return r.json().then(function (data) {
+              /* Update the button data attribute so re-opening shows the new value */
+              var btn = document.querySelector('.title-edit-btn[data-talk-id="' + currentTalkId + '"]');
+              if (btn) {
+                btn.dataset.formattedTitle = data.formattedTitle || '';
+              }
+              titleEditorStatus.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Saved.</span>';
+              setTimeout(function () {
+                bootstrap.Modal.getInstance(titleEditorModal).hide();
+              }, 600);
+            });
+          } else {
+            titleEditorStatus.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle-fill me-1"></i>Failed to save.</span>';
+          }
+        }).catch(function () {
+          titleEditorStatus.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle-fill me-1"></i>Network error.</span>';
+        });
+      });
+
+      document.getElementById('btnResetTitle').addEventListener('click', function () {
+        if (!currentTalkId) return;
+        fetch('/api/talks/' + currentTalkId + '/formatted-title', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ formattedTitle: '' })
+        }).then(function (r) {
+          if (r.ok) {
+            var btn = document.querySelector('.title-edit-btn[data-talk-id="' + currentTalkId + '"]');
+            if (btn) {
+              btn.dataset.formattedTitle = '';
+              titleEditor.innerHTML = escapeHtml(btn.dataset.talkTitle || '');
+            }
+            titleEditorStatus.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Reset to original.</span>';
+          }
+        });
+      });
+
+      /* Prevent pasting rich text – only allow plain text + line breaks */
+      titleEditor.addEventListener('paste', function (e) {
+        e.preventDefault();
+        var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertHTML', false, escapeHtml(text).replace(/\n/g, '<br>'));
+      });
+    });
+  </script>
+
+</section>
+
+</html>

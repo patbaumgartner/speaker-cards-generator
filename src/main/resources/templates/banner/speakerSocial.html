@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${speaker.firstName} + ' ' + ${speaker.lastName} + ' — Social Banner'">Social Banner</title>
+  <style th:inline="text">
+    @font-face {
+      font-family: 'Poppins';
+      font-style: normal;
+      font-weight: 300;
+      src: url('/fonts/Poppins-Light.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: 'Poppins';
+      font-style: normal;
+      font-weight: 400;
+      src: url('/fonts/Poppins-Regular.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: 'Poppins';
+      font-style: normal;
+      font-weight: 600;
+      src: url('/fonts/Poppins-SemiBold.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: 'Poppins';
+      font-style: normal;
+      font-weight: 700;
+      src: url('/fonts/Poppins-Bold.ttf') format('truetype');
+    }
+
+    @page {
+      size: 1080px 1080px;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1080px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      color: #ffffff;
+      background: #ffffff;
+    }
+
+    /* White header */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 120px;
+      background: #ffffff;
+      z-index: 10;
+    }
+
+    .header-logo {
+      position: absolute;
+      top: 20px;
+      left: 50px;
+    }
+
+    .header-logo img {
+      height: 80px;
+      width: auto;
+      display: block;
+    }
+
+    .header-hashtag {
+      position: absolute;
+      top: 34px;
+      right: 50px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 40px;
+      font-weight: 600;
+      color: #999999;
+      letter-spacing: 1px;
+    }
+
+    /* Accent line below header */
+    .accent-line {
+      position: absolute;
+      top: 120px;
+      left: 0;
+      width: 1080px;
+      height: 4px;
+
+      background: [[${event.colorAccent}]];
+      z-index: 10;
+    }
+
+    /* Primary gradient body */
+    .body-area {
+      position: absolute;
+      top: 124px;
+      left: 0;
+      width: 1080px;
+      height: 856px;
+
+      background-color: [[${event.colorPrimary}]];
+      z-index: 1;
+    }
+
+    .body-accent {
+      position: absolute;
+      top: 124px;
+      left: 0;
+      width: 1080px;
+      height: 856px;
+
+      background-color: transparent;
+      z-index: 2;
+    }
+
+    /* Intro text */
+    .intro-text {
+      position: absolute;
+      top: 155px;
+      left: 50px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+
+      color: [[${event.colorAccent}]];
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      z-index: 10;
+    }
+
+    /* Talk title */
+    .talk-title {
+      position: absolute;
+      top: 200px;
+      left: 50px;
+      right: 50px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 62px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      text-align: left;
+      hyphens: none;
+      word-wrap: break-word;
+      z-index: 10;
+    }
+
+    /* Separator line */
+    .section-divider {
+      position: absolute;
+      top: 540px;
+      left: 50px;
+      width: 80px;
+      height: 3px;
+
+      background: [[${event.colorAccent}]];
+      z-index: 10;
+    }
+
+    /* Speaker section */
+    .speaker-section {
+      position: absolute;
+      bottom: 140px;
+      left: 50px;
+      right: 50px;
+      z-index: 10;
+    }
+
+    .speaker-section table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .speaker-section td {
+      vertical-align: middle;
+      padding: 0;
+    }
+
+    .speaker-info-cell {
+      text-align: left;
+    }
+
+    .speaker-photo-cell {
+      text-align: right;
+      width: 316px;
+    }
+
+    .speaker-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 55px;
+      font-weight: 700;
+      color: #ffffff;
+      word-wrap: break-word;
+      line-height: 1.15;
+    }
+
+    .speaker-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 23px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    .speaker-company {
+      font-family: 'Poppins', sans-serif;
+      font-size: 21px;
+      font-weight: 400;
+
+      color: [[${event.colorAccent}]];
+      margin-top: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .speaker-photo-wrapper {
+      width: 286px;
+      height: 286px;
+      border-radius: 50%;
+      padding: 5px;
+
+      background-color: [[${event.colorAccent}]];
+      margin-left: auto;
+    }
+
+    .speaker-photo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+    }
+
+    /* Accent footer bar */
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 1080px;
+      height: 100px;
+
+      background: [[${event.colorAccent}]];
+      z-index: 10;
+    }
+
+    .footer-left {
+      position: absolute;
+      bottom: 34px;
+      left: 50px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 21px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      z-index: 11;
+    }
+
+    .footer-right {
+      position: absolute;
+      bottom: 34px;
+      right: 50px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 21px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      z-index: 11;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- White header -->
+  <div class="header">
+    <div class="header-logo">
+      <img th:src="'/images/' + ${event.logoFile}" alt="Event Logo" />
+    </div>
+    <div class="header-hashtag" th:text="'#' + ${event.shortName}">#VDZ26</div>
+  </div>
+
+  <!-- Accent line -->
+  <div class="accent-line"></div>
+
+  <!-- Primary gradient body -->
+  <div class="body-area"></div>
+  <div class="body-accent"></div>
+
+  <!-- Intro text -->
+  <div class="intro-text" th:text="${event.speakingAboutLabel}">I am speaking about</div>
+
+  <!-- Talk title -->
+  <div class="talk-title" th:if="${talk != null and talk.title != null}"
+    th:utext="${talk.formattedTitle}" th:unless="${talk.formattedTitle == null}"></div>
+  <div class="talk-title" th:if="${talk != null and talk.title != null and talk.formattedTitle == null}"
+    th:utext="${utils.formatTitle(talk.title, 980, 62, 700)}">Talk Title
+    Goes Here</div>
+
+  <!-- Separator -->
+  <div class="section-divider"></div>
+
+  <!-- Speaker section -->
+  <div class="speaker-section">
+    <table>
+      <tr>
+        <td class="speaker-info-cell">
+          <div class="speaker-name" th:text="${speaker.firstName} + ' ' + ${speaker.lastName}">Speaker
+            Name</div>
+          <div class="speaker-title" th:if="${speaker.title != null and !#strings.isEmpty(speaker.title)}"
+            th:text="${speaker.title}">Speaker Title</div>
+          <div class="speaker-company" th:if="${speaker.company != null and !#strings.isEmpty(speaker.company)}"
+            th:text="${speaker.company}">Company</div>
+        </td>
+        <td class="speaker-photo-cell">
+          <div class="speaker-photo-wrapper">
+            <div class="speaker-photo-inner" th:style="${speaker.id != null}
+                   ? 'background-image: url(/speaker-photo/' + ${speaker.id} + ')'
+                   : 'background-color: ' + ${event.colorPrimary} + ';'">
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Accent footer -->
+  <div class="footer"></div>
+  <div class="footer-left">
+    <span th:if="${event.date != null and !#strings.isEmpty(event.date)}" th:text="${event.date}"></span>
+    <span
+      th:if="${event.date != null and !#strings.isEmpty(event.date) and event.location != null and !#strings.isEmpty(event.location)}">
+      &#183; </span>
+    <span th:if="${event.location != null and !#strings.isEmpty(event.location)}" th:text="${event.location}"></span>
+  </div>
+  <div class="footer-right" th:text="${event.url}">https://voxxeddays.ch</div>
+</body>
+
+</html>
