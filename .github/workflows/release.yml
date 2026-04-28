@@ -30,8 +30,20 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Verify CHANGELOG contains version entry
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          if ! grep -qE "^## \[${VERSION}\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md does not contain a section for version ${VERSION}."
+            echo "Add a '## [${VERSION}] - YYYY-MM-DD' entry before tagging the release."
+            exit 1
+          fi
+
       - name: Set Maven project version
         run: ./mvnw --no-transfer-progress versions:set -DnewVersion=${{ steps.version.outputs.VERSION }} -DgenerateBackupPoms=false
+
+      - name: Build & verify (run full test suite)
+        run: ./mvnw --no-transfer-progress verify
 
       - name: Build JAR
         run: ./mvnw --no-transfer-progress package -DskipTests
