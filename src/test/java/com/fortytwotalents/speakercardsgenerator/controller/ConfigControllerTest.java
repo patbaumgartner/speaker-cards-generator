@@ -16,70 +16,68 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * MVC tests for {@link ConfigController} using a standalone {@link MockMvc}
- * setup so the
- * controller can be exercised without bootstrapping the full application
- * context.
+ * MVC tests for {@link ConfigController} using a standalone {@link MockMvc} setup so the
+ * controller can be exercised without bootstrapping the full application context.
  */
 class ConfigControllerTest {
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    private DevoxxApiConfig devoxxApiConfig;
+	private DevoxxApiConfig devoxxApiConfig;
 
-    @BeforeEach
-    void setUp() {
-        this.devoxxApiConfig = new DevoxxApiConfig();
-        this.mockMvc = MockMvcBuilders.standaloneSetup(new ConfigController(this.devoxxApiConfig)).build();
-    }
+	@BeforeEach
+	void setUp() {
+		this.devoxxApiConfig = new DevoxxApiConfig();
+		this.mockMvc = MockMvcBuilders.standaloneSetup(new ConfigController(this.devoxxApiConfig)).build();
+	}
 
-    @Test
-    void tokenStatusReturnsFalseWhenNoTokenConfigured() throws Exception {
-        this.mockMvc.perform(get("/api/config/api-token/status"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.configured").value(false));
-    }
+	@Test
+	void tokenStatusReturnsFalseWhenNoTokenConfigured() throws Exception {
+		this.mockMvc.perform(get("/api/config/api-token/status"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.configured").value(false));
+	}
 
-    @Test
-    void tokenStatusReturnsTrueWhenTokenConfigured() throws Exception {
-        this.devoxxApiConfig.setApiToken("secret-token");
+	@Test
+	void tokenStatusReturnsTrueWhenTokenConfigured() throws Exception {
+		this.devoxxApiConfig.setApiToken("secret-token");
 
-        this.mockMvc.perform(get("/api/config/api-token/status"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.configured").value(true));
-    }
+		this.mockMvc.perform(get("/api/config/api-token/status"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.configured").value(true));
+	}
 
-    @Test
-    void setTokenAcceptsValidToken() throws Exception {
-        String body = "{\"token\":\"abc123\"}";
+	@Test
+	void setTokenAcceptsValidToken() throws Exception {
+		String body = "{\"token\":\"abc123\"}";
 
-        this.mockMvc.perform(post("/api/config/api-token").contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("configured")));
-    }
+		this.mockMvc.perform(post("/api/config/api-token").contentType(MediaType.APPLICATION_JSON).content(body))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("configured")));
+	}
 
-    @Test
-    void setTokenRejectsBlankToken() throws Exception {
-        String body = "{\"token\":\"   \"}";
+	@Test
+	void setTokenRejectsBlankToken() throws Exception {
+		String body = "{\"token\":\"   \"}";
 
-        this.mockMvc.perform(post("/api/config/api-token").contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("must not be empty")));
-    }
+		this.mockMvc.perform(post("/api/config/api-token").contentType(MediaType.APPLICATION_JSON).content(body))
+			.andExpect(status().isBadRequest())
+			.andExpect(content().string(containsString("must not be empty")));
+	}
 
-    @Test
-    void setTokenRejectsMissingToken() throws Exception {
-        this.mockMvc.perform(post("/api/config/api-token").contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isBadRequest());
-    }
+	@Test
+	void setTokenRejectsMissingToken() throws Exception {
+		this.mockMvc.perform(post("/api/config/api-token").contentType(MediaType.APPLICATION_JSON).content("{}"))
+			.andExpect(status().isBadRequest());
+	}
 
-    @Test
-    void clearTokenReturnsOk() throws Exception {
-        this.devoxxApiConfig.setApiToken("to-be-cleared");
+	@Test
+	void clearTokenReturnsOk() throws Exception {
+		this.devoxxApiConfig.setApiToken("to-be-cleared");
 
-        this.mockMvc.perform(delete("/api/config/api-token"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("cleared")));
-    }
+		this.mockMvc.perform(delete("/api/config/api-token"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("cleared")));
+	}
 
 }
