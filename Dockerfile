@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 WORKDIR /build
 
@@ -18,7 +18,7 @@ RUN ./mvnw --no-transfer-progress package -DskipTests
 RUN java -Djarmode=layertools -jar target/speaker-cards-generator-*.jar extract --destination extracted
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # Non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
