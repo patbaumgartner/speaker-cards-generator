@@ -13,10 +13,37 @@ updates:
         patterns:
           - "org.springframework.boot:*"
           - "org.springframework:*"
+        update-types:
+          - "minor"
+          - "patch"
+      pdf-rendering:
+        patterns:
+          - "com.openhtmltopdf:*"
+          - "org.apache.pdfbox:*"
+        update-types:
+          - "minor"
+          - "patch"
+      apache-poi:
+        patterns:
+          - "org.apache.poi:*"
+        update-types:
+          - "minor"
+          - "patch"
+      webjars:
+        patterns:
+          - "org.webjars*:*"
+        update-types:
+          - "minor"
+          - "patch"
       test-deps:
         patterns:
           - "org.junit*:*"
           - "org.mockito:*"
+          - "org.assertj:*"
+          - "com.h2database:*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Keep GitHub Actions up to date
   - package-ecosystem: "github-actions"
@@ -26,4 +53,21 @@ updates:
       day: "monday"
       time: "08:00"
     open-pull-requests-limit: 5
-# manual-trigger: 2026-04-27T06:12Z
+
+  # Keep Dockerfile base images up to date
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+    open-pull-requests-limit: 5
+
+  # Keep Docker Compose images up to date
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+    open-pull-requests-limit: 5
