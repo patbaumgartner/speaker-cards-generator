@@ -275,7 +275,8 @@ class TemplateUtilsTest {
 		// "JBang, a Java file to rule them all? 🔮" — emoji must not end up alone on a
 		// line
 		String result = TemplateUtils.formatTitle("JBang, a Java file to rule them all? \uD83D\uDD2E", 800, 44, 600);
-		assertThat(result).contains("&nbsp;\uD83D\uDD2E");
+		// &#160; is the numeric reference for non-breaking space — valid in XHTML/XML
+		assertThat(result).contains("&#160;\uD83D\uDD2E");
 		assertThat(result).doesNotContain(" \uD83D\uDD2E");
 	}
 
