@@ -89,43 +89,19 @@ public class BannerGenerationResult {
 		if (hasFailures()) {
 			sb.append("\nFailures:\n");
 			for (FailureEntry f : failures) {
-				sb.append("- %s (%s): %s%n".formatted(f.displayName, f.speakerId, f.errorMessage));
+				sb.append("- %s (%s): %s%n".formatted(f.displayName(), f.speakerId(), f.errorMessage()));
 			}
 		}
 		return sb.toString();
 	}
 
 	/** Details of a successfully generated banner. */
-	public static final class SuccessEntry {
-
-		public final UUID speakerId;
-
-		public final String displayName;
-
-		public final int bannerSize;
-
-		SuccessEntry(UUID speakerId, String displayName, int bannerSize) {
-			this.speakerId = speakerId;
-			this.displayName = displayName;
-			this.bannerSize = bannerSize;
-		}
+	public record SuccessEntry(UUID speakerId, String displayName, int bannerSize) {
 
 	}
 
 	/** Details of a banner that failed to generate. */
-	public static final class FailureEntry {
-
-		public final UUID speakerId;
-
-		public final String displayName;
-
-		public final String errorMessage;
-
-		FailureEntry(UUID speakerId, String displayName, String errorMessage) {
-			this.speakerId = speakerId;
-			this.displayName = displayName;
-			this.errorMessage = errorMessage;
-		}
+	public record FailureEntry(UUID speakerId, String displayName, String errorMessage) {
 
 	}
 

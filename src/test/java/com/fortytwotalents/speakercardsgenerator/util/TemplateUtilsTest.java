@@ -165,22 +165,23 @@ class TemplateUtilsTest {
 
 	@Test
 	void sanitizeFormattedTitlePreservesLineBreaks() {
-		assertThat(TemplateUtils.sanitizeFormattedTitle("Line One<br>Line Two")).isEqualTo("Line One<br>Line Two");
+		assertThat(TemplateUtils.sanitizeFormattedTitle("Line One<br>Line Two")).isEqualTo("Line One<br/>Line Two");
 	}
 
 	@Test
 	void sanitizeFormattedTitleNormalisesBrVariants() {
-		assertThat(TemplateUtils.sanitizeFormattedTitle("A<br/>B<BR />C")).isEqualTo("A<br>B<br>C");
+		assertThat(TemplateUtils.sanitizeFormattedTitle("A<br/>B<BR />C")).isEqualTo("A<br/>B<br/>C");
 	}
 
 	@Test
 	void sanitizeFormattedTitleStripsOtherHtmlTags() {
-		assertThat(TemplateUtils.sanitizeFormattedTitle("Hello <b>World</b><br>Next")).isEqualTo("Hello World<br>Next");
+		assertThat(TemplateUtils.sanitizeFormattedTitle("Hello <b>World</b><br>Next"))
+			.isEqualTo("Hello World<br/>Next");
 	}
 
 	@Test
 	void sanitizeFormattedTitleEscapesHtmlEntities() {
-		assertThat(TemplateUtils.sanitizeFormattedTitle("A & B <br> C < D")).isEqualTo("A &amp; B <br> C &lt; D");
+		assertThat(TemplateUtils.sanitizeFormattedTitle("A & B <br> C < D")).isEqualTo("A &amp; B <br/> C &lt; D");
 	}
 
 	@Test
@@ -253,20 +254,20 @@ class TemplateUtilsTest {
 	@Test
 	void formatTitleReturnsSingleWordWithoutBreak() {
 		String result = TemplateUtils.formatTitle("Kubernetes", 700, 53, 700);
-		assertThat(result).doesNotContain("<br>");
+		assertThat(result).doesNotContain("<br/>");
 	}
 
 	@Test
 	void formatTitleReturnsShortTitleWithoutBreak() {
 		String result = TemplateUtils.formatTitle("Short Title", 700, 53, 700);
-		assertThat(result).doesNotContain("<br>");
+		assertThat(result).doesNotContain("<br/>");
 	}
 
 	@Test
 	void formatTitleBreaksLongTitle() {
 		String result = TemplateUtils
 			.formatTitle("Building Cloud-Native Event-Driven Microservices with Spring Boot and Kafka", 700, 53, 700);
-		assertThat(result).contains("<br>");
+		assertThat(result).contains("<br/>");
 	}
 
 	@Test
@@ -289,8 +290,8 @@ class TemplateUtilsTest {
 	void formatTitleAvoidsSingleShortWordOnLastLine() {
 		String result = TemplateUtils.formatTitle("Understanding the Fundamentals of Reactive Programming in Java", 700,
 				53, 700);
-		if (result.contains("<br>")) {
-			String lastLine = result.substring(result.lastIndexOf("<br>") + 4).trim();
+		if (result.contains("<br/>")) {
+			String lastLine = result.substring(result.lastIndexOf("<br/>") + 5).trim();
 			// Last line should not be a single very short word
 			assertThat(lastLine.split("\\s+").length).isGreaterThan(0);
 			assertThat(lastLine.length()).isGreaterThan(4);

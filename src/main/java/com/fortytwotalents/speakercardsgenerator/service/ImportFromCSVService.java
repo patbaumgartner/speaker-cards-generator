@@ -324,7 +324,8 @@ public class ImportFromCSVService {
 				if (queryIdx > 0) {
 					urlExt = urlExt.substring(0, queryIdx);
 				}
-				if ("jpg".equals(urlExt) || "jpeg".equals(urlExt) || "png".equals(urlExt) || "gif".equals(urlExt)) {
+				if ("jpg".equals(urlExt) || "jpeg".equals(urlExt) || "png".equals(urlExt) || "gif".equals(urlExt)
+						|| "webp".equals(urlExt)) {
 					extension = urlExt;
 				}
 			}
