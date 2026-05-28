@@ -24,9 +24,10 @@ public class DevoxxApiConfig {
 	/**
 	 * Event identifier, e.g. {@code vdz26} (Voxxed Days Zürich 2026), {@code vdt26}
 	 * (Voxxed Days Ticino 2026), or {@code vdcern26} (Voxxed Days CERN 2026). Used to
-	 * build the CFP API URL as {@code https://{eventId}.cfp.dev/api/public/speakers}.
+	 * build the CFP API URL as {@code https://{eventId}.cfp.dev/api/public/speakers}. Set
+	 * to {@code none} to disable API import for a profile.
 	 */
-	private String eventId = "vdz26";
+	private String eventId;
 
 	/**
 	 * Optional Bearer token for the authenticated CFP API. When set, the import fetches
