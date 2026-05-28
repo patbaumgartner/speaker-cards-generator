@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -127,31 +129,10 @@ public final class TemplateUtils {
 			return "";
 		}
 		try {
-			// Expected format: "yyyy-MM-dd"
-			String[] parts = date.split("-");
-			if (parts.length == 3) {
-				int year = Integer.parseInt(parts[0]);
-				int month = Integer.parseInt(parts[1]);
-				int day = Integer.parseInt(parts[2]);
-
-				String monthName = switch (month) {
-					case 1 -> "January";
-					case 2 -> "February";
-					case 3 -> "March";
-					case 4 -> "April";
-					case 5 -> "May";
-					case 6 -> "June";
-					case 7 -> "July";
-					case 8 -> "August";
-					case 9 -> "September";
-					case 10 -> "October";
-					case 11 -> "November";
-					case 12 -> "December";
-					default -> String.valueOf(month);
-				};
-
-				return monthName + ", " + day + getOrdinalSuffix(day) + ", " + year;
-			}
+			LocalDate ld = LocalDate.parse(date);
+			int day = ld.getDayOfMonth();
+			String monthName = ld.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+			return monthName + ", " + day + getOrdinalSuffix(day) + ", " + ld.getYear();
 		}
 		catch (Exception ignored) {
 			// fall through to default
@@ -201,16 +182,16 @@ public final class TemplateUtils {
 		if (html == null || html.isEmpty()) {
 			return null;
 		}
-		// Strip all tags except <br> variants, then normalise to <br>
+		// Strip all tags except <br> variants, then normalise to <br/>
 		String sanitized = html.replaceAll("(?i)<br\\s*/?>", "\n")
 			.replaceAll("<[^>]+>", "")
 			.replace("&", "&amp;")
 			.replace("<", "&lt;")
 			.replace(">", "&gt;")
 			.replace("\"", "&quot;")
-			.replace("\n", "<br>");
+			.replace("\n", "<br/>");
 		// If only whitespace remains after stripping, treat as empty
-		if (sanitized.replace("<br>", "").isBlank()) {
+		if (sanitized.replace("<br/>", "").isBlank()) {
 			return null;
 		}
 		return sanitized;
@@ -403,7 +384,7 @@ public final class TemplateUtils {
 		StringBuilder sb = new StringBuilder();
 		for (int l = 0; l < lineStarts.length; l++) {
 			if (l > 0) {
-				sb.append("<br>");
+				sb.append("<br/>");
 			}
 			int start = lineStarts[l];
 			int end = (l + 1 < lineStarts.length) ? lineStarts[l + 1] : units.size();

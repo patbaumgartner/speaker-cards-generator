@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotBlank;
 import java.sql.Types;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -77,12 +76,12 @@ public class Speaker implements Comparable<Speaker> {
 
 	private String phone;
 
-	private Date lastUpdated;
+	private Instant lastUpdated;
 
 	@PreUpdate
 	@PrePersist
 	public void prePersist() {
-		lastUpdated = Date.from(Instant.now());
+		lastUpdated = Instant.now();
 	}
 
 	@Override
@@ -255,11 +254,11 @@ public class Speaker implements Comparable<Speaker> {
 		this.phone = phone;
 	}
 
-	public Date getLastUpdated() {
+	public Instant getLastUpdated() {
 		return lastUpdated;
 	}
 
-	public void setLastUpdated(Date lastUpdated) {
+	public void setLastUpdated(Instant lastUpdated) {
 		this.lastUpdated = lastUpdated;
 	}
 
