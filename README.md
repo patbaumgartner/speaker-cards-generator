@@ -10,13 +10,25 @@
 
 ---
 
+## 🖼️ Preview
+
+**Speaker card** (960 × 540 px)
+
+![Speaker card example](docs/images/speaker-card-example.png)
+
+**Talk card** (960 × 540 px)
+
+![Talk card example](docs/images/talk-card-example.png)
+
+---
+
 ## ✨ Features
 
 - 🎨 **Banner generation** – speaker card (16:9), talk card (16:9), and social card (1:1 square)
 - 📥 **Speaker import** – from [Sessionize](https://sessionize.com/) XLSX export or the [Devoxx CFP API](https://m.devoxx.com)
 - 🎛️ **Multi-event profiles** – switch between events by activating a Spring profile
 - 🌐 **Web UI** – Bootstrap-based speaker directory with one-click download
-- 🐳 **Docker-ready** – `Dockerfile` + `docker-compose.yml` included
+- 🐳 **Docker-ready** – `Dockerfile` + `compose.yml` included
 - 🔄 **Auto-start database** – Spring Boot Docker Compose starts PostgreSQL automatically during local development
 
 ---
@@ -27,7 +39,7 @@
 
 ```shell
 # Start PostgreSQL + the application in Docker
-docker compose -f docker-compose.yml up -d
+docker compose --profile deploy up -d
 ```
 
 Open <http://localhost:8080> in your browser.
@@ -110,9 +122,8 @@ speaker-cards-generator/
 │       ├── templates/   – Thymeleaf HTML templates
 │       ├── static/      – Static assets (CSS, fonts, images)
 │       └── application*.properties – App and profile-specific config
-├── compose.yml          – Local development database (Spring Boot Docker Compose)
+├── compose.yml          – Docker Compose (db auto-start for dev; full-stack with --profile deploy)
 ├── Dockerfile           – Multi-stage Docker build
-├── docker-compose.yml   – Full-stack Docker deployment (database + application)
 ├── pom.xml
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
