@@ -35,8 +35,9 @@ public class HtmlToPngConverter {
 	 * Converts an HTML string to a PNG byte array.
 	 *
 	 * <p>
-	 * The HTML is rendered at screen resolution (96 DPI) and the first page of the
-	 * resulting PDF is then converted to PNG.
+	 * The HTML is laid out at 96 CSS DPI (standard browser rendering), producing a PDF
+	 * page of 960×540 pt. That page is then rasterised at 144 DPI, yielding a 1920×1080
+	 * px PNG — crisp retina-quality output suited for social-media cards.
 	 * @param html HTML content to render; must be parseable by the HTML5 parser
 	 * @return PNG bytes for the first rendered page
 	 * @throws RuntimeException if rendering or image conversion fails
@@ -73,8 +74,10 @@ public class HtmlToPngConverter {
 				ByteArrayOutputStream pngOut = new ByteArrayOutputStream()) {
 
 			PDFRenderer renderer = new PDFRenderer(pdfDoc);
-			// 72 DPI = 1 pt → 1 px, which maps the PDF page pixels 1:1 to image pixels
-			BufferedImage image = renderer.renderImageWithDPI(0, 72, ImageType.ARGB);
+			// 144 DPI: the CSS @page is 1280×720 CSS px (at 96 dpi → 960×540 pt PDF).
+			// Rendering at 144 DPI doubles the CSS-pixel resolution to 1920×1080,
+			// producing crisp edges on circular elements and sharp text for social media.
+			BufferedImage image = renderer.renderImageWithDPI(0, 144, ImageType.ARGB);
 			ImageIO.write(image, "PNG", pngOut);
 			return pngOut.toByteArray();
 		}
