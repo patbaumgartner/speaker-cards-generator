@@ -96,6 +96,10 @@ public class DevoxxImportService {
 
 	@Transactional
 	public int importSpeakers() {
+		if (!devoxxApiConfig.isDevoxxApiEnabled()) {
+			throw new IllegalStateException(
+					"Devoxx CFP API is not configured for this event profile (event-id is none/empty).");
+		}
 		return importSpeakers(devoxxApiConfig.getEventId());
 	}
 

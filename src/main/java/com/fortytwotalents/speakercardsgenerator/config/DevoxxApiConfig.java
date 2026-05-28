@@ -52,11 +52,16 @@ public class DevoxxApiConfig {
 	}
 
 	/**
-	 * Returns {@code true} when the Devoxx CFP API is enabled, i.e. an
-	 * {@link #getEventId() eventId} has been configured.
+	 * Returns {@code true} when the Devoxx CFP API is enabled for this profile.
+	 *
+	 * <p>
+	 * The API is considered disabled when {@code eventId} is {@code null}, blank, or the
+	 * sentinel value {@code "none"} (case-insensitive). Use {@code none} in a profile
+	 * properties file to explicitly disable CFP import without leaving the property
+	 * empty.
 	 */
 	public boolean isDevoxxApiEnabled() {
-		return this.eventId != null && !this.eventId.isBlank();
+		return this.eventId != null && !this.eventId.isBlank() && !"none".equalsIgnoreCase(this.eventId);
 	}
 
 }
