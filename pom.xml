@@ -22,6 +22,9 @@
     <poi-ooxml.version>5.5.1</poi-ooxml.version>
     <bootstrap.version>5.3.8</bootstrap.version>
     <bootstrap.icons.version>1.13.1</bootstrap.icons.version>
+    <!-- Security patches – override Spring Boot BOM to fix CVEs -->
+    <tomcat.version>11.0.22</tomcat.version>
+    <postgresql.version>42.7.11</postgresql.version>
     <!-- Convergence overrides -->
     <commons-io.version>2.22.0</commons-io.version>
     <!-- Plugin versions -->
