@@ -20,11 +20,13 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 /**
- * Template utility methods exposed to Thymeleaf templates via the {@code utils} variable.
+ * Template utility methods exposed to Thymeleaf templates via the {@code utils}
+ * variable.
  *
  * <p>
  * Register as a Spring bean so
- * {@link com.fortytwotalents.speakercardsgenerator.controller.BannerController} can
+ * {@link com.fortytwotalents.speakercardsgenerator.controller.BannerController}
+ * can
  * inject it into every template rendering context:
  *
  * <pre>
@@ -51,14 +53,17 @@ public final class TemplateUtils {
 			"as", "or", "is", "vs", "vs.", "and", "for", "nor", "but", "yet", "so");
 
 	/**
-	 * Matches a token that consists entirely of emoji (with optional variation selectors
+	 * Matches a token that consists entirely of emoji (with optional variation
+	 * selectors
 	 * / ZWJ).
 	 */
 	private static final Pattern EMOJI_ONLY = Pattern
-		.compile("^[\\p{So}\\p{Sk}\\p{Cn}\\uFE0E\\uFE0F\\u200D\\u20E3" + "\\x{1F3FB}-\\x{1F3FF}" + "]+$");
+			.compile("^[\\p{So}\\p{Sk}\\p{Cn}\\uFE0E\\uFE0F\\u200D\\u20E3" + "\\x{1F3FB}-\\x{1F3FF}" + "]+$");
 
 	/**
-	 * Capitalises the first letter of each whitespace-separated word in the given string.
+	 * Capitalises the first letter of each whitespace-separated word in the given
+	 * string.
+	 * 
 	 * @param string input string; may be {@code null}
 	 * @return capitalised string, or an empty string if the input is {@code null}
 	 */
@@ -80,8 +85,10 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Removes the seconds component from a time string, returning only {@code HH:mm}. For
+	 * Removes the seconds component from a time string, returning only
+	 * {@code HH:mm}. For
 	 * example {@code "11:00:00"} → {@code "11:00"}.
+	 * 
 	 * @param time time string; may be {@code null} or empty
 	 * @return formatted time string, or an empty string if the input is blank
 	 */
@@ -93,8 +100,10 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Adds one hour to a time string and returns the result in {@code HH:mm} format. The
+	 * Adds one hour to a time string and returns the result in {@code HH:mm}
+	 * format. The
 	 * hour wraps around at 24. For example {@code "14:00:00"} → {@code "15:00"}.
+	 * 
 	 * @param time time string; may be {@code null} or empty
 	 * @return time plus one hour, or the formatted input if parsing fails
 	 */
@@ -111,16 +120,17 @@ public final class TemplateUtils {
 				hour = (hour + 1) % 24;
 				return "%02d:%02d".formatted(hour, minute);
 			}
-		}
-		catch (Exception ignored) {
+		} catch (Exception ignored) {
 			// fall through to default
 		}
 		return formatTime(time);
 	}
 
 	/**
-	 * Formats a date string from the stored {@code yyyy-MM-dd} representation into a
+	 * Formats a date string from the stored {@code yyyy-MM-dd} representation into
+	 * a
 	 * human-readable form such as {@code "January, 22nd, 2026"}.
+	 * 
 	 * @param date date string in {@code yyyy-MM-dd} format; may be {@code null}
 	 * @return formatted date string, or the original input if parsing fails
 	 */
@@ -133,8 +143,7 @@ public final class TemplateUtils {
 			int day = ld.getDayOfMonth();
 			String monthName = ld.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
 			return monthName + ", " + day + getOrdinalSuffix(day) + ", " + ld.getYear();
-		}
-		catch (Exception ignored) {
+		} catch (Exception ignored) {
 			// fall through to default
 		}
 		return date;
@@ -155,7 +164,8 @@ public final class TemplateUtils {
 	/**
 	 * Converts a CSS hex colour (e.g. {@code "#1e2246"}) and alpha value to an
 	 * {@code rgba(r, g, b, a)} CSS string.
-	 * @param hex hex colour string with leading {@code #}
+	 * 
+	 * @param hex   hex colour string with leading {@code #}
 	 * @param alpha opacity value between 0.0 and 1.0
 	 * @return rgba CSS value, e.g. {@code "rgba(30, 34, 70, 0.85)"}
 	 */
@@ -173,8 +183,10 @@ public final class TemplateUtils {
 	/**
 	 * Sanitises a user-supplied formatted title by stripping every HTML tag except
 	 * {@code <br>
-	 * }. This prevents XSS while preserving the manual line-breaks the user entered in
+	 * }. This prevents XSS while preserving the manual line-breaks the user entered
+	 * in
 	 * the title editor.
+	 * 
 	 * @param html raw input from the editor; may be {@code null}
 	 * @return sanitised string containing only plain text and {@code <br>} tags
 	 */
@@ -183,13 +195,14 @@ public final class TemplateUtils {
 			return null;
 		}
 		// Strip all tags except <br> variants, then normalise to <br/>
+		// Use possessive quantifier <[^>]++> to prevent ReDoS backtracking
 		String sanitized = html.replaceAll("(?i)<br\\s*/?>", "\n")
-			.replaceAll("<[^>]+>", "")
-			.replace("&", "&amp;")
-			.replace("<", "&lt;")
-			.replace(">", "&gt;")
-			.replace("\"", "&quot;")
-			.replace("\n", "<br/>");
+				.replaceAll("<[^>]++>", "")
+				.replace("&", "&amp;")
+				.replace("<", "&lt;")
+				.replace(">", "&gt;")
+				.replace("\"", "&quot;")
+				.replace("\n", "<br/>");
 		// If only whitespace remains after stripping, treat as empty
 		if (sanitized.replace("<br/>", "").isBlank()) {
 			return null;
@@ -198,20 +211,24 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Formats a talk title for banner rendering with typographically correct line breaks.
+	 * Formats a talk title for banner rendering with typographically correct line
+	 * breaks.
 	 * Uses the actual Poppins font metrics to measure text width and applies
 	 * minimum-raggedness line breaking with orphan avoidance and clause-separator
 	 * preference.
 	 *
 	 * <p>
 	 * The result contains {@code <br>
-	 * } tags and HTML-escaped text, suitable for use with {@code th:utext}. Callers pass
-	 * the layout constants from the template so the algorithm adapts automatically when
+	 * } tags and HTML-escaped text, suitable for use with {@code th:utext}. Callers
+	 * pass
+	 * the layout constants from the template so the algorithm adapts automatically
+	 * when
 	 * the design changes.
-	 * @param title the talk title; may be {@code null}
+	 * 
+	 * @param title            the talk title; may be {@code null}
 	 * @param containerWidthPx available width in pixels for the title
-	 * @param fontSizePx CSS font-size in pixels
-	 * @param fontWeight CSS font-weight (300, 400, 600, or 700)
+	 * @param fontSizePx       CSS font-size in pixels
+	 * @param fontWeight       CSS font-weight (300, 400, 600, or 700)
 	 * @return HTML string with {@code <br>} at optimal break points
 	 */
 	public static String formatTitle(String title, int containerWidthPx, int fontSizePx, int fontWeight) {
@@ -253,8 +270,10 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Groups words into break units that should not be split across lines. Standalone
-	 * dashes attach to the preceding word; articles and short prepositions attach to the
+	 * Groups words into break units that should not be split across lines.
+	 * Standalone
+	 * dashes attach to the preceding word; articles and short prepositions attach
+	 * to the
 	 * following word.
 	 */
 	static List<String> buildBreakUnits(String[] words) {
@@ -263,8 +282,7 @@ public final class TemplateUtils {
 		for (String word : words) {
 			if (!merged.isEmpty() && isStandaloneSeparator(word)) {
 				merged.set(merged.size() - 1, merged.getLast() + " " + word);
-			}
-			else {
+			} else {
 				merged.add(word);
 			}
 		}
@@ -278,8 +296,7 @@ public final class TemplateUtils {
 			if (i < merged.size() - 1 && NON_BREAKING_WORDS.contains(trailing.toLowerCase(Locale.ROOT))) {
 				units.add(current + " " + merged.get(i + 1));
 				i += 2;
-			}
-			else {
+			} else {
 				units.add(current);
 				i++;
 			}
@@ -308,8 +325,10 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Computes optimal line-break positions using minimum-raggedness dynamic programming.
-	 * Returns an array of indices into the units list marking the start of each line.
+	 * Computes optimal line-break positions using minimum-raggedness dynamic
+	 * programming.
+	 * Returns an array of indices into the units list marking the start of each
+	 * line.
 	 */
 	private static int[] computeOptimalBreaks(List<String> units, int[] widths, int spaceWidth, int maxWidth) {
 		int n = units.size();
@@ -338,15 +357,12 @@ public final class TemplateUtils {
 					if (lineWidth < maxWidth / 3 && i > 0) {
 						long gap = maxWidth - lineWidth;
 						lineCost = gap * gap * 2;
-					}
-					else {
+					} else {
 						lineCost = 0;
 					}
-				}
-				else if (lineWidth > maxWidth) {
+				} else if (lineWidth > maxWidth) {
 					lineCost = Long.MAX_VALUE / 4;
-				}
-				else {
+				} else {
 					long gap = maxWidth - lineWidth;
 					lineCost = gap * gap;
 					// Prefer breaking after clause separators (dashes, colons, commas)
@@ -403,7 +419,8 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Estimates the extra pixel width contributed by emoji characters that the Poppins
+	 * Estimates the extra pixel width contributed by emoji characters that the
+	 * Poppins
 	 * font cannot measure (it has no emoji glyphs). Emoji are typically rendered as
 	 * square glyphs at approximately the current font size.
 	 */
@@ -438,8 +455,7 @@ public final class TemplateUtils {
 			int len = Character.charCount(cp);
 			if (cp == ' ' && i + len < html.length() && isEmojiCodePoint(html.codePointAt(i + len))) {
 				sb.append("&nbsp;");
-			}
-			else {
+			} else {
 				sb.appendCodePoint(cp);
 			}
 			i += len;
@@ -460,8 +476,7 @@ public final class TemplateUtils {
 					return new Font(Font.SANS_SERIF, Font.PLAIN, 1);
 				}
 				return Font.createFont(Font.TRUETYPE_FONT, is);
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				return new Font(Font.SANS_SERIF, Font.PLAIN, 1);
 			}
 		});
