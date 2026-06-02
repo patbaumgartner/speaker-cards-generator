@@ -32,7 +32,7 @@
     <spring-javaformat.version>0.0.47</spring-javaformat.version>
     <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
     <maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
-    <maven-failsafe-plugin.version>3.5.5</maven-failsafe-plugin.version>
+    <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
     <!-- Reproducible builds: https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
     <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
