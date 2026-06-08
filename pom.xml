@@ -17,7 +17,7 @@
 
   <properties>
     <java.version>21</java.version>
-    <jacoco.version>0.8.14</jacoco.version>
+    <jacoco.version>0.8.15</jacoco.version>
     <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
     <poi-ooxml.version>5.5.1</poi-ooxml.version>
     <bootstrap.version>5.3.8</bootstrap.version>
