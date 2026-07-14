@@ -25,6 +25,7 @@
     <!-- Security patches – override Spring Boot BOM to fix CVEs -->
     <tomcat.version>11.0.22</tomcat.version>
     <postgresql.version>42.7.11</postgresql.version>
+    <logback.version>1.5.35</logback.version>
     <!-- Convergence overrides -->
     <commons-io.version>2.22.0</commons-io.version>
     <!-- Plugin versions -->
