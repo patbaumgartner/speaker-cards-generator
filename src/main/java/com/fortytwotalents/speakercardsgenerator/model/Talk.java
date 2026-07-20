@@ -52,7 +52,7 @@ public class Talk implements Comparable<Talk> {
 
 	/**
 	 * Manually formatted title with HTML line-breaks ({@code <br>
-	 * }) for custom text wrapping on banners. When {@code null}, the raw {@link #title}
+	 *  }) for custom text wrapping on banners. When {@code null}, the raw {@link #title}
 	 * is used instead.
 	 */
 	@JdbcTypeCode(Types.LONGVARCHAR)

@@ -183,8 +183,8 @@
                   <version>[3.9,)</version>
                   <message>Maven 3.9 or higher is required.</message>
                 </requireMavenVersion>
-                <banDuplicatePomDependencyVersions />
-                <dependencyConvergence />
+                <banDuplicatePomDependencyVersions></banDuplicatePomDependencyVersions>
+                <dependencyConvergence></dependencyConvergence>
               </rules>
             </configuration>
           </execution>
@@ -294,19 +294,15 @@
         <executions>
           <execution>
             <id>fix-thymeleaf-inline-expressions</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <target>
                 <!-- Collapse [[ $ { event.foo } ]] → [[${event.foo}]] -->
-                <replaceregexp
-                  match="\[\[\s*\$\s*\{\s*(\S+?)\s*\}\s*\]\]"
-                  replace="[[$${\1}]]"
-                  flags="gs" byline="false">
-                  <fileset dir="src/main/resources/templates/banner"
-                    includes="*.html" />
+                <replaceregexp byline="false" flags="gs" match="\[\[\s*\$\s*\{\s*(\S+?)\s*\}\s*\]\]" replace="[[$${\1}]]">
+                  <fileset dir="src/main/resources/templates/banner" includes="*.html"></fileset>
                 </replaceregexp>
               </target>
             </configuration>
@@ -319,6 +315,11 @@
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
         <version>${cyclonedx-maven-plugin.version}</version>
+        <configuration>
+          <projectType>application</projectType>
+          <outputFormat>json</outputFormat>
+          <outputName>sbom</outputName>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -327,11 +328,6 @@
             <phase>package</phase>
           </execution>
         </executions>
-        <configuration>
-          <projectType>application</projectType>
-          <outputFormat>json</outputFormat>
-          <outputName>sbom</outputName>
-        </configuration>
       </plugin>
     </plugins>
   </build>
