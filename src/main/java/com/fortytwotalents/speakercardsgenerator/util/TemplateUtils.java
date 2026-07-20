@@ -173,7 +173,7 @@ public final class TemplateUtils {
 	/**
 	 * Sanitises a user-supplied formatted title by stripping every HTML tag except
 	 * {@code <br>
-	 * }. This prevents XSS while preserving the manual line-breaks the user entered in
+	 *  }. This prevents XSS while preserving the manual line-breaks the user entered in
 	 * the title editor.
 	 * @param html raw input from the editor; may be {@code null}
 	 * @return sanitised string containing only plain text and {@code <br>} tags
@@ -206,7 +206,7 @@ public final class TemplateUtils {
 	 *
 	 * <p>
 	 * The result contains {@code <br>
-	 * } tags and HTML-escaped text, suitable for use with {@code th:utext}. Callers pass
+	 *  } tags and HTML-escaped text, suitable for use with {@code th:utext}. Callers pass
 	 * the layout constants from the template so the algorithm adapts automatically when
 	 * the design changes.
 	 * @param title the talk title; may be {@code null}
