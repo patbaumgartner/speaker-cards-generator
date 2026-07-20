@@ -5,9 +5,13 @@ updates:
   schedule:
     interval: weekly
     day: monday
-    time: 06:00
+    time: "06:00"
     timezone: Europe/Zurich
   open-pull-requests-limit: 10
+  reviewers:
+  - patbaumgartner
+  assignees:
+  - patbaumgartner
   groups:
     spring-boot:
       patterns:
@@ -46,33 +50,40 @@ updates:
       - patch
   labels:
   - dependencies
-  - maven
+  - java
   commit-message:
-    prefix: chore(deps)
-    prefix-development: chore(deps-dev)
+    prefix: deps(java)
     include: scope
 - package-ecosystem: github-actions
   directory: /
   schedule:
     interval: weekly
     day: monday
-    time: 06:00
+    time: "06:00"
     timezone: Europe/Zurich
   open-pull-requests-limit: 5
+  reviewers:
+  - patbaumgartner
+  assignees:
+  - patbaumgartner
   labels:
   - dependencies
   - github-actions
   commit-message:
-    prefix: ci(deps)
+    prefix: ci
     include: scope
 - package-ecosystem: docker
   directory: /
   schedule:
     interval: weekly
     day: monday
-    time: 06:00
+    time: "06:00"
     timezone: Europe/Zurich
   open-pull-requests-limit: 5
+  reviewers:
+  - patbaumgartner
+  assignees:
+  - patbaumgartner
   labels:
   - dependencies
   - docker
@@ -85,9 +96,13 @@ updates:
   schedule:
     interval: weekly
     day: monday
-    time: 06:00
+    time: "06:00"
     timezone: Europe/Zurich
   open-pull-requests-limit: 5
+  reviewers:
+  - patbaumgartner
+  assignees:
+  - patbaumgartner
   labels:
   - dependencies
   - docker
