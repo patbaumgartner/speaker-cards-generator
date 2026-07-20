@@ -30,14 +30,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Imports speakers and talks from a Sessionize XLSX export file ({@code
- * SelectedWithSchedule.xlsx}).
+ * Imports speakers and talks from a Sessionize XLSX export file
+ * ({@code SelectedWithSchedule.xlsx}).
  *
  * <p>
  * The import is idempotent: existing speakers and talks are looked up by their primary
  * keys and only missing records are inserted. Speaker profile pictures are downloaded to
- * {@code
- * src/main/resources/static/images/speaker/} if not already present.
+ * {@code src/main/resources/static/images/speaker/} if not already present.
  *
  * <p>
  * Expected XLSX column layout (0-indexed):
