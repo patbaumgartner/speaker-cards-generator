@@ -7,16 +7,12 @@ import com.fortytwotalents.speakercardsgenerator.model.Speaker;
 import com.fortytwotalents.speakercardsgenerator.model.Talk;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -53,11 +49,6 @@ public class DevoxxImportService {
 	 */
 	private static final Pattern SAFE_EVENT_ID = Pattern.compile("^[a-zA-Z0-9_-]{1,50}$");
 
-	/**
-	 * URL schemes allowed when downloading profile pictures from external sources.
-	 */
-	private static final Set<String> ALLOWED_PICTURE_SCHEMES = Set.of("http", "https");
-
 	private final DevoxxApiConfig devoxxApiConfig;
 
 	private final SpeakerRepository speakerRepository;
@@ -66,12 +57,15 @@ public class DevoxxImportService {
 
 	private final RestClient restClient;
 
+	private final SpeakerPhotoStore photoStore;
+
 	public DevoxxImportService(DevoxxApiConfig devoxxApiConfig, SpeakerRepository speakerRepository,
-			TalkRepository talkRepository, RestClient.Builder restClientBuilder) {
+			TalkRepository talkRepository, RestClient.Builder restClientBuilder, SpeakerPhotoStore photoStore) {
 		this.devoxxApiConfig = devoxxApiConfig;
 		this.speakerRepository = speakerRepository;
 		this.talkRepository = talkRepository;
 		this.restClient = configureBuilder(restClientBuilder).build();
+		this.photoStore = photoStore;
 	}
 
 	/**
@@ -295,9 +289,7 @@ public class DevoxxImportService {
 			.addArgument(speakerId)
 			.log("{} speaker: {} {} ({})");
 
-		if (dto.imageUrl != null && !dto.imageUrl.isBlank()) {
-			downloadProfilePicture(speakerId, dto.imageUrl);
-		}
+		photoStore.download(speakerId, dto.imageUrl);
 		return true;
 	}
 
@@ -341,61 +333,6 @@ public class DevoxxImportService {
 
 	private static String blankToNull(String value) {
 		return value == null || value.isBlank() ? null : value.trim();
-	}
-
-	/**
-	 * Downloads a profile picture from the given URL and stores it under
-	 * {@code src/main/resources/static/images/speaker/{speakerId}.{ext}}.
-	 *
-	 * <p>
-	 * Only {@code http} and {@code https} URL schemes are permitted to prevent SSRF
-	 * attacks.
-	 * @param speakerId speaker UUID (used as file name)
-	 * @param pictureUrl URL of the profile image
-	 */
-	private void downloadProfilePicture(UUID speakerId, String pictureUrl) {
-		try {
-			URI uri = URI.create(pictureUrl);
-			String scheme = uri.getScheme();
-			if (scheme == null || !ALLOWED_PICTURE_SCHEMES.contains(scheme.toLowerCase())) {
-				log.warn("Skipping profile picture download for speaker {}: disallowed URL scheme in '{}'", speakerId,
-						pictureUrl);
-				return;
-			}
-
-			String extension = deriveExtension(pictureUrl);
-			Path dir = Path.of("src/main/resources/static/images/speaker");
-			Files.createDirectories(dir);
-
-			Path target = dir.resolve(speakerId + "." + extension);
-			if (Files.exists(target)) {
-				log.debug("Profile picture already exists for speaker {}, skipping", speakerId);
-				return;
-			}
-			log.info("Downloading profile picture for speaker {} from {}", speakerId, pictureUrl);
-			try (InputStream in = uri.toURL().openStream()) {
-				Files.copy(in, target);
-				log.info("Downloaded profile picture to {}", target);
-			}
-		}
-		catch (Exception e) {
-			log.error("Error downloading profile picture for speaker {} from {}", speakerId, pictureUrl, e);
-		}
-	}
-
-	private static String deriveExtension(String url) {
-		int lastDot = url.lastIndexOf('.');
-		if (lastDot > 0) {
-			String ext = url.substring(lastDot + 1).toLowerCase();
-			int query = ext.indexOf('?');
-			if (query > 0) {
-				ext = ext.substring(0, query);
-			}
-			if (List.of("jpg", "jpeg", "png", "gif", "webp").contains(ext)) {
-				return ext;
-			}
-		}
-		return "jpg";
 	}
 
 	/**
