@@ -22,7 +22,6 @@ FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # Non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
 
 WORKDIR /app
 
@@ -31,6 +30,13 @@ COPY --from=builder /build/extracted/dependencies/          ./
 COPY --from=builder /build/extracted/spring-boot-loader/    ./
 COPY --from=builder /build/extracted/snapshot-dependencies/ ./
 COPY --from=builder /build/extracted/application/           ./
+
+# Imported profile pictures are written here at runtime, so it must be owned by the
+# unprivileged runtime user. Declared as a volume so photos survive container replacement.
+RUN mkdir -p /app/data && chown -R appuser:appgroup /app
+VOLUME ["/app/data"]
+
+USER appuser
 
 EXPOSE 8080
 

@@ -5,8 +5,6 @@ import com.fortytwotalents.speakercardsgenerator.model.Talk;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -16,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -61,11 +58,6 @@ public class ImportFromCSVService {
 
 	private static final Logger log = LoggerFactory.getLogger(ImportFromCSVService.class);
 
-	/**
-	 * URL schemes allowed when downloading profile pictures from external sources.
-	 */
-	private static final Set<String> ALLOWED_PICTURE_SCHEMES = Set.of("http", "https");
-
 	// XLSX column indices from SelectedWithSchedule.xlsx
 	private static final int COL_SESSION_ID = 0;
 
@@ -103,9 +95,13 @@ public class ImportFromCSVService {
 
 	private final TalkRepository talkRepository;
 
-	public ImportFromCSVService(SpeakerRepository speakerRepository, TalkRepository talkRepository) {
+	private final SpeakerPhotoStore photoStore;
+
+	public ImportFromCSVService(SpeakerRepository speakerRepository, TalkRepository talkRepository,
+			SpeakerPhotoStore photoStore) {
 		this.speakerRepository = speakerRepository;
 		this.talkRepository = talkRepository;
+		this.photoStore = photoStore;
 	}
 
 	/**
@@ -213,10 +209,7 @@ public class ImportFromCSVService {
 
 			speakerRepository.save(speaker);
 
-			String pictureUrl = nullIfBlank(fields[COL_PROFILE_PICTURE]);
-			if (pictureUrl != null) {
-				downloadProfilePicture(speakerId, pictureUrl);
-			}
+			photoStore.download(speakerId, nullIfBlank(fields[COL_PROFILE_PICTURE]));
 
 			log.atDebug()
 				.addArgument(() -> isNew ? "Persisted" : "Updated")
@@ -290,63 +283,6 @@ public class ImportFromCSVService {
 		}
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
-	}
-
-	/**
-	 * Downloads a speaker profile picture from the given URL and stores it under
-	 * {@code src/main/resources/static/images/speaker/{speakerId}.{ext}}.
-	 *
-	 * <p>
-	 * Only {@code http} and {@code https} URL schemes are permitted to prevent SSRF
-	 * attacks.
-	 * @param speakerId speaker UUID (used as filename)
-	 * @param pictureUrl URL of the profile picture
-	 */
-	private void downloadProfilePicture(UUID speakerId, String pictureUrl) {
-		if (pictureUrl == null || pictureUrl.isEmpty()) {
-			return;
-		}
-		try {
-			URI uri = URI.create(pictureUrl);
-			String scheme = uri.getScheme();
-			if (scheme == null || !ALLOWED_PICTURE_SCHEMES.contains(scheme.toLowerCase())) {
-				log.warn("Skipping profile picture download for speaker {}: disallowed URL scheme in '{}'", speakerId,
-						pictureUrl);
-				return;
-			}
-
-			String extension = "jpg";
-			int lastDot = pictureUrl.lastIndexOf('.');
-			if (lastDot > 0) {
-				String urlExt = pictureUrl.substring(lastDot + 1).toLowerCase();
-				int queryIdx = urlExt.indexOf('?');
-				if (queryIdx > 0) {
-					urlExt = urlExt.substring(0, queryIdx);
-				}
-				if ("jpg".equals(urlExt) || "jpeg".equals(urlExt) || "png".equals(urlExt) || "gif".equals(urlExt)
-						|| "webp".equals(urlExt)) {
-					extension = urlExt;
-				}
-			}
-
-			Path resourcesPath = Path.of("src/main/resources/static/images/speaker");
-			Files.createDirectories(resourcesPath);
-
-			Path imagePath = resourcesPath.resolve(speakerId + "." + extension);
-			if (Files.exists(imagePath)) {
-				log.debug("Profile picture already exists for speaker {}, skipping download", speakerId);
-				return;
-			}
-
-			log.info("Downloading profile picture for speaker {} from {}", speakerId, pictureUrl);
-			try (InputStream in = uri.toURL().openStream()) {
-				Files.copy(in, imagePath);
-				log.info("Downloaded profile picture for speaker {} to {}", speakerId, imagePath);
-			}
-		}
-		catch (Exception e) {
-			log.error("Error downloading profile picture for speaker {} from {}", speakerId, pictureUrl, e);
-		}
 	}
 
 }

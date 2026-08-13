@@ -7,12 +7,14 @@ import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
 import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationResult;
 import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationService;
+import com.fortytwotalents.speakercardsgenerator.service.SpeakerPhotoStore;
 import com.fortytwotalents.speakercardsgenerator.util.HtmlToPngConverter;
 import com.fortytwotalents.speakercardsgenerator.util.TemplateUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +67,8 @@ public class BannerController {
 
 	private static final Logger log = LoggerFactory.getLogger(BannerController.class);
 
+	private static final String PLACEHOLDER_PHOTO = "/static/images/duke_cool.png";
+
 	private final SpeakerRepository speakerRepository;
 
 	private final TalkRepository talkRepository;
@@ -78,9 +83,12 @@ public class BannerController {
 
 	private final TemplateUtils templateUtils;
 
+	private final SpeakerPhotoStore photoStore;
+
 	public BannerController(SpeakerRepository speakerRepository, TalkRepository talkRepository,
 			BannerGenerationService bannerService, HtmlToPngConverter htmlToPngConverter,
-			SpringTemplateEngine templateEngine, EventConfig eventConfig, TemplateUtils templateUtils) {
+			SpringTemplateEngine templateEngine, EventConfig eventConfig, TemplateUtils templateUtils,
+			SpeakerPhotoStore photoStore) {
 		this.speakerRepository = speakerRepository;
 		this.talkRepository = talkRepository;
 		this.bannerService = bannerService;
@@ -88,6 +96,7 @@ public class BannerController {
 		this.templateEngine = templateEngine;
 		this.eventConfig = eventConfig;
 		this.templateUtils = templateUtils;
+		this.photoStore = photoStore;
 	}
 
 	@GetMapping("/speaker-banner/{id}")
@@ -150,24 +159,27 @@ public class BannerController {
 	@GetMapping("/speaker-photo/{id}")
 	public ResponseEntity<byte[]> speakerPhoto(@PathVariable UUID id) {
 		requireSpeaker(id); // ensure speaker exists
+		SpeakerPhotoStore.Photo photo = photoStore.find(id).orElseGet(BannerController::placeholderPhoto);
+		return ResponseEntity.ok()
+			.contentType(photo.contentType())
+			.cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)))
+			.body(photo.content());
+	}
 
-		String[] exts = { ".jpg", ".png", ".jpeg" };
-		for (String ext : exts) {
-			String path = "/static/images/speaker/" + id + ext;
-			try (InputStream in = getClass().getResourceAsStream(path)) {
-				if (in != null) {
-					byte[] bytes = in.readAllBytes();
-					String mimeType = ".png".equals(ext) ? "image/png" : "image/jpeg";
-					return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(bytes);
-				}
+	/**
+	 * Served inline rather than as a redirect: the banner renderer resolves this URL
+	 * while rasterising a page and must get image bytes back in a single hop.
+	 */
+	private static SpeakerPhotoStore.Photo placeholderPhoto() {
+		try (InputStream in = BannerController.class.getResourceAsStream(PLACEHOLDER_PHOTO)) {
+			if (in == null) {
+				throw new IllegalStateException("Missing bundled placeholder image " + PLACEHOLDER_PHOTO);
 			}
-			catch (Exception e) {
-				// try next extension
-			}
+			return new SpeakerPhotoStore.Photo(in.readAllBytes(), MediaType.IMAGE_PNG);
 		}
-
-		// Redirect to placeholder
-		return ResponseEntity.status(HttpStatus.FOUND).header("Location", "/static/images/duke_cool.png").build();
+		catch (IOException ex) {
+			throw new IllegalStateException("Could not read bundled placeholder image " + PLACEHOLDER_PHOTO, ex);
+		}
 	}
 
 	@GetMapping(value = "/api/banners/generate-all", produces = MediaType.APPLICATION_JSON_VALUE)

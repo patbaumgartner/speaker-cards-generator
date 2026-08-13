@@ -46,6 +46,8 @@ services:
       SPRING_DATASOURCE_USERNAME: speakercards
       SPRING_DATASOURCE_PASSWORD: speakercards
       SPRING_PROFILES_ACTIVE: vdz
+    volumes:
+      - speaker_photos:/app/data
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
@@ -55,3 +57,4 @@ services:
 
 volumes:
   postgres_data:
+  speaker_photos:
