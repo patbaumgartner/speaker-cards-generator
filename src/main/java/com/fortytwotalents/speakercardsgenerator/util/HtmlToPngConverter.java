@@ -5,6 +5,7 @@ import com.openhtmltopdf.util.XRLog;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -70,13 +71,12 @@ public class HtmlToPngConverter {
 	}
 
 	private byte[] pdfToImage(byte[] pdfBytes) throws Exception {
-		try (PDDocument pdfDoc = PDDocument.load(pdfBytes);
-				ByteArrayOutputStream pngOut = new ByteArrayOutputStream()) {
+		try (PDDocument pdfDoc = Loader.loadPDF(pdfBytes); ByteArrayOutputStream pngOut = new ByteArrayOutputStream()) {
 
 			PDFRenderer renderer = new PDFRenderer(pdfDoc);
-			// 144 DPI: the CSS @page is 1280×720 CSS px (at 96 dpi → 960×540 pt PDF).
-			// Rendering at 144 DPI doubles the CSS-pixel resolution to 1920×1080,
-			// producing crisp edges on circular elements and sharp text for social media.
+			// The CSS @page is 1280×720 CSS px, which at 96 CSS DPI is a 960×540 pt PDF
+			// page. Rasterising that at 144 DPI scales by 144/96 = 1.5, giving a
+			// 1920×1080 PNG: crisp circles and sharp text for social media.
 			BufferedImage image = renderer.renderImageWithDPI(0, 144, ImageType.ARGB);
 			ImageIO.write(image, "PNG", pngOut);
 			return pngOut.toByteArray();

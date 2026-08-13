@@ -22,7 +22,7 @@ updates:
       - patch
     pdf-rendering:
       patterns:
-      - com.openhtmltopdf:*
+      - io.github.openhtmltopdf:*
       - org.apache.pdfbox:*
       update-types:
       - minor
