@@ -84,17 +84,28 @@ public class Speaker implements Comparable<Speaker> {
 		lastUpdated = Instant.now();
 	}
 
+	/**
+	 * Human-readable name for logs, banners and file names. Never {@code null}: imported
+	 * records regularly arrive with one or both name fields missing, and this value is
+	 * used for sorting and error messages where a null would be fatal.
+	 */
+	public String displayName() {
+		String first = (firstName == null) ? "" : firstName.trim();
+		String last = (lastName == null) ? "" : lastName.trim();
+		if (first.isEmpty() && last.isEmpty()) {
+			return "(unknown speaker)";
+		}
+		return (first + " " + last).trim();
+	}
+
 	@Override
 	public String toString() {
-		if (firstName == null || firstName.isBlank()) {
-			return lastName;
-		}
-		return firstName + " " + lastName;
+		return displayName();
 	}
 
 	@Override
 	public int compareTo(Speaker other) {
-		return toString().compareTo(other.toString());
+		return displayName().compareToIgnoreCase(other.displayName());
 	}
 
 	/**

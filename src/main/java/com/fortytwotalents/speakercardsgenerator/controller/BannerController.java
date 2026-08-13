@@ -7,23 +7,19 @@ import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
 import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationResult;
 import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationService;
+import com.fortytwotalents.speakercardsgenerator.service.BannerRenderer;
+import com.fortytwotalents.speakercardsgenerator.service.BannerRenderer.BannerType;
 import com.fortytwotalents.speakercardsgenerator.service.SpeakerPhotoStore;
-import com.fortytwotalents.speakercardsgenerator.util.HtmlToPngConverter;
 import com.fortytwotalents.speakercardsgenerator.util.TemplateUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,8 +34,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 /**
  * Spring MVC controller for banner HTML preview and PNG generation.
@@ -65,8 +59,6 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 @Controller
 public class BannerController {
 
-	private static final Logger log = LoggerFactory.getLogger(BannerController.class);
-
 	private static final String PLACEHOLDER_PHOTO = "/static/images/duke_cool.png";
 
 	private final SpeakerRepository speakerRepository;
@@ -75,9 +67,7 @@ public class BannerController {
 
 	private final BannerGenerationService bannerService;
 
-	private final HtmlToPngConverter htmlToPngConverter;
-
-	private final SpringTemplateEngine templateEngine;
+	private final BannerRenderer renderer;
 
 	private final EventConfig eventConfig;
 
@@ -86,14 +76,12 @@ public class BannerController {
 	private final SpeakerPhotoStore photoStore;
 
 	public BannerController(SpeakerRepository speakerRepository, TalkRepository talkRepository,
-			BannerGenerationService bannerService, HtmlToPngConverter htmlToPngConverter,
-			SpringTemplateEngine templateEngine, EventConfig eventConfig, TemplateUtils templateUtils,
-			SpeakerPhotoStore photoStore) {
+			BannerGenerationService bannerService, BannerRenderer renderer, EventConfig eventConfig,
+			TemplateUtils templateUtils, SpeakerPhotoStore photoStore) {
 		this.speakerRepository = speakerRepository;
 		this.talkRepository = talkRepository;
 		this.bannerService = bannerService;
-		this.htmlToPngConverter = htmlToPngConverter;
-		this.templateEngine = templateEngine;
+		this.renderer = renderer;
 		this.eventConfig = eventConfig;
 		this.templateUtils = templateUtils;
 		this.photoStore = photoStore;
@@ -101,24 +89,12 @@ public class BannerController {
 
 	@GetMapping("/speaker-banner/{id}")
 	public String speakerBanner(@PathVariable UUID id, Model model) {
-		Speaker speaker = requireSpeaker(id);
-		Talk talk = firstTalk(speaker);
-		model.addAttribute("speaker", speaker);
-		model.addAttribute("talk", talk);
-		model.addAttribute("event", eventConfig);
-		model.addAttribute("utils", templateUtils);
-		return "banner/speakerBanner";
+		return speakerPreview(BannerType.SPEAKER, id, model);
 	}
 
 	@GetMapping("/speaker-social/{id}")
 	public String speakerSocial(@PathVariable UUID id, Model model) {
-		Speaker speaker = requireSpeaker(id);
-		Talk talk = firstTalk(speaker);
-		model.addAttribute("speaker", speaker);
-		model.addAttribute("talk", talk);
-		model.addAttribute("event", eventConfig);
-		model.addAttribute("utils", templateUtils);
-		return "banner/speakerSocial";
+		return speakerPreview(BannerType.SOCIAL, id, model);
 	}
 
 	@GetMapping("/talk-banner/{id}")
@@ -127,33 +103,34 @@ public class BannerController {
 		model.addAttribute("talk", talk);
 		model.addAttribute("event", eventConfig);
 		model.addAttribute("utils", templateUtils);
-		return "banner/talkBanner";
+		return BannerType.TALK.view();
 	}
 
 	@GetMapping(value = "/speaker-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
 	public byte[] speakerBannerPng(@PathVariable UUID id) {
-		Speaker speaker = requireSpeaker(id);
-		Talk talk = firstTalk(speaker);
-		String html = renderTemplate("banner/speakerBanner", speaker, talk);
-		return htmlToPngConverter.convertToPng(html);
+		return renderer.renderSpeakerPng(BannerType.SPEAKER, requireSpeaker(id));
 	}
 
 	@GetMapping(value = "/speaker-social/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
 	public byte[] speakerSocialPng(@PathVariable UUID id) {
-		Speaker speaker = requireSpeaker(id);
-		Talk talk = firstTalk(speaker);
-		String html = renderTemplate("banner/speakerSocial", speaker, talk);
-		return htmlToPngConverter.convertToPng(html);
+		return renderer.renderSpeakerPng(BannerType.SOCIAL, requireSpeaker(id));
 	}
 
 	@GetMapping(value = "/talk-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
 	public byte[] talkBannerPng(@PathVariable Long id) {
-		Talk talk = requireTalk(id);
-		String html = renderTemplate("banner/talkBanner", null, talk);
-		return htmlToPngConverter.convertToPng(html);
+		return renderer.renderPng(BannerType.TALK, null, requireTalk(id));
+	}
+
+	private String speakerPreview(BannerType type, UUID id, Model model) {
+		Speaker speaker = requireSpeaker(id);
+		model.addAttribute("speaker", speaker);
+		model.addAttribute("talk", BannerRenderer.firstTalk(speaker));
+		model.addAttribute("event", eventConfig);
+		model.addAttribute("utils", templateUtils);
+		return type.view();
 	}
 
 	@GetMapping("/speaker-photo/{id}")
@@ -218,119 +195,29 @@ public class BannerController {
 
 	@GetMapping("/api/banners/download/all")
 	public void downloadAllBanners(HttpServletResponse response) throws IOException {
-		List<Speaker> speakers = speakerRepository.findAllWithTalksBy();
-		Set<Long> addedTalkIds = new HashSet<>();
-		response.setContentType("application/zip");
-		response.setHeader("Content-Disposition", "attachment; filename=\"banners-all.zip\"");
-		try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
-			for (Speaker speaker : speakers) {
-				addSpeakerBannerToZip(zos, speaker);
-				addSocialBannerToZip(zos, speaker);
-				if (speaker.getTalks() != null) {
-					for (Talk talk : speaker.getTalks()) {
-						if (addedTalkIds.add(talk.getId())) {
-							addTalkBannerToZip(zos, talk);
-						}
-					}
-				}
-			}
-		}
+		streamZip(response, "banners-all.zip", EnumSet.allOf(BannerType.class));
 	}
 
 	@GetMapping("/api/banners/download/speakers")
 	public void downloadSpeakerBanners(HttpServletResponse response) throws IOException {
-		List<Speaker> speakers = speakerRepository.findAllWithTalksBy();
-		response.setContentType("application/zip");
-		response.setHeader("Content-Disposition", "attachment; filename=\"banners-speakers.zip\"");
-		try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
-			for (Speaker speaker : speakers) {
-				addSpeakerBannerToZip(zos, speaker);
-			}
-		}
+		streamZip(response, "banners-speakers.zip", EnumSet.of(BannerType.SPEAKER));
 	}
 
 	@GetMapping("/api/banners/download/talks")
 	public void downloadTalkBanners(HttpServletResponse response) throws IOException {
-		List<Speaker> speakers = speakerRepository.findAllWithTalksBy();
-		Set<Long> addedTalkIds = new HashSet<>();
-		response.setContentType("application/zip");
-		response.setHeader("Content-Disposition", "attachment; filename=\"banners-talks.zip\"");
-		try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
-			for (Speaker speaker : speakers) {
-				if (speaker.getTalks() != null) {
-					for (Talk talk : speaker.getTalks()) {
-						if (addedTalkIds.add(talk.getId())) {
-							addTalkBannerToZip(zos, talk);
-						}
-					}
-				}
-			}
-		}
+		streamZip(response, "banners-talks.zip", EnumSet.of(BannerType.TALK));
 	}
 
 	@GetMapping("/api/banners/download/social")
 	public void downloadSocialBanners(HttpServletResponse response) throws IOException {
-		List<Speaker> speakers = speakerRepository.findAllWithTalksBy();
+		streamZip(response, "banners-social.zip", EnumSet.of(BannerType.SOCIAL));
+	}
+
+	private void streamZip(HttpServletResponse response, String filename, EnumSet<BannerType> types)
+			throws IOException {
 		response.setContentType("application/zip");
-		response.setHeader("Content-Disposition", "attachment; filename=\"banners-social.zip\"");
-		try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
-			for (Speaker speaker : speakers) {
-				addSocialBannerToZip(zos, speaker);
-			}
-		}
-	}
-
-	private void addSpeakerBannerToZip(ZipOutputStream zos, Speaker speaker) throws IOException {
-		try {
-			Talk talk = firstTalk(speaker);
-			String html = renderTemplate("banner/speakerBanner", speaker, talk);
-			byte[] png = htmlToPngConverter.convertToPng(html);
-			String filename = "speaker/" + sanitize(speaker.getLastName()) + "_" + sanitize(speaker.getFirstName())
-					+ ".png";
-			zos.putNextEntry(new ZipEntry(filename));
-			zos.write(png);
-			zos.closeEntry();
-		}
-		catch (Exception ex) {
-			log.error("Failed to generate speaker banner for {} ({})", speaker, speaker.getId(), ex);
-		}
-	}
-
-	private void addTalkBannerToZip(ZipOutputStream zos, Talk talk) throws IOException {
-		try {
-			String html = renderTemplate("banner/talkBanner", null, talk);
-			byte[] png = htmlToPngConverter.convertToPng(html);
-			String filename = "talks/" + talk.getId() + ".png";
-			zos.putNextEntry(new ZipEntry(filename));
-			zos.write(png);
-			zos.closeEntry();
-		}
-		catch (Exception ex) {
-			log.error("Failed to generate talk banner for '{}' ({})", talk.getTitle(), talk.getId(), ex);
-		}
-	}
-
-	private void addSocialBannerToZip(ZipOutputStream zos, Speaker speaker) throws IOException {
-		try {
-			Talk talk = firstTalk(speaker);
-			String html = renderTemplate("banner/speakerSocial", speaker, talk);
-			byte[] png = htmlToPngConverter.convertToPng(html);
-			String filename = "social/" + sanitize(speaker.getLastName()) + "_" + sanitize(speaker.getFirstName())
-					+ ".png";
-			zos.putNextEntry(new ZipEntry(filename));
-			zos.write(png);
-			zos.closeEntry();
-		}
-		catch (Exception ex) {
-			log.error("Failed to generate social banner for {} ({})", speaker, speaker.getId(), ex);
-		}
-	}
-
-	private static String sanitize(String value) {
-		if (value == null || value.isBlank()) {
-			return "unknown";
-		}
-		return value.replaceAll("[^a-zA-Z0-9._-]", "_");
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+		bannerService.writeZip(response.getOutputStream(), types);
 	}
 
 	private Speaker requireSpeaker(UUID id) {
@@ -341,22 +228,6 @@ public class BannerController {
 	private Talk requireTalk(Long id) {
 		return talkRepository.findWithSpeakersById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Talk not found: " + id));
-	}
-
-	private static Talk firstTalk(Speaker speaker) {
-		if (speaker.getTalks() != null && !speaker.getTalks().isEmpty()) {
-			return speaker.getTalks().get(0);
-		}
-		return null;
-	}
-
-	private String renderTemplate(String viewName, Speaker speaker, Talk talk) {
-		Context ctx = new Context();
-		ctx.setVariable("speaker", speaker);
-		ctx.setVariable("talk", talk);
-		ctx.setVariable("event", eventConfig);
-		ctx.setVariable("utils", templateUtils);
-		return templateEngine.process(viewName, ctx);
 	}
 
 }
