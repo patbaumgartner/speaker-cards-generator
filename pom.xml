@@ -18,22 +18,29 @@
   <properties>
     <java.version>21</java.version>
     <jacoco.version>0.8.15</jacoco.version>
-    <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
+    <openhtmltopdf.version>1.1.73</openhtmltopdf.version>
     <poi-ooxml.version>5.5.1</poi-ooxml.version>
     <bootstrap.version>5.3.8</bootstrap.version>
     <bootstrap.icons.version>1.13.1</bootstrap.icons.version>
     <!--
       Transitive dependency overrides.
 
-      Security patches override the Spring Boot BOM. PDFBox is pinned because
-      openhtmltopdf 1.0.10 declares the outdated PDFBox 2.0.24 release.
+      Only pin an artifact here when the version we need is NEWER than the one the
+      Spring Boot BOM manages. Pinning a version that the BOM already provides (or
+      that is older) turns into a silent DOWNGRADE the moment the Boot parent is
+      upgraded, and Dependabot cannot see property-only overrides of BOM-managed
+      artifacts. Prefer bumping the spring-boot-starter-parent version instead.
+
+      pdfbox: openhtmltopdf 1.1.73 brings PDFBox 3.0.7. CVE-2026-33929 lists 3.0.7 as
+      affected (examples module only, which we do not use), so track 3.0.8 to keep
+      dependency scanners quiet and stay ahead of the next advisory.
     -->
     <tomcat.version>11.0.22</tomcat.version>
     <postgresql.version>42.7.12</postgresql.version>
     <logback.version>1.5.35</logback.version>
     <log4j.version>2.26.1</log4j.version>
     <jackson-databind.version>3.2.2</jackson-databind.version>
-    <pdfbox.version>2.0.36</pdfbox.version>
+    <pdfbox.version>3.0.8</pdfbox.version>
     <!-- Convergence overrides -->
     <commons-io.version>2.22.0</commons-io.version>
     <!-- Plugin versions -->
@@ -63,8 +70,8 @@
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson-databind.version}</version>
-            </dependency>
-            <dependency>
+      </dependency>
+      <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
         <version>${pdfbox.version}</version>
@@ -117,14 +124,20 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- HTML → PDF (OpenHTMLtoPDF) and PDF → PNG (PDFBox) for banner generation -->
+    <!--
+      HTML → PDF (OpenHTMLtoPDF) and PDF → PNG (PDFBox) for banner generation.
+
+      `io.github.openhtmltopdf` is the maintained community fork; the original
+      `com.openhtmltopdf` coordinates were last released in September 2021 and are
+      stuck on PDFBox 2.0.x. Package names are unchanged between the two.
+    -->
     <dependency>
-      <groupId>com.openhtmltopdf</groupId>
+      <groupId>io.github.openhtmltopdf</groupId>
       <artifactId>openhtmltopdf-pdfbox</artifactId>
       <version>${openhtmltopdf.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.openhtmltopdf</groupId>
+      <groupId>io.github.openhtmltopdf</groupId>
       <artifactId>openhtmltopdf-slf4j</artifactId>
       <version>${openhtmltopdf.version}</version>
     </dependency>
