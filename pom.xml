@@ -26,7 +26,7 @@
     <tomcat.version>11.0.22</tomcat.version>
     <postgresql.version>42.7.12</postgresql.version>
     <logback.version>1.5.35</logback.version>
-    <log4j.version>2.25.5</log4j.version>
+    <log4j.version>2.26.1</log4j.version>
     <jackson-databind.version>3.1.5</jackson-databind.version>
     <!-- Convergence overrides -->
     <commons-io.version>2.22.0</commons-io.version>
