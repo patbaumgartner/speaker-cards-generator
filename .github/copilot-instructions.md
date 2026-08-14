@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Speaker Cards Generator** is a Spring Boot 4.0.5 web application that generates speaker cards (PNG banners) for Voxxed Days and similar tech conferences. It imports speaker/session data from the Devoxx CFP API or XLSX/CSV files, stores them in a PostgreSQL database, and renders per-talk banners via a Thymeleaf → HTML → OpenHTMLtoPDF → PDFBox → PNG pipeline.
+**Speaker Cards Generator** is a Spring Boot 4.1.0 web application that generates speaker cards (PNG banners) for Voxxed Days and similar tech conferences. It imports speaker/session data from the Devoxx CFP API or XLSX files, stores them in PostgreSQL, and renders banners via a Thymeleaf → HTML → OpenHTMLtoPDF → PDFBox → PNG pipeline.
 
 ## Repository Layout
 
@@ -31,10 +31,10 @@ speaker-cards-generator/
 
 | Layer | Technology |
 |---|---|
-| Framework | Spring Boot 4.0.5 |
+| Framework | Spring Boot 4.1.0 |
 | Web / Templates | Spring MVC + Thymeleaf |
-| Persistence | Spring Data JPA + PostgreSQL 16 |
-| Banner rendering | OpenHTMLtoPDF 1.0.10 → PDFBox → PNG |
+| Persistence | Spring Data JPA + PostgreSQL 18 |
+| Banner rendering | OpenHTMLtoPDF 1.1.73 → PDFBox 3.0.8 → PNG |
 | Data import | Apache POI 5.5.1 (XLSX), Devoxx CFP REST API |
 | Frontend | Bootstrap 5.3.8 + Bootstrap Icons 1.13.1 (via WebJars) |
 | Java version | 21 |
@@ -83,5 +83,5 @@ All Maven commands are run from the repository root.
 
 - Banner generation entry point: `HtmlToPngConverter` service — Thymeleaf renders the HTML template, OpenHTMLtoPDF converts to PDF, PDFBox rasterises to PNG.
 - `TemplateUtils` is a `@Component` registered as `${utils.*}` in Thymeleaf templates.
-- Devoxx CFP import endpoint: `GET /api/import/devoxx/{eventId}` (e.g. `vdz26`).
+- Devoxx CFP import endpoint: `POST /api/import/devoxx/{eventId}` (e.g. `vdz26`).
 - Event-specific configuration lives in `application-{profile}.properties` files.

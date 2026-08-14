@@ -46,14 +46,14 @@ By participating you agree to abide by its terms.
 |------------|---------|
 | Java       | 21+     |
 | Maven      | 3.9+    |
-| PostgreSQL | 16+     |
+| PostgreSQL | 18+     |
 | Docker     | 24+     |
 
 ### Start the full stack with Docker Compose
 
 ```shell
 # From the repository root
-docker compose up -d
+docker compose up -d db
 
 # Then run the app against the Docker PostgreSQL
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz
@@ -63,6 +63,12 @@ docker compose up -d
 
 ```shell
 ./mvnw test
+```
+
+Run the full CI-equivalent quality gate before opening a pull request:
+
+```shell
+./mvnw verify
 ```
 
 ### Check code style

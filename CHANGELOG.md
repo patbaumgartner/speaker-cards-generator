@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Store imported speaker photos in configurable runtime storage so they work from executable JARs and containers
+- Prevent SSRF and unbounded downloads through CFP profile-picture URLs
+- Generate banners in-process instead of calling the application back over HTTP
+- Fetch talk speakers eagerly for ZIP generation, preventing silently missing talk banners
+- Make XLSX imports atomic and report missing, malformed, or invalid files correctly
+- Define stable entity identity and null-safe deterministic ordering
+
+### Security
+- Move import and filesystem-generation operations from GET to POST
+- Stop exposing internal exception details in HTTP responses
+- Migrate to maintained OpenHTMLtoPDF 1.1.73 and PDFBox 3.0.8
+
+### Quality
+- Add end-to-end banner rendering, ZIP, photo storage, importer, and entity tests
+- Raise the JaCoCo line coverage floor from 25% to 60%
+- Add the CodeQL workflow referenced by the security policy
+
 ### Changed
 - Renamed base package from `com.fortytwotalents` to `com.fortytwotalents.speakercardsgenerator` to align namespace with the project name
 - Renamed Maven `artifactId` and `<name>` from `speaker-cards` to `speaker-cards-generator` to match the repository name
