@@ -33,8 +33,6 @@ release.properties
 .DS_Store
 
 node_modules/
-.dockerignore
-
 # Downloaded speaker profile pictures (generated at runtime)
 data/
 # Legacy location used before app.storage.photo-dir existed; still read as a fallback

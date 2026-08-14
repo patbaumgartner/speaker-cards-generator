@@ -1,0 +1,10 @@
+.git
+.github
+.codegraph
+.idea
+.vscode
+data
+docs
+target
+*.log
+*.xlsx

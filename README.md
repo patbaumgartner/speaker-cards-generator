@@ -3,7 +3,7 @@
 [![CI](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.6-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
 
 > Generate professional **speaker and talk banner images** (PNG) for conference events such as
 > **Voxxed Days Zürich**, **Voxxed Days Ticino**, **Voxxed Days CERN**, and **BaselOne**.
@@ -12,11 +12,11 @@
 
 ## 🖼️ Preview
 
-**Speaker card** (960 × 540 px)
+**Speaker card** (1920 × 1080 px)
 
 ![Speaker card example](docs/images/speaker-card-example.png)
 
-**Talk card** (960 × 540 px)
+**Talk card** (1920 × 1080 px)
 
 ![Talk card example](docs/images/talk-card-example.png)
 
@@ -85,10 +85,10 @@ create a new `application-{profile}.properties` file with the event-specific bra
 
 ```shell
 # From the Devoxx CFP API
-curl http://localhost:8080/api/import/devoxx/vdz26
+curl -X POST http://localhost:8080/api/import/devoxx/vdz26
 
 # From a Sessionize XLSX export
-curl http://localhost:8080/api/import/csv
+curl -X POST http://localhost:8080/api/import/csv
 ```
 
 ---
@@ -97,7 +97,7 @@ curl http://localhost:8080/api/import/csv
 
 ```shell
 # Generate all banners and save to ./speaker-banners/
-curl "http://localhost:8080/api/banners/generate-all?outputDir=./speaker-banners"
+curl -X POST "http://localhost:8080/api/banners/generate-all?outputDir=./speaker-banners"
 ```
 
 ---
