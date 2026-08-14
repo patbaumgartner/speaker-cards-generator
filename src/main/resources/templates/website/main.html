@@ -151,7 +151,7 @@
             btn.innerHTML =
                 '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Importing\u2026';
 
-            fetch('/api/import/' + type)
+	            fetch('/api/import/' + type, { method: 'POST' })
                 .then(function (r) {
                     return r.text().then(function (text) {
                         return { ok: r.ok, text: text };

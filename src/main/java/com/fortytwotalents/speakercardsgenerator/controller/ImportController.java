@@ -2,14 +2,15 @@ package com.fortytwotalents.speakercardsgenerator.controller;
 
 import com.fortytwotalents.speakercardsgenerator.service.DevoxxImportService;
 import com.fortytwotalents.speakercardsgenerator.service.ImportFromCSVService;
+import com.fortytwotalents.speakercardsgenerator.service.ImportFromCSVService.ImportResult;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
  * <h2>Endpoints</h2>
  *
  * <pre>
- *   GET /api/import/csv              – import from default XLSX file (SelectedWithSchedule.xlsx)
- *   GET /api/import/csv/{path}       – import from a custom XLSX/CSV path
- *   GET /api/import/devoxx           – import from CFP API (configured event)
- *   GET /api/import/devoxx/{eventId} – import from CFP API for a specific event ID
+	 *   POST /api/import/csv              – import from default XLSX file (SelectedWithSchedule.xlsx)
+	 *   POST /api/import/csv/{path}       – import from a custom XLSX/CSV path
+	 *   POST /api/import/devoxx           – import from CFP API (configured event)
+	 *   POST /api/import/devoxx/{eventId} – import from CFP API for a specific event ID
  * </pre>
  */
 @RestController
@@ -40,19 +41,19 @@ public class ImportController {
 		this.devoxxImportService = devoxxImportService;
 	}
 
-	@GetMapping(value = "/csv", produces = MediaType.TEXT_PLAIN_VALUE)
+	@PostMapping(value = "/csv", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importCsv() {
 		try {
-			importFromCSVService.importFromXlsx("SelectedWithSchedule.xlsx");
-			return ResponseEntity.ok("XLSX import completed successfully. Check logs for details.");
+			ImportResult result = importFromCSVService.importFromXlsx("SelectedWithSchedule.xlsx");
+			return ResponseEntity.ok(importSummary(result));
 		}
 		catch (Exception e) {
 			log.error("Error during XLSX import", e);
-			return ResponseEntity.internalServerError().body("Error during XLSX import: " + e.getMessage());
+			return ResponseEntity.internalServerError().body("XLSX import failed. Check the application logs.");
 		}
 	}
 
-	@GetMapping(value = "/csv/{path:.*}", produces = MediaType.TEXT_PLAIN_VALUE)
+	@PostMapping(value = "/csv/{path:.*}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importCsvFromPath(@PathVariable String path) {
 		try {
 			Path base = Path.of("").toAbsolutePath();
@@ -62,16 +63,16 @@ public class ImportController {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body("Invalid file path: must be within the working directory");
 			}
-			importFromCSVService.importFromXlsx(resolved.toString());
-			return ResponseEntity.ok("XLSX import completed successfully. Check logs for details.");
+			ImportResult result = importFromCSVService.importFromXlsx(resolved.toString());
+			return ResponseEntity.ok(importSummary(result));
 		}
 		catch (Exception e) {
 			log.error("Error during XLSX import from path: {}", path, e);
-			return ResponseEntity.internalServerError().body("Error during XLSX import: " + e.getMessage());
+			return ResponseEntity.internalServerError().body("XLSX import failed. Check the application logs.");
 		}
 	}
 
-	@GetMapping(value = "/devoxx", produces = MediaType.TEXT_PLAIN_VALUE)
+	@PostMapping(value = "/devoxx", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importFromDevoxx() {
 		try {
 			int count = devoxxImportService.importSpeakers();
@@ -79,11 +80,11 @@ public class ImportController {
 		}
 		catch (Exception e) {
 			log.error("Error during CFP import", e);
-			return ResponseEntity.internalServerError().body("Error during CFP import: " + e.getMessage());
+			return ResponseEntity.internalServerError().body("CFP import failed. Check the application logs.");
 		}
 	}
 
-	@GetMapping(value = "/devoxx/{eventId}", produces = MediaType.TEXT_PLAIN_VALUE)
+	@PostMapping(value = "/devoxx/{eventId}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> importFromDevoxxEvent(@PathVariable String eventId) {
 		try {
 			int count = devoxxImportService.importSpeakers(eventId);
@@ -92,9 +93,12 @@ public class ImportController {
 		}
 		catch (Exception e) {
 			log.error("Error during CFP import for event {}", eventId, e);
-			return ResponseEntity.internalServerError()
-				.body("Error during CFP import for event '" + eventId + "': " + e.getMessage());
+			return ResponseEntity.internalServerError().body("CFP import failed. Check the application logs.");
 		}
+	}
+
+	private static String importSummary(ImportResult result) {
+		return "XLSX import completed. Imported " + result.rowsImported() + " of " + result.rowsRead() + " rows.";
 	}
 
 }

@@ -34,7 +34,7 @@ public class DevoxxApiConfig {
 	 * speaker details from {@code /api/speakers/{id}} which includes the {@code jobTitle}
 	 * field not available on the public endpoint.
 	 */
-	private String apiToken;
+	private volatile String apiToken;
 
 	public String getEventId() {
 		return eventId;
