@@ -159,7 +159,7 @@ public class BannerController {
 		}
 	}
 
-	@GetMapping(value = "/api/banners/generate-all", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/api/banners/generate-all", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public BannerGenerationResult generateAllBanners(@RequestParam(required = false) String outputDir) {
 		if (outputDir != null && !outputDir.isBlank()) {
