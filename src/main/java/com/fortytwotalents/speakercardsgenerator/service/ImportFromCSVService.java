@@ -5,6 +5,7 @@ import com.fortytwotalents.speakercardsgenerator.model.Talk;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -107,18 +108,23 @@ public class ImportFromCSVService {
 	/**
 	 * Imports all rows from the given XLSX file.
 	 * @param xlsxFilePath absolute or relative path to the XLSX file
+	 * @return counts from the completed import
+	 * @throws XlsxImportException when the file is missing, malformed, or a row cannot be
+	 * persisted; the surrounding transaction is rolled back in that case
 	 */
 	@Transactional
-	public void importFromXlsx(String xlsxFilePath) {
+	public ImportResult importFromXlsx(String xlsxFilePath) {
 		log.info("Starting XLSX import from: {}", xlsxFilePath);
 
 		Path path = Path.of(xlsxFilePath);
-		if (!Files.exists(path)) {
-			log.error("XLSX file not found: {}", xlsxFilePath);
-			return;
+		if (!Files.isRegularFile(path)) {
+			throw new XlsxImportException("XLSX file not found: " + path);
 		}
 
-		try (FileInputStream fis = new FileInputStream(xlsxFilePath); Workbook workbook = new XSSFWorkbook(fis)) {
+		try (FileInputStream fis = new FileInputStream(path.toFile()); Workbook workbook = new XSSFWorkbook(fis)) {
+			if (workbook.getNumberOfSheets() == 0) {
+				throw new XlsxImportException("XLSX workbook contains no sheets: " + path);
+			}
 
 			Sheet sheet = workbook.getSheetAt(0);
 			Iterator<Row> rowIterator = sheet.iterator();
@@ -129,23 +135,25 @@ public class ImportFromCSVService {
 				log.info("XLSX header found with {} columns", header.getLastCellNum());
 			}
 
-			int rowNumber = 0;
+			int rowsRead = 0;
+			int rowsImported = 0;
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
-				rowNumber++;
-				try {
-					String[] fields = extractRowData(row);
-					processRow(fields);
-				}
-				catch (Exception e) {
-					log.error("Error processing row {}: {}", rowNumber, e.getMessage(), e);
+				rowsRead++;
+				String[] fields = extractRowData(row);
+				if (processRow(fields)) {
+					rowsImported++;
 				}
 			}
-			log.info("XLSX import completed. Processed {} rows", rowNumber);
+			log.info("XLSX import completed. Imported {} of {} rows", rowsImported, rowsRead);
+			return new ImportResult(rowsRead, rowsImported);
 
 		}
-		catch (Exception e) {
-			log.error("Error reading XLSX file: {}", xlsxFilePath, e);
+		catch (IOException | RuntimeException ex) {
+			if (ex instanceof XlsxImportException importException) {
+				throw importException;
+			}
+			throw new XlsxImportException("Could not import XLSX file: " + path, ex);
 		}
 	}
 
@@ -172,7 +180,7 @@ public class ImportFromCSVService {
 		};
 	}
 
-	private void processRow(String[] fields) {
+	private boolean processRow(String[] fields) {
 		Talk talk = createOrUpdateTalk(fields);
 		Speaker speaker = createOrUpdateSpeaker(fields);
 
@@ -183,7 +191,9 @@ public class ImportFromCSVService {
 				talkRepository.save(talk);
 				speakerRepository.save(speaker);
 			}
+			return true;
 		}
+		return false;
 	}
 
 	private Speaker createOrUpdateSpeaker(String[] fields) {
@@ -191,38 +201,32 @@ public class ImportFromCSVService {
 		if (speakerIdStr.isEmpty()) {
 			return null;
 		}
-		try {
-			UUID speakerId = UUID.fromString(speakerIdStr);
-			Speaker speaker = speakerRepository.findById(speakerId).orElse(null);
-			boolean isNew = speaker == null;
+		UUID speakerId = UUID.fromString(speakerIdStr);
+		Speaker speaker = speakerRepository.findById(speakerId).orElse(null);
+		boolean isNew = speaker == null;
 
-			if (isNew) {
-				speaker = new Speaker();
-				speaker.setId(speakerId);
-			}
-
-			speaker.setFirstName(nullIfBlank(fields[COL_FIRST_NAME]));
-			speaker.setLastName(nullIfBlank(fields[COL_LAST_NAME]));
-			speaker.setTitle(nullIfBlank(fields[COL_TAG_LINE]));
-			speaker.setBiography(nullIfBlank(fields[COL_BIO]));
-			speaker.setStar(false);
-
-			speakerRepository.save(speaker);
-
-			photoStore.download(speakerId, nullIfBlank(fields[COL_PROFILE_PICTURE]));
-
-			log.atDebug()
-				.addArgument(() -> isNew ? "Persisted" : "Updated")
-				.addArgument(speaker.getFirstName())
-				.addArgument(speaker.getLastName())
-				.addArgument(speakerId)
-				.log("{} speaker: {} {} ({})");
-			return speaker;
+		if (isNew) {
+			speaker = new Speaker();
+			speaker.setId(speakerId);
 		}
-		catch (Exception e) {
-			log.error("Error creating speaker: {}", e.getMessage(), e);
-			return null;
-		}
+
+		speaker.setFirstName(nullIfBlank(fields[COL_FIRST_NAME]));
+		speaker.setLastName(defaultIfBlank(fields[COL_LAST_NAME], "(unknown)"));
+		speaker.setTitle(nullIfBlank(fields[COL_TAG_LINE]));
+		speaker.setBiography(defaultIfBlank(fields[COL_BIO], "(no biography provided)"));
+		speaker.setStar(false);
+
+		speakerRepository.save(speaker);
+
+		photoStore.download(speakerId, nullIfBlank(fields[COL_PROFILE_PICTURE]));
+
+		log.atDebug()
+			.addArgument(() -> isNew ? "Persisted" : "Updated")
+			.addArgument(speaker.getFirstName())
+			.addArgument(speaker.getLastName())
+			.addArgument(speakerId)
+			.log("{} speaker: {} {} ({})");
+		return speaker;
 	}
 
 	private Talk createOrUpdateTalk(String[] fields) {
@@ -230,51 +234,41 @@ public class ImportFromCSVService {
 		if (sessionIdStr.isEmpty()) {
 			return null;
 		}
-		try {
-			Long sessionId = Long.parseLong(sessionIdStr);
-			Talk talk = talkRepository.findById(sessionId).orElse(null);
-			boolean isNew = talk == null;
+		Long sessionId = Long.parseLong(sessionIdStr);
+		Talk talk = talkRepository.findById(sessionId).orElse(null);
+		boolean isNew = talk == null;
 
-			if (isNew) {
-				String title = fields[COL_TITLE].trim();
-				if (title.isEmpty()) {
-					log.warn("Skipping new talk with session ID {}: title is empty", sessionId);
-					return null;
-				}
-				talk = new Talk();
-				talk.setId(sessionId);
-				talk.setTitle(title);
-				talk.setDescription(nullIfBlank(fields[COL_DESCRIPTION]));
-				talk.setScheduledDuration(nullIfBlank(fields[COL_SCHEDULED_DURATION]));
-				talk.setLiveLink(nullIfBlank(fields[COL_LIVE_LINK]));
-
-				String scheduledAt = fields[COL_SCHEDULED_AT].trim();
-				if (!scheduledAt.isEmpty()) {
-					try {
-						LocalDateTime estDateTime = LocalDateTime.parse(scheduledAt);
-						ZonedDateTime estZoned = estDateTime.atZone(EST_ZONE);
-						ZonedDateTime cetZoned = estZoned.withZoneSameInstant(CET_ZONE);
-						talk.setDate(cetZoned.format(DATE_FORMAT));
-						talk.setEstTime(estZoned.format(TIME_FORMAT));
-						talk.setCetTime(cetZoned.format(TIME_FORMAT));
-					}
-					catch (Exception e) {
-						log.warn("Could not parse date '{}' for talk {}", scheduledAt, sessionId);
-					}
-				}
-				talkRepository.save(talk);
-				log.debug("Persisted talk: {} ({})", talk.getTitle(), sessionId);
-			}
-			else {
-				log.debug("Found existing talk: {} ({}) with {} speaker(s)", talk.getTitle(), sessionId,
-						talk.getSpeakers().size());
-			}
-			return talk;
-		}
-		catch (Exception e) {
-			log.error("Error creating talk: {}", e.getMessage(), e);
+		String title = fields[COL_TITLE].trim();
+		if (title.isEmpty()) {
+			log.warn("Skipping talk with session ID {}: title is empty", sessionId);
 			return null;
 		}
+		if (isNew) {
+			talk = new Talk();
+			talk.setId(sessionId);
+		}
+		talk.setTitle(title);
+		talk.setDescription(nullIfBlank(fields[COL_DESCRIPTION]));
+		talk.setScheduledDuration(nullIfBlank(fields[COL_SCHEDULED_DURATION]));
+		talk.setLiveLink(nullIfBlank(fields[COL_LIVE_LINK]));
+
+		String scheduledAt = fields[COL_SCHEDULED_AT].trim();
+		if (!scheduledAt.isEmpty()) {
+			try {
+				LocalDateTime estDateTime = LocalDateTime.parse(scheduledAt);
+				ZonedDateTime estZoned = estDateTime.atZone(EST_ZONE);
+				ZonedDateTime cetZoned = estZoned.withZoneSameInstant(CET_ZONE);
+				talk.setDate(cetZoned.format(DATE_FORMAT));
+				talk.setEstTime(estZoned.format(TIME_FORMAT));
+				talk.setCetTime(cetZoned.format(TIME_FORMAT));
+			}
+			catch (java.time.format.DateTimeParseException ex) {
+				log.warn("Could not parse date '{}' for talk {}", scheduledAt, sessionId);
+			}
+		}
+		talkRepository.save(talk);
+		log.debug("{} talk: {} ({})", isNew ? "Persisted" : "Updated", talk.getTitle(), sessionId);
+		return talk;
 	}
 
 	private String nullIfBlank(String value) {
@@ -283,6 +277,26 @@ public class ImportFromCSVService {
 		}
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private String defaultIfBlank(String value, String defaultValue) {
+		String normalised = nullIfBlank(value);
+		return normalised != null ? normalised : defaultValue;
+	}
+
+	public record ImportResult(int rowsRead, int rowsImported) {
+	}
+
+	public static class XlsxImportException extends RuntimeException {
+
+		XlsxImportException(String message) {
+			super(message);
+		}
+
+		XlsxImportException(String message, Throwable cause) {
+			super(message, cause);
+		}
+
 	}
 
 }
