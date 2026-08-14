@@ -280,10 +280,8 @@
     <div class="separator"></div>
 
     <div id="talk-title" th:if="${talk != null and talk.title != null}"
-      th:utext="${talk.formattedTitle}" th:unless="${talk.formattedTitle == null}">
-    </div>
-    <div id="talk-title" th:if="${talk != null and talk.title != null and talk.formattedTitle == null}"
-      th:utext="${utils.formatTitle(talk.title, 800, 44, 600)}">Talk Title
+      th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 800, 44, 600)}">
+      Talk Title
     </div>
   </div>
 

@@ -301,10 +301,9 @@
 
   <!-- Talk title -->
   <div class="talk-title" th:if="${talk != null and talk.title != null}"
-    th:utext="${talk.formattedTitle}" th:unless="${talk.formattedTitle == null}"></div>
-  <div class="talk-title" th:if="${talk != null and talk.title != null and talk.formattedTitle == null}"
-    th:utext="${utils.formatTitle(talk.title, 980, 62, 700)}">Talk Title
-    Goes Here</div>
+    th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 980, 62, 700)}">
+    Talk Title Goes Here
+  </div>
 
   <!-- Separator -->
   <div class="section-divider"></div>

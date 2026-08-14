@@ -309,11 +309,10 @@
   <div class="session-label" th:text="${event.sessionLabel}">Session</div>
 
   <!-- Talk title -->
-  <div id="talk-title" th:if="${talk != null and talk.title != null}" th:utext="${talk.formattedTitle}"
-    th:unless="${talk.formattedTitle == null}"></div>
-  <div id="talk-title" th:if="${talk != null and talk.title != null and talk.formattedTitle == null}"
-    th:utext="${utils.formatTitle(talk.title, 700, 53, 700)}">Talk Title Goes
-    Here</div>
+  <div id="talk-title" th:if="${talk != null and talk.title != null}"
+    th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 700, 53, 700)}">
+    Talk Title Goes Here
+  </div>
 
   <!-- Speakers list -->
   <div id="speakers-container" th:if="${talk != null and talk.speakers != null}">
