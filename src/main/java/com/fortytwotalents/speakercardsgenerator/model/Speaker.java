@@ -10,6 +10,7 @@ import java.sql.Types;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.validator.constraints.Length;
@@ -105,7 +106,34 @@ public class Speaker implements Comparable<Speaker> {
 
 	@Override
 	public int compareTo(Speaker other) {
-		return displayName().compareToIgnoreCase(other.displayName());
+		int byName = displayName().compareToIgnoreCase(other.displayName());
+		if (byName != 0) {
+			return byName;
+		}
+		return compareIds(this.id, other.id);
+	}
+
+	@Override
+	public boolean equals(Object candidate) {
+		if (this == candidate) {
+			return true;
+		}
+		if (!(candidate instanceof Speaker speaker)) {
+			return false;
+		}
+		return this.id != null && this.id.equals(speaker.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.id);
+	}
+
+	private static int compareIds(UUID left, UUID right) {
+		if (left == null) {
+			return right == null ? 0 : 1;
+		}
+		return right == null ? -1 : left.compareTo(right);
 	}
 
 	/**

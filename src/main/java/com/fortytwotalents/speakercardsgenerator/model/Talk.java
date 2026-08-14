@@ -9,6 +9,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
@@ -66,7 +67,27 @@ public class Talk implements Comparable<Talk> {
 
 	@Override
 	public int compareTo(Talk other) {
-		return Comparator.nullsLast(String::compareTo).compare(this.title, other.title);
+		int byTitle = Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER).compare(this.title, other.title);
+		if (byTitle != 0) {
+			return byTitle;
+		}
+		return Comparator.nullsLast(Long::compareTo).compare(this.id, other.id);
+	}
+
+	@Override
+	public boolean equals(Object candidate) {
+		if (this == candidate) {
+			return true;
+		}
+		if (!(candidate instanceof Talk talk)) {
+			return false;
+		}
+		return this.id != null && this.id.equals(talk.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.id);
 	}
 
 	public Long getId() {
