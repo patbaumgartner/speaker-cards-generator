@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -31,13 +33,14 @@
       upgraded, and Dependabot cannot see property-only overrides of BOM-managed
       artifacts. Prefer bumping the spring-boot-starter-parent version instead.
 
+      tomcat: Boot 4.1.1 manages 11.0.24, which CVE-2026-65182, CVE-2026-65905 and
+      CVE-2026-68525 all list as affected. Remove this once the parent reaches 11.0.25.
+
       pdfbox: openhtmltopdf 1.1.73 brings PDFBox 3.0.7. CVE-2026-33929 lists 3.0.7 as
       affected (examples module only, which we do not use), so track 3.0.8 to keep
       dependency scanners quiet and stay ahead of the next advisory.
     -->
-    <tomcat.version>11.0.22</tomcat.version>
-    <postgresql.version>42.7.12</postgresql.version>
-    <logback.version>1.5.35</logback.version>
+    <tomcat.version>11.0.25</tomcat.version>
     <log4j.version>2.26.1</log4j.version>
     <jackson-databind.version>3.2.2</jackson-databind.version>
     <pdfbox.version>3.0.8</pdfbox.version>
@@ -347,7 +350,8 @@
             <configuration>
               <target>
                 <!-- Collapse [[ $ { event.foo } ]] → [[${event.foo}]] -->
-                <replaceregexp byline="false" flags="gs" match="\[\[\s*\$\s*\{\s*(\S+?)\s*\}\s*\]\]" replace="[[$${\1}]]">
+                <replaceregexp byline="false" flags="gs" match="\[\[\s*\$\s*\{\s*(\S+?)\s*\}\s*\]\]"
+                  replace="[[$${\1}]]">
                   <fileset dir="src/main/resources/templates/banner" includes="*.html"></fileset>
                 </replaceregexp>
               </target>
