@@ -5,7 +5,7 @@ updates:
   schedule:
     interval: weekly
     day: monday
-    time: "06:00"
+    time: 06:00
     timezone: Europe/Zurich
   open-pull-requests-limit: 10
   reviewers:
@@ -57,12 +57,13 @@ updates:
 - package-ecosystem: github-actions
   groups:
     codeql-action:
-      patterns: ["github/codeql-action*"]
+      patterns:
+      - github/codeql-action*
   directory: /
   schedule:
     interval: weekly
     day: monday
-    time: "06:00"
+    time: 06:00
     timezone: Europe/Zurich
   open-pull-requests-limit: 5
   reviewers:
@@ -80,7 +81,7 @@ updates:
   schedule:
     interval: weekly
     day: monday
-    time: "06:00"
+    time: 06:00
     timezone: Europe/Zurich
   open-pull-requests-limit: 5
   reviewers:
@@ -99,7 +100,7 @@ updates:
   schedule:
     interval: weekly
     day: monday
-    time: "06:00"
+    time: 06:00
     timezone: Europe/Zurich
   open-pull-requests-limit: 5
   reviewers:
@@ -113,3 +114,7 @@ updates:
     prefix: chore(deps)
     prefix-development: chore(deps-dev)
     include: scope
+groups:
+  multi-step-actions:
+    patterns:
+    - github/codeql-action/*
