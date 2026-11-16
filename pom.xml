@@ -42,6 +42,8 @@
     -->
     <tomcat.version>11.0.25</tomcat.version>
     <log4j.version>2.26.1</log4j.version>
+    <!-- Keep the whole Jackson 3 stack aligned; databind 3.3 requires core 3.3. -->
+    <jackson-bom.version>3.3.0</jackson-bom.version>
     <jackson-databind.version>3.3.0</jackson-databind.version>
     <pdfbox.version>3.0.8</pdfbox.version>
     <!-- Convergence overrides -->
