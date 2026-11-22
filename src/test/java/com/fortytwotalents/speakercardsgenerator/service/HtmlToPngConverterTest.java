@@ -63,10 +63,10 @@ class HtmlToPngConverterTest {
 		String html = """
 				<!DOCTYPE html>
 				<html><head><style>
-				  @font-face { font-family: 'Poppins'; font-weight: 700;
-				               src: url('/fonts/Poppins-Bold.ttf') format('truetype'); }
+				  @font-face { font-family: 'Space Grotesk'; font-weight: 700;
+				               src: url('/fonts/SpaceGrotesk-Bold.ttf') format('truetype'); }
 				  @page { size: 400px 100px; margin: 0; }
-				  body { margin: 0; font-family: 'Poppins', sans-serif; font-size: 30px; }
+				  body { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; }
 				</style></head>
 				<body><div>Voxxed Days</div></body></html>
 				""";

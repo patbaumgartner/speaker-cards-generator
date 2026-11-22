@@ -4,34 +4,6 @@
     <meta charset="UTF-8" />
     <title th:text="${speaker.displayName()} + ' — Speaker Card'">Speaker Card</title>
     <style th:inline="text">
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 300;
-        src: url("/fonts/Poppins-Light.ttf") format("truetype");
-      }
-
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 400;
-        src: url("/fonts/Poppins-Regular.ttf") format("truetype");
-      }
-
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 600;
-        src: url("/fonts/Poppins-SemiBold.ttf") format("truetype");
-      }
-
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 700;
-        src: url("/fonts/Poppins-Bold.ttf") format("truetype");
-      }
-
       @page {
         size: 1280px 720px;
         margin: 0;
@@ -45,7 +17,7 @@
         height: 720px;
         position: relative;
         overflow: hidden;
-        font-family: "Poppins", sans-serif;
+        font-family: "Inter", sans-serif;
         color: #0F172A;
         background: #ffffff;
       }
@@ -142,7 +114,7 @@
       }
 
       #company {
-        font-family: "Poppins", sans-serif;
+        font-family: "Inter", sans-serif;
         font-size: 16px;
         font-weight: 400;
 
@@ -153,7 +125,7 @@
       }
 
       #name {
-        font-family: "Poppins", sans-serif;
+        font-family: "Space Grotesk", sans-serif;
         font-size: 51px;
         font-weight: 700;
         color: #0F172A;
@@ -165,9 +137,9 @@
       }
 
       #role {
-        font-family: "Poppins", sans-serif;
+        font-family: "Inter", sans-serif;
         font-size: 18px;
-        font-weight: 300;
+        font-weight: 400;
         color: #475569;
         letter-spacing: 1px;
         margin-bottom: 22px;
@@ -182,9 +154,9 @@
       }
 
       #talk-title {
-        font-family: "Poppins", sans-serif;
+        font-family: "Space Grotesk", sans-serif;
         font-size: 44px;
-        font-weight: 600;
+        font-weight: 700;
         color: #1E293B;
         line-height: 1.3;
         text-align: left;
@@ -256,7 +228,7 @@
       <div
         id="talk-title"
         th:if="${talk != null and talk.title != null}"
-        th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 800, 44, 600)}"
+        th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 800, 44, 700)}"
       >
         Talk Title
       </div>

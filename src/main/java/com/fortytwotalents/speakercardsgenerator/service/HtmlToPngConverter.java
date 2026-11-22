@@ -7,6 +7,8 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.slf4j.Slf4jLogger;
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import com.openhtmltopdf.util.XRLog;
+import java.awt.color.ColorSpace;
+import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -92,6 +94,12 @@ public class HtmlToPngConverter {
 	private byte[] renderToPdf(String html) throws IOException {
 		try (ByteArrayOutputStream pdfOut = new ByteArrayOutputStream()) {
 			PdfRendererBuilder builder = new PdfRendererBuilder();
+			// Use embedded fonts for the intermediate PDF, including unstyled text.
+			// PDF/A-2 keeps transparency in the banner artwork.
+			builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_2_B);
+			builder.useColorProfile(ICC_Profile.getInstance(ColorSpace.CS_sRGB).getData());
+			builder.useFont(() -> HtmlToPngConverter.class.getResourceAsStream("/static/fonts/Inter-Regular.ttf"),
+					"serif");
 			builder.withHtmlContent(html, SCHEME + "/");
 			builder.useUriResolver(new AppUriResolver());
 			builder.useProtocolsStreamImplementation(new AppStreamFactory(), "app");

@@ -2,6 +2,19 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <style th:fragment="signatureStyle" th:inline="text">
+    @font-face {
+      font-family: "Inter";
+      font-weight: 400;
+      src: url("/fonts/Inter-Regular.ttf") format("truetype");
+    }
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 700;
+      src: url("/fonts/SpaceGrotesk-Bold.ttf") format("truetype");
+    }
+    .event-date, .footer-url, .campaign-tag, .campaign-motto {
+      font-family: "Space Grotesk", sans-serif;
+    }
     .campaign-signature {
       position: absolute;
       right: 50px;
@@ -54,7 +67,7 @@
       white-space: nowrap;
       color: #FFFFFF;
       font-size: 30px;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1.2;
     }
     .campaign-switch {

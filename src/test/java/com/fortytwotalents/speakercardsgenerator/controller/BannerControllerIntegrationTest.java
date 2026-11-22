@@ -160,12 +160,22 @@ class BannerControllerIntegrationTest {
 		Set<String> entries = zipEntries("/api/banners/download/all");
 
 		assertThat(entries).containsExactlyInAnyOrder("speaker/Doe_Jane.png", "social/Doe_Jane.png",
-				"speaker/Roe_John.png", "social/Roe_John.png", "talks/" + TALK_ID + ".png");
+				"speaker/Roe_John.png", "social/Roe_John.png", "talks/Doe_Jane_" + TALK_ID + ".png");
+	}
+
+	@Test
+	void downloadAllStillIncludesTalksWhenTwoSpeakersShareAName() throws Exception {
+		// Speaker file names are derived from first and last name, so two people with
+		// the same name map to the same ZIP entry. That must not abort the archive
+		// before the talk banners are written.
+		this.speakerRepository.save(speaker(UUID.randomUUID(), "Jane", "Doe"));
+
+		assertThat(zipEntries("/api/banners/download/all")).contains("talks/Doe_Jane_" + TALK_ID + ".png");
 	}
 
 	@Test
 	void downloadTalksProducesOneEntryPerTalkNotOnePerSpeaker() throws Exception {
-		assertThat(zipEntries("/api/banners/download/talks")).containsExactly("talks/" + TALK_ID + ".png");
+		assertThat(zipEntries("/api/banners/download/talks")).containsExactly("talks/Doe_Jane_" + TALK_ID + ".png");
 	}
 
 	@Test

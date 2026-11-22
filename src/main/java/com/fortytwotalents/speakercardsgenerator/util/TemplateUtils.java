@@ -200,7 +200,7 @@ public final class TemplateUtils {
 
 	/**
 	 * Formats a talk title for banner rendering with typographically correct line breaks.
-	 * Uses the actual Poppins font metrics to measure text width and applies
+	 * Uses the actual banner font metrics to measure text width and applies
 	 * minimum-raggedness line breaking with orphan avoidance and clause-separator
 	 * preference.
 	 *
@@ -404,7 +404,7 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Estimates the extra pixel width contributed by emoji characters that the Poppins
+	 * Estimates the extra pixel width contributed by emoji characters that the banner
 	 * font cannot measure (it has no emoji glyphs). Emoji are typically rendered as
 	 * square glyphs at approximately the current font size.
 	 */
@@ -453,12 +453,7 @@ public final class TemplateUtils {
 
 	private static Font resolveFont(int weight, int sizePx) {
 		Font base = FONT_CACHE.computeIfAbsent(weight, w -> {
-			String filename = switch (w) {
-				case 300 -> "Poppins-Light.ttf";
-				case 600 -> "Poppins-SemiBold.ttf";
-				case 700 -> "Poppins-Bold.ttf";
-				default -> "Poppins-Regular.ttf";
-			};
+			String filename = w >= 600 ? "SpaceGrotesk-Bold.ttf" : "Inter-Regular.ttf";
 			try (InputStream is = TemplateUtils.class.getResourceAsStream("/static/fonts/" + filename)) {
 				if (is == null) {
 					return new Font(Font.SANS_SERIF, Font.PLAIN, 1);

@@ -4,34 +4,6 @@
     <meta charset="UTF-8" />
     <title th:text="${talk.title} + ' — Talk Banner'">Talk Banner</title>
     <style th:inline="text">
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 300;
-        src: url("/fonts/Poppins-Light.ttf") format("truetype");
-      }
-
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 400;
-        src: url("/fonts/Poppins-Regular.ttf") format("truetype");
-      }
-
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 600;
-        src: url("/fonts/Poppins-SemiBold.ttf") format("truetype");
-      }
-
-      @font-face {
-        font-family: "Poppins";
-        font-style: normal;
-        font-weight: 700;
-        src: url("/fonts/Poppins-Bold.ttf") format("truetype");
-      }
-
       @page {
         size: 1280px 720px;
         margin: 0;
@@ -45,7 +17,7 @@
         height: 720px;
         position: relative;
         overflow: hidden;
-        font-family: "Poppins", sans-serif;
+        font-family: "Inter", sans-serif;
         color: #0F172A;
         background: #ffffff;
       }
@@ -113,9 +85,9 @@
         position: absolute;
         left: 50px;
         top: 150px;
-        font-family: "Poppins", sans-serif;
+        font-family: "Space Grotesk", sans-serif;
         font-size: 15px;
-        font-weight: 600;
+        font-weight: 700;
 
         color: [[${event.colorPrimary}]];
         letter-spacing: 4px;
@@ -130,7 +102,7 @@
         top: 377px;
         transform: translateY(-50%);
         width: 700px;
-        font-family: "Poppins", sans-serif;
+        font-family: "Space Grotesk", sans-serif;
         font-size: 53px;
         font-weight: 700;
         color: #0F172A;
@@ -187,7 +159,7 @@
       }
 
       .speaker-name {
-        font-family: "Poppins", sans-serif;
+        font-family: "Space Grotesk", sans-serif;
         font-size: 30px;
         font-weight: 700;
         color: #0F172A;
@@ -196,7 +168,7 @@
       }
 
       .speaker-title {
-        font-family: "Poppins", sans-serif;
+        font-family: "Inter", sans-serif;
         font-size: 17px;
         font-weight: 400;
         color: #475569;
@@ -204,7 +176,7 @@
       }
 
       .speaker-company {
-        font-family: "Poppins", sans-serif;
+        font-family: "Inter", sans-serif;
         font-size: 15px;
         font-weight: 400;
 

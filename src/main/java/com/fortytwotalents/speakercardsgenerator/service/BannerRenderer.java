@@ -127,13 +127,20 @@ public class BannerRenderer {
 	 * e.g. {@code speaker/Doe_Jane.png}.
 	 */
 	public static String fileName(BannerType type, Speaker speaker) {
-		return type.directory() + "/" + sanitise(speaker.getLastName()) + "_" + sanitise(speaker.getFirstName())
-				+ ".png";
+		return type.directory() + "/" + fileName(speaker) + ".png";
 	}
 
-	/** File name used for a talk banner, e.g. {@code talks/1234.png}. */
+	/**
+	 * File name used for a talk banner, e.g. {@code talks/Doe_Jane_1234.png}. The first
+	 * speaker's name leads; the talk id keeps the name unique.
+	 */
 	public static String fileName(Talk talk) {
-		return BannerType.TALK.directory() + "/" + talk.getId() + ".png";
+		String speakerPart = talk.getSpeakers().isEmpty() ? "" : fileName(talk.getSpeakers().get(0)) + "_";
+		return BannerType.TALK.directory() + "/" + speakerPart + talk.getId() + ".png";
+	}
+
+	private static String fileName(Speaker speaker) {
+		return sanitise(speaker.getLastName()) + "_" + sanitise(speaker.getFirstName());
 	}
 
 	/**

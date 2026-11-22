@@ -12,19 +12,23 @@
 
 ## 🖼️ Preview
 
-**Speaker card** (1920 × 1080 px)
+**Speaker banner** (1920 × 1080 px)
 
-![Speaker card example](docs/images/speaker-card-example.png)
+![Speaker banner example](docs/images/speaker-banner-example.png)
 
-**Talk card** (1920 × 1080 px)
+**Talk banner** (1920 × 1080 px)
 
-![Talk card example](docs/images/talk-card-example.png)
+![Talk banner example](docs/images/talk-banner-example.png)
+
+**Social banner** (1620 × 1620 px)
+
+![Social banner example](docs/images/social-banner-example.png)
 
 ---
 
 ## ✨ Features
 
-- 🎨 **Banner generation** – speaker card (16:9), talk card (16:9), and social card (1:1 square)
+- 🎨 **Banner generation** – speaker banner (16:9), talk banner (16:9), and social banner (1:1 square)
 - 📥 **Speaker import** – from the [Devoxx CFP API](https://cfp.dev)
 - 🎛️ **Multi-event profiles** – switch between events by activating a Spring profile
 - 🌐 **Web UI** – Bootstrap-based speaker directory with one-click download
@@ -48,14 +52,18 @@ Open <http://localhost:8080> in your browser.
 
 Prerequisites: Java 21+, Maven 3.9+, Docker
 
-Spring Boot automatically starts PostgreSQL via Docker Compose (`compose.yml`) when you run:
+Spring Boot automatically starts PostgreSQL via Docker Compose (`compose.dev.yml`) when you run:
 
 ```shell
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz
 ```
 
-No manual `docker compose up` step is needed — the database container is started and stopped
-together with the application.
+Spring Boot connects to a private development database on a dynamically assigned loopback
+port. PostgreSQL stores its data in memory. Stopping the application removes its managed
+container, and the next run starts with an empty database. Local speaker photo files
+persist. The full-stack deployment uses its own persistent PostgreSQL volume.
+
+The development file requires Docker Compose 2.24.4 or later (`!override` support).
 
 ---
 

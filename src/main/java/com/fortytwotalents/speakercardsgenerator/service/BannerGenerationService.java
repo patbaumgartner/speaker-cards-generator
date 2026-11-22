@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -152,10 +153,12 @@ public class BannerGenerationService {
 				.stream()
 				.filter(types::contains)
 				.toList();
+			Set<String> entryNames = new HashSet<>();
 			if (!speakerTypes.isEmpty()) {
 				for (Speaker speaker : this.speakerRepository.findAllWithTalksBy()) {
 					for (BannerType type : speakerTypes) {
-						addEntry(zip, BannerRenderer.fileName(type, speaker),
+						addEntry(zip,
+								uniqueEntryName(entryNames, BannerRenderer.fileName(type, speaker), speaker.getId()),
 								() -> this.renderer.renderSpeakerPng(type, speaker),
 								type + " banner for " + speaker.displayName());
 					}
@@ -169,6 +172,20 @@ public class BannerGenerationService {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns {@code name}, or the same name with the id appended when another speaker
+	 * already claimed it. Two people with the same name would otherwise produce a
+	 * duplicate ZIP entry, which aborts the whole archive.
+	 */
+	private static String uniqueEntryName(Set<String> used, String name, Object id) {
+		if (used.add(name)) {
+			return name;
+		}
+		String unique = name.substring(0, name.length() - ".png".length()) + "_" + id + ".png";
+		used.add(unique);
+		return unique;
 	}
 
 	private void addEntry(ZipOutputStream zip, String name, Supplier<byte[]> png, String description)
