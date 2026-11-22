@@ -46,18 +46,18 @@
         position: relative;
         overflow: hidden;
         font-family: "Poppins", sans-serif;
-        color: #ffffff;
+        color: #0F172A;
         background: #ffffff;
       }
 
-      /* White header bar */
+      /* Event-color header bar */
       .header {
         position: absolute;
         top: 0;
         left: 0;
         width: 1280px;
         height: 110px;
-        background: #ffffff;
+        background: [[${event.colorPrimary}]];
         z-index: 10;
       }
 
@@ -73,17 +73,6 @@
         display: block;
       }
 
-      .header-hashtag {
-        position: absolute;
-        top: 32px;
-        right: 50px;
-        font-family: "Poppins", sans-serif;
-        font-size: 40px;
-        font-weight: 600;
-        color: #999999;
-        letter-spacing: 1px;
-      }
-
       /* Accent line below header */
       .accent-line {
         position: absolute;
@@ -96,7 +85,7 @@
         z-index: 10;
       }
 
-      /* Primary gradient body */
+      /* Base beneath the stage lighting */
       .body-area {
         position: absolute;
         top: 114px;
@@ -104,11 +93,11 @@
         width: 1280px;
         height: 526px;
 
-        background-color: [[${event.colorPrimary}]];
+        background-color: #F8FAFC;
         z-index: 1;
       }
 
-      /* "Lights on" stage-lighting overlay, tinted with the event accent colour */
+      /* Event-coloured stage lighting */
       .lighting {
         position: absolute;
         top: 114px;
@@ -128,7 +117,7 @@
         font-size: 15px;
         font-weight: 600;
 
-        color: [[${event.colorAccent}]];
+        color: [[${event.colorPrimary}]];
         letter-spacing: 4px;
         text-transform: uppercase;
         z-index: 10;
@@ -144,7 +133,7 @@
         font-family: "Poppins", sans-serif;
         font-size: 53px;
         font-weight: 700;
-        color: #ffffff;
+        color: #0F172A;
         line-height: 1.2;
         text-align: left;
         hyphens: none;
@@ -165,16 +154,18 @@
       .speaker-item {
         position: relative;
         display: block;
-        margin-bottom: 8px;
-        height: 140px;
+        margin-bottom: 12px;
+        min-height: 136px;
+        background-color: #FFFFFF;
+        border-radius: 18px;
       }
 
       .speaker-photo-wrapper {
         position: absolute;
-        left: 0;
-        top: 0;
-        width: 120px;
-        height: 120px;
+        left: 14px;
+        top: 14px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         padding: 4px;
 
@@ -191,27 +182,24 @@
       }
 
       .speaker-details {
-        position: absolute;
-        left: 150px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 270px;
+        padding: 18px 16px 18px 140px;
+        word-wrap: break-word;
       }
 
       .speaker-name {
         font-family: "Poppins", sans-serif;
-        font-size: 26px;
+        font-size: 30px;
         font-weight: 700;
-        color: #ffffff;
+        color: #0F172A;
         line-height: 1.2;
         word-wrap: break-word;
       }
 
       .speaker-title {
         font-family: "Poppins", sans-serif;
-        font-size: 15px;
-        font-weight: 300;
-        color: rgba(255, 255, 255, 0.6);
+        font-size: 17px;
+        font-weight: 400;
+        color: #475569;
         margin-top: 3px;
       }
 
@@ -220,7 +208,7 @@
         font-size: 15px;
         font-weight: 400;
 
-        color: [[${event.colorAccent}]];
+        color: [[${event.colorPrimary}]];
         letter-spacing: 2px;
         text-transform: uppercase;
         margin-top: 2px;
@@ -228,28 +216,24 @@
 
       /* Single speaker: stacked layout (photo on top, text below) */
       .single-speaker .speaker-item {
-        height: auto;
+        padding: 20px;
         text-align: center;
       }
 
       .single-speaker .speaker-photo-wrapper {
         position: relative;
+        left: auto;
+        top: auto;
         margin: 0 auto;
         width: 220px;
         height: 220px;
       }
 
       .single-speaker .speaker-details {
-        position: relative;
-        left: auto;
-        top: auto;
-        transform: none;
-        width: 100%;
-        text-align: center;
-        margin-top: 15px;
+        padding: 14px 0 0;
       }
 
-      /* Accent footer bar */
+      /* Event-primary footer */
       .footer {
         position: absolute;
         bottom: 0;
@@ -257,46 +241,24 @@
         width: 1280px;
         height: 80px;
 
-        background: [[${event.colorAccent}]];
+        background: [[${event.colorPrimary}]];
         z-index: 10;
       }
 
-      .footer-left {
-        position: absolute;
-        bottom: 26px;
-        left: 50px;
-        font-family: "Poppins", sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        color: #ffffff;
-        white-space: nowrap;
-        z-index: 11;
-      }
-
-      .footer-right {
-        position: absolute;
-        bottom: 26px;
-        right: 50px;
-        font-family: "Poppins", sans-serif;
-        font-size: 18px;
-        font-weight: 600;
-        color: #ffffff;
-        white-space: nowrap;
-        z-index: 11;
-        letter-spacing: 1px;
-      }
     </style>
+    <style th:replace="~{banner/fragments/lighting :: signatureStyle}"></style>
   </head>
 
   <body
     th:classappend="${talk != null and talk.speakers != null and #lists.size(talk.speakers) == 1 ? 'single-speaker' : ''}"
   >
-    <!-- White header -->
+    <!-- Event-color header -->
     <div class="header">
       <div class="header-logo">
         <img th:src="'/images/' + ${event.logoFile}" alt="Event Logo" />
       </div>
-      <div class="header-hashtag" th:text="'#' + ${event.shortName}">#vdz27</div>
+      <div th:replace="~{banner/fragments/lighting :: schedule}"></div>
+      <div th:replace="~{banner/fragments/lighting :: signature}"></div>
     </div>
 
     <!-- Accent line -->
@@ -304,7 +266,7 @@
 
     <!-- Primary body with the "lights on" overlay -->
     <div class="body-area"></div>
-    <div th:replace="~{banner/fragments/lighting :: wide(accent=${event.colorAccent})}"></div>
+    <div th:replace="~{banner/fragments/lighting :: stage(1280, 526, 'translate(0 0)')}"></div>
 
     <!-- Session label -->
     <div class="session-label" th:text="${event.sessionLabel}">Session</div>
@@ -326,7 +288,7 @@
             class="speaker-photo-inner"
             th:style="${speaker.id != null}
                ? 'background-image: url(/speaker-photo/' + ${speaker.id} + ')'
-               : 'background-color: ' + ${event.colorPrimary} + ';'"
+               : 'background-image: url(/speaker-photo)'"
           ></div>
         </div>
         <div class="speaker-details">
@@ -350,16 +312,9 @@
     </div>
 
     <!-- Accent footer -->
-    <div class="footer"></div>
-    <div class="footer-left">
-      <span th:if="${event.date != null and !#strings.isEmpty(event.date)}" th:text="${event.date}"></span>
-      <span
-        th:if="${event.date != null and !#strings.isEmpty(event.date) and event.location != null and !#strings.isEmpty(event.location)}"
-      >
-        &#183;
-      </span>
-      <span th:if="${event.location != null and !#strings.isEmpty(event.location)}" th:text="${event.location}"></span>
+    <div class="footer">
+      <div th:replace="~{banner/fragments/lighting :: motto}"></div>
+      <div th:replace="~{banner/fragments/lighting :: website}"></div>
     </div>
-    <div class="footer-right" th:text="${event.url}">https://voxxeddays.ch</div>
   </body>
 </html>

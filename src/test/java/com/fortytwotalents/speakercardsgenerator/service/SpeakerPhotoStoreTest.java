@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -70,6 +71,16 @@ class SpeakerPhotoStoreTest {
 			assertThat(photo.contentType()).isEqualTo(MediaType.IMAGE_PNG);
 			assertThat(photo.content()).isNotEmpty();
 		});
+	}
+
+	@Test
+	void downloadSniffsImageBytesWhenTheApiServesAGenericBinaryContentType() {
+		serve("/jane", 200, "binary/octet-stream", pngBytes());
+
+		assertThat(store().download(SPEAKER_ID, url("/jane"))).isTrue();
+		assertThat(this.photoDir.resolve(SPEAKER_ID + ".png")).exists();
+		assertThat(store().find(SPEAKER_ID))
+			.hasValueSatisfying(photo -> assertThat(photo.contentType()).isEqualTo(MediaType.IMAGE_PNG));
 	}
 
 	@Test
@@ -144,18 +155,31 @@ class SpeakerPhotoStoreTest {
 	}
 
 	@Test
-	void downloadIsSkippedWhenAPhotoIsAlreadyStored() throws IOException {
+	void refreshReplacesAnOlderFormatWithTheExactServerBytes() throws IOException {
 		Files.write(this.photoDir.resolve(SPEAKER_ID + ".jpg"), new byte[] { 1, 2, 3 });
 		serve("/jane.png", 200, "image/png", pngBytes());
 
-		assertThat(store().download(SPEAKER_ID, url("/jane.png"))).isFalse();
-		assertThat(this.photoDir.resolve(SPEAKER_ID + ".png")).doesNotExist();
+		assertThat(store().download(SPEAKER_ID, url("/jane.png"))).isTrue();
+		assertThat(this.photoDir.resolve(SPEAKER_ID + ".jpg")).doesNotExist();
+		assertThat(store().find(SPEAKER_ID).orElseThrow().content()).isEqualTo(pngBytes());
+	}
+
+	@Test
+	void refreshKeepsHighestResolutionAndPreservesItWhenLaterFetchFails() {
+		byte[] large = pngBytes(64);
+		serve("/small", 200, "image/png", pngBytes());
+		serve("/large", 200, "image/png", large);
+		serve("/error", 503, "text/plain", new byte[0]);
+
+		assertThat(store().download(SPEAKER_ID, url("/small"), url("/large"))).isTrue();
+		assertThat(store().download(SPEAKER_ID, url("/error"))).isFalse();
+		assertThat(store().find(SPEAKER_ID).orElseThrow().content()).isEqualTo(large);
 	}
 
 	@Test
 	void downloadIgnoresMissingInput() {
 		assertThat(store().download(null, "http://example.com/a.png")).isFalse();
-		assertThat(store().download(SPEAKER_ID, null)).isFalse();
+		assertThat(store().download(SPEAKER_ID, (String) null)).isFalse();
 		assertThat(store().download(SPEAKER_ID, "  ")).isFalse();
 	}
 
@@ -170,6 +194,26 @@ class SpeakerPhotoStoreTest {
 		assertThat(store().find(UUID.randomUUID())).isEmpty();
 		assertThat(store().find(null)).isEmpty();
 		assertThat(store().exists(null)).isFalse();
+	}
+
+	@Test
+	void findOrPlaceholderAlwaysReturnsARealImage() throws IOException {
+		SpeakerPhotoStore.Photo photo = store().findOrPlaceholder(UUID.randomUUID());
+
+		assertThat(photo.contentType()).isEqualTo(MediaType.IMAGE_PNG);
+		assertThat(ImageIO.read(new ByteArrayInputStream(photo.content()))).isNotNull();
+	}
+
+	@Test
+	void findOrPlaceholderPrefersAStoredPhoto() {
+		assertThat(store().findOrPlaceholder(BUNDLED_SPEAKER_ID).content())
+			.isNotEqualTo(SpeakerPhotoStore.defaultPhoto().content());
+	}
+
+	@Test
+	void dukePlaceholderIsGoneForGood() {
+		assertThat(getClass().getResource("/static/images/duke_cool.png")).isNull();
+		assertThat(SpeakerPhotoStore.defaultPhoto().content()).isNotEmpty();
 	}
 
 	private SpeakerPhotoStore store() {
@@ -209,8 +253,12 @@ class SpeakerPhotoStoreTest {
 	}
 
 	private static byte[] pngBytes() {
+		return pngBytes(4);
+	}
+
+	private static byte[] pngBytes(int size) {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-			ImageIO.write(new BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB), "PNG", out);
+			ImageIO.write(new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB), "PNG", out);
 			return out.toByteArray();
 		}
 		catch (IOException ex) {

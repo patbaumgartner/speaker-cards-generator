@@ -92,8 +92,13 @@ curl -X POST http://localhost:8080/api/import/devoxx
 curl -X POST http://localhost:8080/api/import/devoxx/vdz27
 ```
 
-The public import does not need a token. A token is only used to enrich imported speakers
-with job titles from the authenticated CFP API.
+Each import refreshes speaker profiles, talks, and portrait files from the CFP. If
+the CFP provides several portrait URLs, the importer compares their pixel dimensions
+and stores the highest-resolution download without recompression. The download limit
+is configurable with `app.storage.max-photo-size` (default `5MB`).
+
+The public import works without a token. Adding a token also checks authenticated
+speaker details for job titles and portrait URLs.
 
 To find it, sign in to your CFP instance, open the browser developer tools (`F12`) and select
 the **Network** tab. Reload the page, choose an authenticated request such as `/api/account`,

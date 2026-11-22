@@ -7,12 +7,14 @@ import com.fortytwotalents.speakercardsgenerator.model.Speaker;
 import com.fortytwotalents.speakercardsgenerator.model.Talk;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -36,7 +38,7 @@ import org.springframework.web.client.RestClient;
  *
  * <p>
  * The import is idempotent: existing speakers (matched by UUID) are updated in place;
- * profile pictures are downloaded once and cached.
+ * profile pictures are refreshed on every import.
  */
 @Service
 public class DevoxxImportService {
@@ -109,17 +111,10 @@ public class DevoxxImportService {
 
 		String baseUrl = "https://" + eventId + ".cfp.dev/api/public";
 
-		// Fetch all speakers (request large page to avoid pagination)
-		URI speakersUri = URI.create(baseUrl + "/speakers?page=0&size=1000");
-		log.info("Importing speakers from CFP API: {}", speakersUri);
+		log.info("Importing speakers from CFP API for event {}", eventId);
 
 		try {
-			DevoxxSpeakerDto[] speakers = restClient.get().uri(speakersUri).retrieve().body(DevoxxSpeakerDto[].class);
-
-			if (speakers == null || speakers.length == 0) {
-				log.warn("No speakers returned from CFP API for event: {}", eventId);
-				return 0;
-			}
+			List<DevoxxSpeakerDto> speakers = fetchSpeakers(baseUrl);
 
 			// When an API token is configured, enrich each speaker with data
 			// from the authenticated endpoint (which includes jobTitle)
@@ -156,6 +151,23 @@ public class DevoxxImportService {
 		catch (Exception e) {
 			log.error("Failed to import speakers from CFP API: {}", e.getMessage(), e);
 			throw new RuntimeException("CFP API import failed for event " + eventId, e);
+		}
+	}
+
+	private List<DevoxxSpeakerDto> fetchSpeakers(String baseUrl) {
+		List<DevoxxSpeakerDto> speakers = new ArrayList<>();
+		for (int page = 0;; page++) {
+			URI uri = URI.create(baseUrl + "/speakers?page=" + page + "&size=1000");
+			var response = restClient.get().uri(uri).retrieve().toEntity(DevoxxSpeakerDto[].class);
+			DevoxxSpeakerDto[] batch = response.getBody();
+			if (batch == null || batch.length == 0) {
+				return speakers;
+			}
+			speakers.addAll(List.of(batch));
+			String links = response.getHeaders().getFirst("Link");
+			if (links == null ? batch.length < 1000 : !links.contains("rel=\"next\"")) {
+				return speakers;
+			}
 		}
 	}
 
@@ -199,27 +211,28 @@ public class DevoxxImportService {
 			talk.setId(dto.id);
 		}
 
-		talk.setTitle(blankToNull(dto.title));
+		String title = blankToNull(dto.title);
+		if (!Objects.equals(title, talk.getTitle())) {
+			talk.setFormattedTitle(null);
+		}
+		talk.setTitle(title);
 		talk.setDescription(blankToNull(dto.description));
 
 		// Extract scheduling from timeSlots if available
-		if (dto.timeSlots != null && !dto.timeSlots.isEmpty()) {
-			DevoxxTimeSlotDto slot = dto.timeSlots.get(0);
-			talk.setDate(blankToNull(slot.date));
-			talk.setCetTime(blankToNull(slot.startTime));
-		}
+		DevoxxTimeSlotDto slot = dto.timeSlots == null || dto.timeSlots.isEmpty() ? null : dto.timeSlots.get(0);
+		talk.setDate(slot == null ? null : blankToNull(slot.date));
+		talk.setCetTime(slot == null ? null : blankToNull(slot.startTime));
 
-		// Link speakers to this talk
+		List<Speaker> talkSpeakers = new ArrayList<>();
 		if (dto.speakers != null) {
-			List<Speaker> talkSpeakers = new ArrayList<>();
 			for (DevoxxTalkSpeakerDto speakerRef : dto.speakers) {
 				UUID speakerUuid = cfpIdToUuid.get(speakerRef.id);
 				if (speakerUuid != null) {
 					speakerRepository.findById(speakerUuid).ifPresent(talkSpeakers::add);
 				}
 			}
-			talk.setSpeakers(talkSpeakers);
 		}
+		talk.setSpeakers(talkSpeakers);
 
 		talkRepository.save(talk);
 	}
@@ -236,8 +249,14 @@ public class DevoxxImportService {
 				.header("Authorization", "Bearer " + apiToken)
 				.retrieve()
 				.body(DevoxxSpeakerDto.class);
-			if (detail != null && detail.jobTitle != null && !detail.jobTitle.isBlank()) {
-				dto.jobTitle = detail.jobTitle;
+			if (detail != null) {
+				if (blankToNull(detail.jobTitle) != null) {
+					dto.jobTitle = detail.jobTitle;
+				}
+				if (blankToNull(detail.originalImageUrl) != null) {
+					dto.originalImageUrl = detail.originalImageUrl;
+				}
+				dto.detailImageUrl = detail.imageUrl;
 			}
 		}
 		catch (Exception e) {
@@ -245,7 +264,7 @@ public class DevoxxImportService {
 		}
 	}
 
-	private boolean saveSpeaker(DevoxxSpeakerDto dto, String eventId) {
+	private boolean saveSpeaker(DevoxxSpeakerDto dto, String eventId) throws IOException {
 		UUID speakerId = resolveSpeakerId(dto, eventId);
 		if (speakerId == null) {
 			return false;
@@ -285,7 +304,13 @@ public class DevoxxImportService {
 			.addArgument(speakerId)
 			.log("{} speaker: {} {} ({})");
 
-		photoStore.download(speakerId, dto.imageUrl);
+		if (blankToNull(dto.imageUrl) == null && blankToNull(dto.detailImageUrl) == null
+				&& blankToNull(dto.originalImageUrl) == null) {
+			photoStore.removeImportedPhoto(speakerId);
+		}
+		else {
+			photoStore.download(speakerId, dto.originalImageUrl, dto.detailImageUrl, dto.imageUrl);
+		}
 		return true;
 	}
 
@@ -375,6 +400,11 @@ public class DevoxxImportService {
 
 		/** Profile picture URL. */
 		public String imageUrl;
+
+		/** Full-resolution portrait when supplied by the CFP. */
+		public String originalImageUrl;
+
+		private String detailImageUrl;
 
 		/** Twitter / X handle. */
 		@JsonProperty("twitterHandle")

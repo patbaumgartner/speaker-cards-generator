@@ -50,9 +50,9 @@ public class HtmlToPngConverter {
 
 	private static final String STATIC_ROOT = "/static";
 
-	private static final String SPEAKER_PHOTO_PREFIX = "/speaker-photo/";
+	private static final String SPEAKER_PHOTO_PATH = "/speaker-photo";
 
-	private static final String PLACEHOLDER_PHOTO = "/images/duke_cool.png";
+	private static final String SPEAKER_PHOTO_PREFIX = SPEAKER_PHOTO_PATH + "/";
 
 	/**
 	 * The templates declare a 1280×720 CSS-pixel page, which at 96 CSS DPI is a 960×540
@@ -144,7 +144,8 @@ public class HtmlToPngConverter {
 			if (query >= 0) {
 				path = path.substring(0, query);
 			}
-			byte[] content = path.startsWith(SPEAKER_PHOTO_PREFIX) ? speakerPhoto(path) : staticResource(path);
+			byte[] content = path.equals(SPEAKER_PHOTO_PATH) || path.startsWith(SPEAKER_PHOTO_PREFIX)
+					? speakerPhoto(path) : staticResource(path);
 			if (content == null) {
 				log.warn("Banner template referenced a resource that could not be resolved: {}", url);
 				content = new byte[0];
@@ -153,10 +154,13 @@ public class HtmlToPngConverter {
 		}
 
 		private byte[] speakerPhoto(String path) {
+			if (path.equals(SPEAKER_PHOTO_PATH)) {
+				return SpeakerPhotoStore.defaultPhoto().content();
+			}
 			String id = path.substring(SPEAKER_PHOTO_PREFIX.length());
-			return speakerId(id).flatMap(HtmlToPngConverter.this.photoStore::find)
+			return speakerId(id).map(HtmlToPngConverter.this.photoStore::findOrPlaceholder)
 				.map(SpeakerPhotoStore.Photo::content)
-				.orElseGet(() -> staticResource(PLACEHOLDER_PHOTO));
+				.orElseGet(() -> SpeakerPhotoStore.defaultPhoto().content());
 		}
 
 		private Optional<UUID> speakerId(String value) {

@@ -4,6 +4,7 @@ import com.fortytwotalents.speakercardsgenerator.model.Speaker;
 import com.fortytwotalents.speakercardsgenerator.model.Talk;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
 import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.service.SpeakerPhotoStore;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -114,17 +115,37 @@ class BannerControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("Jane")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("#TC27")))
-			.andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"lighting\"")));
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"lighting\"")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("background-image: url(/speaker-photo/")));
 
-		this.mockMvc.perform(get("/talk-banner/{id}", TALK_ID)).andExpect(status().isOk());
+		this.mockMvc.perform(get("/talk-banner/{id}", TALK_ID))
+			.andExpect(status().isOk())
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("background-image: url(/speaker-photo/")));
 		this.mockMvc.perform(get("/speaker-social/{id}", SPEAKER_ID)).andExpect(status().isOk());
 	}
 
 	@Test
-	void speakerPhotoFallsBackToThePlaceholderInsteadOfA404() throws Exception {
-		this.mockMvc.perform(get("/speaker-photo/{id}", SPEAKER_ID))
+	void speakerPhotoFallsBackToTheDefaultAvatarInsteadOfA404() throws Exception {
+		byte[] body = this.mockMvc.perform(get("/speaker-photo/{id}", SPEAKER_ID))
 			.andExpect(status().isOk())
-			.andExpect(content().contentType(MediaType.IMAGE_PNG));
+			.andExpect(content().contentType(MediaType.IMAGE_PNG))
+			.andReturn()
+			.getResponse()
+			.getContentAsByteArray();
+
+		assertThat(body).isEqualTo(SpeakerPhotoStore.defaultPhoto().content());
+	}
+
+	@Test
+	void defaultSpeakerPhotoEndpointServesTheBrandedAvatar() throws Exception {
+		byte[] body = this.mockMvc.perform(get("/speaker-photo"))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType(MediaType.IMAGE_PNG))
+			.andReturn()
+			.getResponse()
+			.getContentAsByteArray();
+
+		assertThat(body).isEqualTo(SpeakerPhotoStore.defaultPhoto().content());
 	}
 
 	@Test

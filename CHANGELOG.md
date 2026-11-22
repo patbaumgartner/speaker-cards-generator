@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Import CFP photos served as `binary/octet-stream` by detecting the image format from the response bytes
+- Always render a real speaker image by replacing the Duke fallback with a branded local avatar
 - Default to the `vdz` Voxxed Days Zürich Spring profile when no profile is active
 - Report invalid CFP event IDs as a clear bad request instead of an opaque server error
 - Store imported speaker photos in configurable runtime storage so they work from executable JARs and containers
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused demo images that were not referenced by any template or configuration
 
 ### Changed
+- Refreshed the VDZ, VDT, and VDCern logos from the official voxxeddays.ch logo library
 - Renamed base package from `com.fortytwotalents` to `com.fortytwotalents.speakercardsgenerator` to align namespace with the project name
 - Renamed Maven `artifactId` and `<name>` from `speaker-cards` to `speaker-cards-generator` to match the repository name
 - Used the microphone cyan as the button accent and icon color while keeping solid actions navy for readability

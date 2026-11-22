@@ -1,6 +1,12 @@
 package com.fortytwotalents.speakercardsgenerator.service;
 
 import com.fortytwotalents.speakercardsgenerator.config.StorageConfig;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,16 +16,21 @@ import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -37,6 +48,11 @@ import org.springframework.stereotype.Component;
  * <li>the classpath under {@code /static/images/speaker/} — so photos bundled into the
  * image or checked in by hand keep working.</li>
  * </ol>
+ *
+ * <p>
+ * Rendering and display use {@link #findOrPlaceholder(UUID)}, which falls back to a
+ * locally generated, branded avatar. A speaker therefore never renders with an empty
+ * photo area or a mascot placeholder.
  *
  * <h2>Download hardening</h2> Image URLs come from third-party CFP systems and are
  * therefore untrusted. Downloads are restricted to {@code http}/{@code https}, capped at
@@ -63,9 +79,24 @@ public class SpeakerPhotoStore {
 			MediaType.IMAGE_JPEG, "png", MediaType.IMAGE_PNG, "gif", MediaType.IMAGE_GIF, "webp",
 			MediaType.parseMediaType("image/webp"));
 
-	/** Maps a response content type back to the extension we store the file under. */
-	private static final Map<String, String> EXTENSION_BY_CONTENT_TYPE = Map.of("image/jpeg", "jpg", "image/jpg", "jpg",
-			"image/png", "png", "image/gif", "gif", "image/webp", "webp");
+	private static final Set<String> IMAGE_CONTENT_TYPES = Set.of("image/jpeg", "image/jpg", "image/png", "image/gif",
+			"image/webp");
+
+	/** Content types that say "binary blob" without naming the actual image format. */
+	private static final Set<String> GENERIC_CONTENT_TYPES = Set.of("binary/octet-stream", "application/octet-stream",
+			"application/binary");
+
+	private static final byte[] JPEG_MAGIC = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF };
+
+	private static final byte[] PNG_MAGIC = { (byte) 0x89, 'P', 'N', 'G', '\r', '\n', (byte) 0x1A, '\n' };
+
+	private static final byte[] GIF_87_MAGIC = "GIF87a".getBytes(StandardCharsets.US_ASCII);
+
+	private static final byte[] GIF_89_MAGIC = "GIF89a".getBytes(StandardCharsets.US_ASCII);
+
+	private static final byte[] RIFF_MAGIC = "RIFF".getBytes(StandardCharsets.US_ASCII);
+
+	private static final byte[] WEBP_MAGIC = "WEBP".getBytes(StandardCharsets.US_ASCII);
 
 	private static final Set<String> ALLOWED_SCHEMES = Set.of("http", "https");
 
@@ -74,6 +105,8 @@ public class SpeakerPhotoStore {
 	private static final int MAX_REDIRECTS = 3;
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(15);
+
+	private static final byte[] DEFAULT_PHOTO = createDefaultPhoto();
 
 	private final StorageConfig config;
 
@@ -126,6 +159,22 @@ public class SpeakerPhotoStore {
 		return Optional.empty();
 	}
 
+	/**
+	 * Finds the speaker's photo, or returns the branded default avatar. Use this for
+	 * display and rendering; {@link #find(UUID)} stays empty-aware so imports can still
+	 * download a real photo later.
+	 * @param speakerId speaker UUID
+	 * @return a real photo when available, otherwise the default avatar
+	 */
+	public Photo findOrPlaceholder(UUID speakerId) {
+		return find(speakerId).orElseGet(SpeakerPhotoStore::defaultPhoto);
+	}
+
+	/** Returns the locally generated avatar used when a speaker has no photo. */
+	public static Photo defaultPhoto() {
+		return new Photo(DEFAULT_PHOTO, MediaType.IMAGE_PNG);
+	}
+
 	/** Returns {@code true} when a profile picture is already stored for the speaker. */
 	public boolean exists(UUID speakerId) {
 		if (speakerId == null) {
@@ -143,31 +192,78 @@ public class SpeakerPhotoStore {
 	}
 
 	/**
-	 * Downloads a profile picture unless one is already stored. Never throws: a failed
-	 * photo download must not abort an otherwise successful speaker import.
+	 * Refreshes a profile picture with the bytes supplied by the CFP. Never throws: a
+	 * failed photo download must not abort an otherwise successful speaker import.
 	 * @param speakerId speaker UUID, used as the file name
-	 * @param sourceUrl absolute {@code http}/{@code https} URL of the image
-	 * @return {@code true} when a new file was written
+	 * @param sourceUrls available portrait URLs, in preference order for equal dimensions
+	 * @return whether a portrait was stored
 	 */
-	public boolean download(UUID speakerId, String sourceUrl) {
-		if (speakerId == null || sourceUrl == null || sourceUrl.isBlank()) {
+	public boolean download(UUID speakerId, String... sourceUrls) {
+		if (speakerId == null || sourceUrls == null) {
 			return false;
 		}
-		if (exists(speakerId)) {
-			log.debug("Profile picture already stored for speaker {}, skipping download", speakerId);
+		Portrait best = null;
+		for (String url : Arrays.stream(sourceUrls)
+			.filter(u -> u != null && !u.isBlank())
+			.map(String::trim)
+			.distinct()
+			.toList()) {
+			try {
+				Portrait candidate = fetch(url);
+				if (best == null || candidate.pixels() > best.pixels()) {
+					best = candidate;
+				}
+			}
+			catch (InterruptedException ex) {
+				Thread.currentThread().interrupt();
+				return false;
+			}
+			catch (IOException | IllegalArgumentException ex) {
+				log.warn("Could not fetch portrait for speaker {}: {}", speakerId, ex.getMessage());
+			}
+		}
+		if (best == null) {
 			return false;
 		}
 		try {
-			return fetchAndStore(speakerId, sourceUrl.trim());
+			write(speakerId, best.extension(), best.content());
+			return true;
 		}
-		catch (Exception ex) {
-			log.warn("Could not download profile picture for speaker {} from {}: {}", speakerId, sourceUrl,
-					ex.getMessage());
+		catch (IOException ex) {
+			log.warn("Could not store portrait for speaker {}", speakerId, ex);
 			return false;
 		}
 	}
 
-	private boolean fetchAndStore(UUID speakerId, String sourceUrl) throws IOException, InterruptedException {
+	private record Portrait(String extension, byte[] content, long pixels) {
+	}
+
+	private static long pixelCount(byte[] content) throws IOException {
+		try (var input = new MemoryCacheImageInputStream(new ByteArrayInputStream(content))) {
+			var readers = ImageIO.getImageReaders(input);
+			if (!readers.hasNext()) {
+				return 0; // Preserve supported formats without an installed ImageIO
+							// reader.
+			}
+			ImageReader reader = readers.next();
+			try {
+				reader.setInput(input);
+				return (long) reader.getWidth(0) * reader.getHeight(0);
+			}
+			finally {
+				reader.dispose();
+			}
+		}
+	}
+
+	/** Removes a previously imported portrait when the CFP clears its photo URL. */
+	public synchronized void removeImportedPhoto(UUID speakerId) throws IOException {
+		for (String extension : EXTENSIONS) {
+			Files.deleteIfExists(photoDirectory().resolve(speakerId + "." + extension));
+		}
+	}
+
+	private Portrait fetch(String sourceUrl) throws IOException, InterruptedException {
 		URI uri = URI.create(sourceUrl);
 		for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
 			validateDestination(uri);
@@ -183,17 +279,15 @@ public class SpeakerPhotoStore {
 				if (response.statusCode() != 200) {
 					throw new IOException("HTTP " + response.statusCode());
 				}
-				String extension = resolveExtension(response, uri);
 				byte[] content = readAtMost(body, config.getMaxPhotoSize().toBytes());
-				write(speakerId, extension, content);
-				log.info("Stored profile picture for speaker {} ({} bytes)", speakerId, content.length);
-				return true;
+				String extension = resolveExtension(response, content);
+				return new Portrait(extension, content, pixelCount(content));
 			}
 		}
 		throw new IOException("too many redirects");
 	}
 
-	private void write(UUID speakerId, String extension, byte[] content) throws IOException {
+	private synchronized void write(UUID speakerId, String extension, byte[] content) throws IOException {
 		Path directory = photoDirectory();
 		Files.createDirectories(directory);
 		Path target = directory.resolve(speakerId + "." + extension);
@@ -202,7 +296,12 @@ public class SpeakerPhotoStore {
 		Path temp = Files.createTempFile(directory, speakerId.toString(), ".part");
 		try {
 			Files.write(temp, content);
-			Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING);
+			Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+			for (String other : EXTENSIONS) {
+				if (!other.equals(extension)) {
+					Files.deleteIfExists(directory.resolve(speakerId + "." + other));
+				}
+			}
 		}
 		finally {
 			Files.deleteIfExists(temp);
@@ -226,36 +325,50 @@ public class SpeakerPhotoStore {
 	}
 
 	/**
-	 * Determines the file extension from the response content type, falling back to the
-	 * URL path. Content type wins: it is what the server actually sent, whereas the path
-	 * is attacker-chosen.
+	 * Checks the response type and identifies the stored format from its signature.
 	 */
-	private static String resolveExtension(HttpResponse<?> response, URI uri) throws IOException {
+	private static String resolveExtension(HttpResponse<?> response, byte[] content) throws IOException {
 		String contentType = response.headers()
 			.firstValue("content-type")
 			.map(value -> value.split(";", 2)[0].trim().toLowerCase(Locale.ROOT))
 			.orElse("");
-		String fromContentType = EXTENSION_BY_CONTENT_TYPE.get(contentType);
-		if (fromContentType != null) {
-			return fromContentType;
+		if (IMAGE_CONTENT_TYPES.contains(contentType) || contentType.isEmpty()
+				|| GENERIC_CONTENT_TYPES.contains(contentType)) {
+			return extensionFromContent(content).orElseThrow(() -> new IOException("unrecognised image bytes"));
 		}
-		if (!contentType.isEmpty()) {
-			throw new IOException("unsupported content type: " + contentType);
-		}
-		return extensionFromPath(uri).orElse("jpg");
+		throw new IOException("unsupported content type: " + contentType);
 	}
 
-	private static Optional<String> extensionFromPath(URI uri) {
-		String path = uri.getPath();
-		if (path == null) {
-			return Optional.empty();
+	private static Optional<String> extensionFromContent(byte[] content) {
+		if (startsWith(content, JPEG_MAGIC)) {
+			return Optional.of("jpg");
 		}
-		int dot = path.lastIndexOf('.');
-		if (dot < 0 || dot == path.length() - 1) {
-			return Optional.empty();
+		if (startsWith(content, PNG_MAGIC)) {
+			return Optional.of("png");
 		}
-		String extension = path.substring(dot + 1).toLowerCase(Locale.ROOT);
-		return EXTENSIONS.contains(extension) ? Optional.of(extension) : Optional.empty();
+		if (startsWith(content, GIF_87_MAGIC) || startsWith(content, GIF_89_MAGIC)) {
+			return Optional.of("gif");
+		}
+		if (content.length >= 12 && startsWith(content, RIFF_MAGIC) && startsWith(content, 8, WEBP_MAGIC)) {
+			return Optional.of("webp");
+		}
+		return Optional.empty();
+	}
+
+	private static boolean startsWith(byte[] content, byte[] prefix) {
+		return startsWith(content, 0, prefix);
+	}
+
+	private static boolean startsWith(byte[] content, int offset, byte[] prefix) {
+		if (content.length - offset < prefix.length) {
+			return false;
+		}
+		for (int i = 0; i < prefix.length; i++) {
+			if (content[offset + i] != prefix[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static boolean isRedirect(int statusCode) {
@@ -297,6 +410,35 @@ public class SpeakerPhotoStore {
 		// IPv6 unique local addresses (fc00::/7) — not covered by isSiteLocalAddress,
 		// which only checks the deprecated fec0::/10 range.
 		return bytes.length == 16 && (bytes[0] & 0xFE) == 0xFC;
+	}
+
+	private static byte[] createDefaultPhoto() {
+		int size = 512;
+		BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D graphics = image.createGraphics();
+		try {
+			graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			graphics.setColor(new Color(0x1E, 0x22, 0x46));
+			graphics.fillRect(0, 0, size, size);
+			graphics.setColor(new Color(0x40, 0xB4, 0xE5));
+			graphics.fillOval(0, 0, size, size);
+			graphics.setColor(new Color(0x1E, 0x22, 0x46));
+			graphics.fillOval(184, 120, 144, 144);
+			graphics.fill(new Ellipse2D.Double(112, 290, 288, 300));
+		}
+		finally {
+			graphics.dispose();
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try {
+			if (!ImageIO.write(image, "png", out)) {
+				throw new IllegalStateException("No PNG image writer is available");
+			}
+		}
+		catch (IOException ex) {
+			throw new IllegalStateException("Could not create the default speaker photo", ex);
+		}
+		return out.toByteArray();
 	}
 
 	private Path photoDirectory() {

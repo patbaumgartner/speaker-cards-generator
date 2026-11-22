@@ -1,140 +1,117 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<head>
+  <style th:fragment="signatureStyle" th:inline="text">
+    .campaign-signature {
+      position: absolute;
+      right: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+      text-align: right;
+    }
+    .event-schedule {
+      position: absolute;
+      left: 34%;
+      top: 18px;
+      width: 420px;
+      color: #FFFFFF;
+      text-align: center;
+    }
+    .event-date {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+    .event-location {
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.2;
+    }
+    .footer-url {
+      position: absolute;
+      left: 50px;
+      top: 20px;
+      color: #FFFFFF;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+    .campaign-tag {
+      color: #FFFFFF;
+      font-size: 48px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+    }
+    .campaign-motto {
+      position: absolute;
+      right: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding-right: 76px;
+      white-space: nowrap;
+      color: #FFFFFF;
+      font-size: 30px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .campaign-switch {
+      position: absolute;
+      right: 0;
+      top: 3px;
+      width: 60px;
+      height: 30px;
+    }
+  </style>
+</head>
 <body>
-  <!--
-    "Lights on" stage lighting. Kept as inline SVG so the glow follows the event accent
-    colour and needs no extra bitmap assets. All shapes are decorative; banner text and
-    speaker photos sit above this layer.
-  -->
-  <svg th:fragment="wide(accent)" class="lighting" xmlns="http://www.w3.org/2000/svg" width="1280" height="526"
-    viewBox="0 0 1280 526" preserveAspectRatio="none" aria-hidden="true">
+  <div th:fragment="schedule" class="event-schedule">
+    <div class="event-date" th:if="${!#strings.isEmpty(event.date)}" th:text="${event.date}"></div>
+    <div class="event-location" th:if="${!#strings.isEmpty(event.location)}" th:text="${event.location}"></div>
+  </div>
+  <div th:fragment="website" class="footer-url" th:if="${!#strings.isEmpty(event.url)}"
+    th:text="${event.url.replaceFirst('^https?://', '').replaceFirst('/$', '')}">voxxeddays.ch</div>
+  <div th:fragment="signature" class="campaign-signature">
+    <div class="campaign-tag" th:text="'#' + ${event.shortName}">#vdz27</div>
+  </div>
+  <div th:fragment="motto" class="campaign-motto">
+    we turn the lights on
+    <svg class="campaign-switch" xmlns="http://www.w3.org/2000/svg" width="60" height="30"
+      viewBox="0 0 60 30" aria-hidden="true">
+      <rect x="1" y="1" width="58" height="28" rx="14" fill="#0F172A" stroke="#FFFFFF" stroke-width="2" />
+      <circle cx="44" cy="15" r="12" th:attr="fill=${event.colorSecondary}" />
+      <circle cx="44" cy="15" r="8" fill="#FFFFFF" />
+    </svg>
+  </div>
+  <svg th:fragment="stage(width, height, orientation)" class="lighting" xmlns="http://www.w3.org/2000/svg"
+    th:attr="width=${width},height=${height}" viewBox="0 0 1280 526" preserveAspectRatio="none" aria-hidden="true">
     <defs>
-      <linearGradient id="wide-beam" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.30" />
-        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.08" />
-        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
+      <linearGradient id="stage-wash" x1="0%" y1="65%" x2="100%" y2="30%">
+        <stop offset="0%" stop-color="#FFFFFF" />
+        <stop offset="44%" stop-color="#F8FAFC" />
+        <stop offset="80%" th:attr="stop-color=${event.colorSecondary}" stop-opacity=".22" />
+        <stop offset="100%" th:attr="stop-color=${event.colorAccent}" stop-opacity=".42" />
       </linearGradient>
-      <radialGradient id="wide-glow">
-        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.38" />
-        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.12" />
-        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
-      </radialGradient>
-    </defs>
-
-    <!-- Volumetric beams from the three fixtures above the stage. -->
-    <polygon points="125,22 215,22 500,526 0,526" fill="url(#wide-beam)" />
-    <polygon points="600,22 680,22 810,526 470,526" fill="url(#wide-beam)" opacity="0.6" />
-    <polygon points="1065,22 1155,22 1280,526 780,526" fill="url(#wide-beam)" />
-
-    <!-- Soft pools of light where the beams meet the content. -->
-    <circle cx="170" cy="35" r="190" fill="url(#wide-glow)" opacity="0.55" />
-    <circle cx="640" cy="35" r="165" fill="url(#wide-glow)" opacity="0.38" />
-    <circle cx="1110" cy="35" r="200" fill="url(#wide-glow)" opacity="0.55" />
-    <circle cx="1110" cy="120" r="150" fill="url(#wide-glow)" opacity="0.45" />
-
-    <!-- Stage fixtures with lit lenses. -->
-    <g th:attr="stroke=${accent}" stroke-width="2" stroke-opacity="0.55" fill="#1a1a1c">
-      <rect x="130" y="0" width="80" height="21" rx="6" />
-      <rect x="600" y="0" width="80" height="21" rx="6" />
-      <rect x="1070" y="0" width="80" height="21" rx="6" />
-    </g>
-    <g th:attr="fill=${accent}">
-      <circle cx="170" cy="24" r="7" />
-      <circle cx="640" cy="24" r="7" />
-      <circle cx="1110" cy="24" r="7" />
-    </g>
-    <g fill="url(#wide-glow)">
-      <circle cx="170" cy="24" r="26" />
-      <circle cx="640" cy="24" r="26" />
-      <circle cx="1110" cy="24" r="26" />
-    </g>
-
-    <!-- A bulb switching on: the visual cue for the whole theme. -->
-    <circle cx="1135" cy="108" r="72" fill="url(#wide-glow)" opacity="0.7" />
-    <g th:attr="stroke=${accent}" stroke-width="3" stroke-opacity="0.5" fill="none">
-      <circle cx="1135" cy="100" r="27" />
-      <path d="M1123 123 L1123 137 L1147 137 L1147 123" />
-      <path d="M1125 145 L1145 145 M1128 152 L1142 152" />
-      <line x1="1135" y1="54" x2="1135" y2="40" />
-      <line x1="1089" y1="100" x2="1075" y2="100" />
-      <line x1="1181" y1="100" x2="1195" y2="100" />
-      <line x1="1102" y1="67" x2="1092" y2="57" />
-      <line x1="1168" y1="67" x2="1178" y2="57" />
-    </g>
-
-    <!-- Stage-edge rim light and a few "spark" dots. -->
-    <rect x="0" y="518" width="1280" height="2" th:attr="fill=${accent}" opacity="0.28" />
-    <g th:attr="fill=${accent}">
-      <circle cx="330" cy="92" r="2.5" opacity="0.55" />
-      <circle cx="410" cy="205" r="1.8" opacity="0.4" />
-      <circle cx="880" cy="150" r="2.2" opacity="0.45" />
-      <circle cx="975" cy="250" r="1.6" opacity="0.35" />
-      <circle cx="760" cy="420" r="2" opacity="0.3" />
-    </g>
-  </svg>
-
-  <svg th:fragment="square(accent)" class="lighting" xmlns="http://www.w3.org/2000/svg" width="1080" height="856"
-    viewBox="0 0 1080 856" preserveAspectRatio="none" aria-hidden="true">
-    <defs>
-      <linearGradient id="square-beam" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.28" />
-        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.07" />
-        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
+      <linearGradient id="tube-light" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" th:attr="stop-color=${event.colorSecondary}" />
+        <stop offset="55%" th:attr="stop-color=${event.colorPrimary}" />
+        <stop offset="100%" th:attr="stop-color=${event.colorAccent}" />
       </linearGradient>
-      <radialGradient id="square-glow">
-        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.36" />
-        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.11" />
-        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
-      </radialGradient>
     </defs>
-
-    <polygon points="110,22 210,22 440,856 0,856" fill="url(#square-beam)" />
-    <polygon points="495,22 585,22 700,856 380,856" fill="url(#square-beam)" opacity="0.55" />
-    <polygon points="870,22 970,22 1080,856 640,856" fill="url(#square-beam)" />
-
-    <circle cx="160" cy="35" r="200" fill="url(#square-glow)" opacity="0.5" />
-    <circle cx="540" cy="35" r="180" fill="url(#square-glow)" opacity="0.35" />
-    <circle cx="920" cy="35" r="210" fill="url(#square-glow)" opacity="0.5" />
-    <circle cx="920" cy="125" r="170" fill="url(#square-glow)" opacity="0.45" />
-
-    <g th:attr="stroke=${accent}" stroke-width="2" stroke-opacity="0.55" fill="#1a1a1c">
-      <rect x="120" y="0" width="80" height="21" rx="6" />
-      <rect x="500" y="0" width="80" height="21" rx="6" />
-      <rect x="880" y="0" width="80" height="21" rx="6" />
-    </g>
-    <g th:attr="fill=${accent}">
-      <circle cx="160" cy="24" r="7" />
-      <circle cx="540" cy="24" r="7" />
-      <circle cx="920" cy="24" r="7" />
-    </g>
-    <g fill="url(#square-glow)">
-      <circle cx="160" cy="24" r="26" />
-      <circle cx="540" cy="24" r="26" />
-      <circle cx="920" cy="24" r="26" />
-    </g>
-
-    <circle cx="950" cy="115" r="80" fill="url(#square-glow)" opacity="0.7" />
-    <g th:attr="stroke=${accent}" stroke-width="3" stroke-opacity="0.5" fill="none">
-      <circle cx="950" cy="105" r="29" />
-      <path d="M937 130 L937 145 L963 145 L963 130" />
-      <path d="M939 153 L961 153 M942 160 L958 160" />
-      <line x1="950" y1="56" x2="950" y2="42" />
-      <line x1="901" y1="105" x2="887" y2="105" />
-      <line x1="999" y1="105" x2="1013" y2="105" />
-      <line x1="915" y1="70" x2="905" y2="60" />
-      <line x1="985" y1="70" x2="995" y2="60" />
-    </g>
-
-    <rect x="0" y="848" width="1080" height="2" th:attr="fill=${accent}" opacity="0.28" />
-    <g th:attr="fill=${accent}">
-      <circle cx="300" cy="110" r="2.5" opacity="0.5" />
-      <circle cx="380" cy="260" r="1.8" opacity="0.35" />
-      <circle cx="770" cy="180" r="2.2" opacity="0.45" />
-      <circle cx="240" cy="610" r="2" opacity="0.3" />
-      <circle cx="830" cy="640" r="1.6" opacity="0.3" />
+    <g th:attr="transform=${orientation}">
+      <rect width="1280" height="526" fill="url(#stage-wash)" />
+      <!-- Bent light tubes share a translucent halo and a white-hot core. -->
+      <g fill="none" stroke-linejoin="round">
+        <path id="tubes" d="M740 565 L1040 45 Q1065 2 1115 2 L1300 2 M845 565 L1120 89 Q1145 46 1195 46 L1300 46 M950 565 L1200 133 Q1225 90 1275 90 L1300 90"
+          stroke="url(#tube-light)" stroke-width="30" opacity=".09" />
+        <path d="M740 565 L1040 45 Q1065 2 1115 2 L1300 2 M845 565 L1120 89 Q1145 46 1195 46 L1300 46 M950 565 L1200 133 Q1225 90 1275 90 L1300 90"
+          stroke="url(#tube-light)" stroke-width="8" opacity=".6" />
+        <path d="M740 565 L1040 45 Q1065 2 1115 2 L1300 2 M845 565 L1120 89 Q1145 46 1195 46 L1300 46 M950 565 L1200 133 Q1225 90 1275 90 L1300 90"
+          stroke="#FFFFFF" stroke-width="4" />
+      </g>
     </g>
   </svg>
 </body>
-
 </html>

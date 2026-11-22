@@ -46,18 +46,18 @@
         position: relative;
         overflow: hidden;
         font-family: "Poppins", sans-serif;
-        color: #ffffff;
+        color: #0F172A;
         background: #ffffff;
       }
 
-      /* White header */
+      /* Event-color header */
       .header {
         position: absolute;
         top: 0;
         left: 0;
         width: 1080px;
         height: 120px;
-        background: #ffffff;
+        background: [[${event.colorPrimary}]];
         z-index: 10;
       }
 
@@ -73,17 +73,6 @@
         display: block;
       }
 
-      .header-hashtag {
-        position: absolute;
-        top: 34px;
-        right: 50px;
-        font-family: "Poppins", sans-serif;
-        font-size: 40px;
-        font-weight: 600;
-        color: #999999;
-        letter-spacing: 1px;
-      }
-
       /* Accent line below header */
       .accent-line {
         position: absolute;
@@ -96,7 +85,7 @@
         z-index: 10;
       }
 
-      /* Primary gradient body */
+      /* Base beneath the stage lighting */
       .body-area {
         position: absolute;
         top: 124px;
@@ -104,11 +93,11 @@
         width: 1080px;
         height: 856px;
 
-        background-color: [[${event.colorPrimary}]];
+        background-color: #F8FAFC;
         z-index: 1;
       }
 
-      /* "Lights on" stage-lighting overlay, tinted with the event accent colour */
+      /* Event-coloured stage lighting */
       .lighting {
         position: absolute;
         top: 124px;
@@ -128,7 +117,7 @@
         font-size: 18px;
         font-weight: 600;
 
-        color: [[${event.colorAccent}]];
+        color: [[${event.colorPrimary}]];
         letter-spacing: 2px;
         text-transform: uppercase;
         white-space: nowrap;
@@ -144,7 +133,7 @@
         font-family: "Poppins", sans-serif;
         font-size: 62px;
         font-weight: 700;
-        color: #ffffff;
+        color: #0F172A;
         line-height: 1.2;
         text-align: left;
         hyphens: none;
@@ -196,7 +185,7 @@
         font-family: "Poppins", sans-serif;
         font-size: 55px;
         font-weight: 700;
-        color: #ffffff;
+        color: #0F172A;
         word-wrap: break-word;
         line-height: 1.15;
       }
@@ -205,7 +194,7 @@
         font-family: "Poppins", sans-serif;
         font-size: 23px;
         font-weight: 300;
-        color: rgba(255, 255, 255, 0.6);
+        color: #475569;
         margin-top: 10px;
         letter-spacing: 1px;
       }
@@ -215,7 +204,7 @@
         font-size: 21px;
         font-weight: 400;
 
-        color: [[${event.colorAccent}]];
+        color: [[${event.colorPrimary}]];
         margin-top: 8px;
         letter-spacing: 3px;
         text-transform: uppercase;
@@ -240,7 +229,7 @@
         overflow: hidden;
       }
 
-      /* Accent footer bar */
+      /* Event-primary footer */
       .footer {
         position: absolute;
         bottom: 0;
@@ -248,44 +237,26 @@
         width: 1080px;
         height: 100px;
 
-        background: [[${event.colorAccent}]];
+        background: [[${event.colorPrimary}]];
         z-index: 10;
       }
 
-      .footer-left {
-        position: absolute;
-        bottom: 34px;
-        left: 50px;
-        font-family: "Poppins", sans-serif;
-        font-size: 21px;
-        font-weight: 700;
-        color: #ffffff;
-        white-space: nowrap;
-        z-index: 11;
-      }
-
-      .footer-right {
-        position: absolute;
-        bottom: 34px;
-        right: 50px;
-        font-family: "Poppins", sans-serif;
-        font-size: 21px;
-        font-weight: 600;
-        color: #ffffff;
-        white-space: nowrap;
-        z-index: 11;
-        letter-spacing: 1px;
-      }
+    </style>
+    <style th:replace="~{banner/fragments/lighting :: signatureStyle}"></style>
+    <style>
+      .footer-url { top: 29px; }
+      .event-schedule { top: 24px; }
     </style>
   </head>
 
   <body>
-    <!-- White header -->
+    <!-- Event-color header -->
     <div class="header">
       <div class="header-logo">
         <img th:src="'/images/' + ${event.logoFile}" alt="Event Logo" />
       </div>
-      <div class="header-hashtag" th:text="'#' + ${event.shortName}">#vdz27</div>
+      <div th:replace="~{banner/fragments/lighting :: schedule}"></div>
+      <div th:replace="~{banner/fragments/lighting :: signature}"></div>
     </div>
 
     <!-- Accent line -->
@@ -293,7 +264,7 @@
 
     <!-- Primary body with the "lights on" overlay -->
     <div class="body-area"></div>
-    <div th:replace="~{banner/fragments/lighting :: square(accent=${event.colorAccent})}"></div>
+    <div th:replace="~{banner/fragments/lighting :: stage(1080, 856, 'translate(0 0)')}"></div>
 
     <!-- Intro text -->
     <div class="intro-text" th:text="${event.speakingAboutLabel}">I am speaking about</div>
@@ -337,7 +308,7 @@
                 class="speaker-photo-inner"
                 th:style="${speaker.id != null}
                    ? 'background-image: url(/speaker-photo/' + ${speaker.id} + ')'
-                   : 'background-color: ' + ${event.colorPrimary} + ';'"
+                   : 'background-image: url(/speaker-photo)'"
               ></div>
             </div>
           </td>
@@ -346,16 +317,9 @@
     </div>
 
     <!-- Accent footer -->
-    <div class="footer"></div>
-    <div class="footer-left">
-      <span th:if="${event.date != null and !#strings.isEmpty(event.date)}" th:text="${event.date}"></span>
-      <span
-        th:if="${event.date != null and !#strings.isEmpty(event.date) and event.location != null and !#strings.isEmpty(event.location)}"
-      >
-        &#183;
-      </span>
-      <span th:if="${event.location != null and !#strings.isEmpty(event.location)}" th:text="${event.location}"></span>
+    <div class="footer">
+      <div th:replace="~{banner/fragments/lighting :: motto}"></div>
+      <div th:replace="~{banner/fragments/lighting :: website}"></div>
     </div>
-    <div class="footer-right" th:text="${event.url}">https://voxxeddays.ch</div>
   </body>
 </html>

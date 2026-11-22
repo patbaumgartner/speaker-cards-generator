@@ -52,12 +52,15 @@ public class EventConfig {
 	/**
 	 * Primary / dark brand colour used on banners (e.g. navy), as a CSS hex value.
 	 */
-	private String colorPrimary = "#1e2246";
+	private String colorPrimary = "#0044DD";
+
+	/** Secondary colour used for stage lighting. */
+	private String colorSecondary = "#00C4FF";
 
 	/**
 	 * Accent / highlight brand colour used on banners (e.g. cyan), as a CSS hex value.
 	 */
-	private String colorAccent = "#40b4e5";
+	private String colorAccent = "#FF0099";
 
 	/** Label shown above the talk title on the talk banner, e.g. "Session". */
 	private String sessionLabel = "Session";
@@ -119,6 +122,14 @@ public class EventConfig {
 
 	public void setColorPrimary(String colorPrimary) {
 		this.colorPrimary = colorPrimary;
+	}
+
+	public String getColorSecondary() {
+		return colorSecondary;
+	}
+
+	public void setColorSecondary(String colorSecondary) {
+		this.colorSecondary = colorSecondary;
 	}
 
 	public String getColorAccent() {

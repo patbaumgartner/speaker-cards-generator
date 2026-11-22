@@ -13,9 +13,7 @@ import com.fortytwotalents.speakercardsgenerator.service.SpeakerPhotoStore;
 import com.fortytwotalents.speakercardsgenerator.util.TemplateUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -51,15 +49,14 @@ import org.springframework.web.server.ResponseStatusException;
  *   GET  /speaker-social/{id}.png    – PNG download of a social-media banner
  *   GET  /talk-banner/{id}           – HTML preview of a talk banner
  *   GET  /talk-banner/{id}.png       – PNG download of a talk banner
- *   GET  /speaker-photo/{id}         – Speaker profile photo (redirect to default if missing)
+ *   GET  /speaker-photo              – Branded default speaker avatar
+ *   GET  /speaker-photo/{id}         – Speaker profile photo (default avatar if missing)
  *   GET  /api/banners/generate-all   – Bulk-generate all banners (optional ?outputDir=…)
  *   POST /api/banners/generate-speakers – Bulk-generate banners for selected speaker IDs
  * </pre>
  */
 @Controller
 public class BannerController {
-
-	private static final String PLACEHOLDER_PHOTO = "/static/images/duke_cool.png";
 
 	private final SpeakerRepository speakerRepository;
 
@@ -133,30 +130,26 @@ public class BannerController {
 		return type.view();
 	}
 
+	@GetMapping("/speaker-photo")
+	public ResponseEntity<byte[]> defaultSpeakerPhoto() {
+		return photoResponse(SpeakerPhotoStore.defaultPhoto());
+	}
+
 	@GetMapping("/speaker-photo/{id}")
 	public ResponseEntity<byte[]> speakerPhoto(@PathVariable UUID id) {
 		requireSpeaker(id); // ensure speaker exists
-		SpeakerPhotoStore.Photo photo = photoStore.find(id).orElseGet(BannerController::placeholderPhoto);
-		return ResponseEntity.ok()
-			.contentType(photo.contentType())
-			.cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)))
-			.body(photo.content());
+		return photoResponse(photoStore.findOrPlaceholder(id));
 	}
 
 	/**
 	 * Served inline rather than as a redirect: the banner renderer resolves this URL
 	 * while rasterising a page and must get image bytes back in a single hop.
 	 */
-	private static SpeakerPhotoStore.Photo placeholderPhoto() {
-		try (InputStream in = BannerController.class.getResourceAsStream(PLACEHOLDER_PHOTO)) {
-			if (in == null) {
-				throw new IllegalStateException("Missing bundled placeholder image " + PLACEHOLDER_PHOTO);
-			}
-			return new SpeakerPhotoStore.Photo(in.readAllBytes(), MediaType.IMAGE_PNG);
-		}
-		catch (IOException ex) {
-			throw new IllegalStateException("Could not read bundled placeholder image " + PLACEHOLDER_PHOTO, ex);
-		}
+	private static ResponseEntity<byte[]> photoResponse(SpeakerPhotoStore.Photo photo) {
+		return ResponseEntity.ok()
+			.contentType(photo.contentType())
+			.cacheControl(CacheControl.noCache())
+			.body(photo.content());
 	}
 
 	@PostMapping(value = "/api/banners/generate-all", produces = MediaType.APPLICATION_JSON_VALUE)

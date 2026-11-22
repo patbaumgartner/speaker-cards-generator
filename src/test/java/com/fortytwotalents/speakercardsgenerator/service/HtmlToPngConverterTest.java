@@ -76,7 +76,7 @@ class HtmlToPngConverterTest {
 
 	@Test
 	void resolvesBundledImagesFromTheClasspathWithoutAServer() {
-		assertThat(converter().convertToPng(imageHtml("/images/duke_cool.png"))).isNotEmpty();
+		assertThat(converter().convertToPng(imageHtml("/images/logo-vdz.png"))).isNotEmpty();
 	}
 
 	@Test
@@ -98,8 +98,14 @@ class HtmlToPngConverterTest {
 	}
 
 	@Test
-	void fallsBackToThePlaceholderWhenASpeakerHasNoPhoto() {
+	void rendersTheDefaultAvatarWhenASpeakerHasNoPhoto() {
 		assertThat(converter().convertToPng(imageHtml("/speaker-photo/" + UUID.randomUUID()))).isNotEmpty();
+	}
+
+	@Test
+	void rendersTheDefaultAvatarForMissingOrInvalidSpeakerIds() {
+		assertThat(converter().convertToPng(imageHtml("/speaker-photo"))).isNotEmpty();
+		assertThat(converter().convertToPng(imageHtml("/speaker-photo/not-a-uuid"))).isNotEmpty();
 	}
 
 	@Test
