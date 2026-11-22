@@ -50,12 +50,12 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <i class="bi bi-cloud-download-fill me-1"></i>Import
+                <i class="bi bi-cloud-download-fill me-1" aria-hidden="true"></i>Import
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="importDropdown">
                 <li>
                   <button class="dropdown-item" data-import-type="devoxx">
-                    <i class="bi bi-cloud-arrow-down me-2 text-primary"></i>Import from CFP.dev API
+                    <i class="bi bi-cloud-arrow-down me-2 text-primary" aria-hidden="true"></i>Import from CFP.dev API
                   </button>
                 </li>
                 <li>
@@ -69,7 +69,7 @@
                     data-bs-toggle="modal"
                     data-bs-target="#apiTokenModal"
                   >
-                    <i class="bi bi-key-fill me-2" id="authIcon"></i>Authorize
+                    <i class="bi bi-key-fill me-2" id="authIcon" aria-hidden="true"></i>Authorize
                   </a>
                 </li>
               </ul>
@@ -84,7 +84,7 @@
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 class="modal-title h5" id="apiTokenModalLabel"><i class="bi bi-key-fill me-2"></i>CFP.dev API Token</h2>
+            <h2 class="modal-title h5" id="apiTokenModalLabel"><i class="bi bi-key-fill me-2" aria-hidden="true"></i>CFP.dev API Token</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form id="apiTokenForm" aria-labelledby="apiTokenModalLabel">
@@ -133,13 +133,13 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-outline-danger" id="btnClearToken">
-                <i class="bi bi-x-circle me-1"></i>Clear
+                <i class="bi bi-x-circle-fill me-1" aria-hidden="true"></i>Clear
               </button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="bi bi-x-lg me-1"></i>Close
+                <i class="bi bi-x-lg me-1" aria-hidden="true"></i>Close
               </button>
               <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle me-1"></i>Authorize
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>Authorize
               </button>
             </div>
           </form>
@@ -259,11 +259,11 @@
             .then(function (data) {
               if (data.configured) {
                 tokenStatus.innerHTML =
-                  '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Token is configured.</span>';
+                  '<span class="text-success"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Token is configured.</span>';
                 authIcon.classList.add("text-success");
               } else {
                 tokenStatus.innerHTML =
-                  '<span class="text-muted"><i class="bi bi-info-circle me-1"></i>No token configured.</span>';
+                  '<span class="text-muted"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>No token configured.</span>';
                 authIcon.classList.remove("text-success");
               }
             })

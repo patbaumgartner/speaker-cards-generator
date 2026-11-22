@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Default to the `vdz` Voxxed Days Zürich Spring profile when no profile is active
+- Report invalid CFP event IDs as a clear bad request instead of an opaque server error
 - Store imported speaker photos in configurable runtime storage so they work from executable JARs and containers
 - Prevent SSRF and unbounded downloads through CFP profile-picture URLs
 - Generate banners in-process instead of calling the application back over HTTP
@@ -35,7 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Renamed base package from `com.fortytwotalents` to `com.fortytwotalents.speakercardsgenerator` to align namespace with the project name
 - Renamed Maven `artifactId` and `<name>` from `speaker-cards` to `speaker-cards-generator` to match the repository name
-- Matched primary and outline buttons to the microphone cyan accent from the favicon
+- Used the microphone cyan as the button accent and icon color while keeping solid actions navy for readability
+- Refined action icons with bolder filled glyphs, consistent sizing, and decorative icons hidden from assistive technology
 - Shown the optional CFP Bearer token as plain text and documented how to obtain it with browser developer tools
 - Updated the footer to “Powered by Voxxed Days Switzerland”
 

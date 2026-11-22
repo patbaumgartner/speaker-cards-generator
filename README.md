@@ -67,6 +67,8 @@ together with the application.
 | `vdt` | Voxxed Days Ticino |
 | `vdcern` | Voxxed Days CERN |
 
+If no profile is set, Spring activates the `vdz` profile by default.
+
 All three profiles use a neon **"lights on"** stage-lighting overlay behind the speaker
 and session content.
 

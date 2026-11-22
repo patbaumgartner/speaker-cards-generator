@@ -56,6 +56,25 @@ class ImportControllerTest {
 	}
 
 	@Test
+	void importFromDevoxxReportsInvalidConfigurationAsBadRequest() throws Exception {
+		given(this.devoxxImportService.importSpeakers()).willThrow(new IllegalArgumentException("Invalid event ID"));
+
+		this.mockMvc.perform(post("/api/import/devoxx"))
+			.andExpect(status().isBadRequest())
+			.andExpect(content().string("CFP import failed: Invalid event ID"));
+	}
+
+	@Test
+	void importFromDevoxxEventReportsInvalidEventIdAsBadRequest() throws Exception {
+		given(this.devoxxImportService.importSpeakers(anyString()))
+			.willThrow(new IllegalArgumentException("Invalid event ID"));
+
+		this.mockMvc.perform(post("/api/import/devoxx/{eventId}", "bad!id"))
+			.andExpect(status().isBadRequest())
+			.andExpect(content().string("CFP import failed: Invalid event ID"));
+	}
+
+	@Test
 	void importFromDevoxxEventReturnsServerErrorOnException() throws Exception {
 		given(this.devoxxImportService.importSpeakers(anyString())).willThrow(new RuntimeException("api down"));
 

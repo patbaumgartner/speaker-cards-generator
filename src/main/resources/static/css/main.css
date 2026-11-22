@@ -1,8 +1,9 @@
 /* ============================================================
    Voxxed Days Brand Colors
    Navy #1e2246 (logo text)   Accent #40b4e5 (microphone cyan)
-   White on Navy  → 13.8:1  (WCAG AAA)
-   Navy on Accent → 6.47:1  (WCAG AA)
+   White on Navy    → 13.8:1 (WCAG AAA)
+   Cyan on Navy     →  6.47:1 (WCAG AA non-text, 3:1 required)
+   Dark cyan borders/white hover text → 4.66:1 (WCAG AA)
    ============================================================ */
 :root {
     --vd-navy:  #1e2246;
@@ -46,38 +47,88 @@ footer {
     border-top: 3px solid var(--vd-accent);
 }
 
-/* ---- Import section card header ---- */
+/* ---- Card headers and button icons ---- */
 .card-header-vd {
     background-color: var(--vd-navy);
     color: #fff;
 }
 
-/* ---- Primary buttons use the microphone cyan ----
-   Navy text on cyan → 6.47:1; dark cyan border/white hover text → 4.66:1 (WCAG AA) */
+.card-header-vd > i.bi {
+    color: var(--vd-accent);
+}
+
+.btn > i.bi {
+    font-size: 1.05rem;
+    line-height: 1;
+    vertical-align: -0.1em;
+}
+
+.btn-sm > i.bi {
+    font-size: 0.9rem;
+}
+
+/* Solid actions stay navy for readability; microphone cyan lives in the icon chip
+   and hover state so the blue accent is still unmistakably Voxxed Days. */
 .btn-primary {
-    --bs-btn-color: var(--vd-navy);
-    --bs-btn-bg: var(--vd-accent);
-    --bs-btn-border-color: var(--vd-accent-dark);
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--vd-navy);
+    --bs-btn-border-color: var(--vd-navy);
     --bs-btn-hover-color: #fff;
     --bs-btn-hover-bg: var(--vd-accent-dark);
     --bs-btn-hover-border-color: var(--vd-accent-dark);
-    --bs-btn-focus-shadow-rgb: 30, 34, 70;
+    --bs-btn-focus-shadow-rgb: 21, 103, 168;
     --bs-btn-active-color: #fff;
     --bs-btn-active-bg: #1567a8;
     --bs-btn-active-border-color: #1567a8;
-    --bs-btn-disabled-color: var(--vd-navy);
-    --bs-btn-disabled-bg: var(--vd-accent);
-    --bs-btn-disabled-border-color: var(--vd-accent-dark);
+    --bs-btn-disabled-color: rgba(255, 255, 255, .7);
+    --bs-btn-disabled-bg: var(--vd-navy);
+    --bs-btn-disabled-border-color: var(--vd-navy);
+}
+
+.btn-primary > i.bi {
+    display: inline-grid;
+    place-items: center;
+    width: 1.6em;
+    height: 1.6em;
+    margin-right: 0.45em;
+    border-radius: 50%;
+    background-color: rgba(64, 180, 229, .18);
+    color: var(--vd-accent);
+    font-size: 0.95em;
+    vertical-align: middle;
+}
+
+.btn-primary:hover > i.bi,
+.btn-primary:focus-visible > i.bi,
+.btn-primary:active > i.bi {
+    background-color: transparent;
+    color: #fff;
 }
 
 .btn-outline-primary {
     --bs-btn-color: var(--vd-navy);
     --bs-btn-border-color: var(--vd-accent-dark);
-    --bs-btn-hover-color: var(--vd-navy);
-    --bs-btn-hover-bg: var(--vd-accent);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--vd-accent-dark);
     --bs-btn-hover-border-color: var(--vd-accent-dark);
-    --bs-btn-focus-shadow-rgb: 30, 34, 70;
+    --bs-btn-focus-shadow-rgb: 21, 103, 168;
     --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: var(--vd-accent-dark);
-    --bs-btn-active-border-color: var(--vd-accent-dark);
+    --bs-btn-active-bg: #1567a8;
+    --bs-btn-active-border-color: #1567a8;
+}
+
+.btn-outline-primary > i.bi {
+    color: #1567a8;
+}
+
+.btn-outline-primary:hover > i.bi,
+.btn-outline-primary:focus-visible > i.bi,
+.btn-outline-primary:active > i.bi {
+    color: #fff;
+}
+
+/* Two-tone focus ring keeps the indicator visible on both white cards and navy buttons. */
+.btn-primary:focus,
+.btn-outline-primary:focus {
+    box-shadow: 0 0 0 0.18rem var(--vd-navy), 0 0 0 0.36rem var(--vd-accent-dark);
 }
