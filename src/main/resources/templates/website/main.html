@@ -81,42 +81,68 @@
 
     <!-- API Token Modal -->
     <div class="modal fade" id="apiTokenModal" tabindex="-1" aria-labelledby="apiTokenModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
             <h2 class="modal-title h5" id="apiTokenModalLabel"><i class="bi bi-key-fill me-2"></i>CFP.dev API Token</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
-            <p class="text-muted small">
-              Enter a Bearer token for the authenticated CFP.dev API to import speaker job titles. The token is stored
-              in-memory only for this session.
-            </p>
-            <div class="mb-3">
-              <label for="apiTokenInput" class="form-label">Bearer Token</label>
-              <div class="input-group">
+          <form id="apiTokenForm" aria-labelledby="apiTokenModalLabel">
+            <div class="modal-body">
+              <p class="text-muted small">
+                The public import does not need a token. Supply one only to add speaker job titles from the
+                authenticated CFP.dev API. The token is kept in memory for this server process only.
+              </p>
+              <div class="mb-3">
+                <label for="apiTokenInput" class="form-label">Bearer Token</label>
                 <input
-                  type="password"
+                  type="text"
                   class="form-control font-monospace"
+                  name="apiToken"
                   autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="none"
+                  spellcheck="false"
                   id="apiTokenInput"
-                  placeholder="eyJhbGciOiJSUzI1NiIs…"
+                  placeholder="Paste the token value; the 'Bearer ' prefix is optional"
+                  aria-describedby="apiTokenHelp"
                 />
               </div>
+              <div id="apiTokenHelp" class="form-text small">
+                <p class="mb-2">
+                  Sign in to your CFP instance, open the browser developer tools (<kbd>F12</kbd>) and select the
+                  <strong>Network</strong> tab. Reload the page, choose an authenticated request such as
+                  <code>/api/account</code>, and copy the value from the <code>Authorization: Bearer …</code> header.
+                  This application removes the <code>Bearer</code> prefix for you.
+                </p>
+                <p class="mb-2">
+                  Endpoint patterns use your event ID, for example
+                  <code>https://{eventId}.cfp.dev/api/public/speakers</code> and
+                  <code>https://{eventId}.cfp.dev/api/account</code>.
+                </p>
+                <pre class="bg-light p-2 rounded mb-2"><code>curl --url 'https://vdz27.cfp.dev/api/account' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Bearer &lt;PASTE_YOUR_TOKEN_HERE&gt;'</code></pre>
+                <p class="mb-0 text-danger">
+                  <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>This token is shown in plain
+                  text and grants access to your CFP account. Do not commit it, paste it into issues, or share
+                  screenshots while it is visible.
+                </p>
+              </div>
+              <div id="tokenStatus" class="small mt-3" role="status" aria-live="polite"></div>
             </div>
-            <div id="tokenStatus" class="small"></div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-danger" id="btnClearToken">
-              <i class="bi bi-x-circle me-1"></i>Clear
-            </button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              <i class="bi bi-x-lg me-1"></i>Close
-            </button>
-            <button type="button" class="btn btn-primary" id="btnSaveToken">
-              <i class="bi bi-check-circle me-1"></i>Authorize
-            </button>
-          </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-danger" id="btnClearToken">
+                <i class="bi bi-x-circle me-1"></i>Clear
+              </button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-lg me-1"></i>Close
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle me-1"></i>Authorize
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -154,8 +180,8 @@
       <div class="container">
         <p class="mb-0">
           &copy; 2027 Speaker Cards Generator — powered by
-          <a th:href="${event.url}" target="_blank" rel="noopener noreferrer" th:text="${event.name}" class="text-light">Conference</a>. All
-          rights reserved.
+          <a href="https://voxxeddays.ch/" target="_blank" rel="noopener noreferrer" class="text-light">Voxxed Days Switzerland</a>. All rights
+          reserved.
         </p>
       </div>
     </footer>
@@ -258,9 +284,11 @@
           }
         });
 
-        document.getElementById("btnSaveToken").addEventListener("click", function () {
+        document.getElementById("apiTokenForm").addEventListener("submit", function (event) {
+          event.preventDefault();
           var token = tokenInput.value.trim();
           if (!token) {
+            tokenInput.focus();
             return;
           }
           fetch(API_BASE + "/config/api-token", {
@@ -268,13 +296,16 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token: token }),
           }).then(function (r) {
+            tokenInput.value = "";
             if (r.ok) {
-              tokenInput.value = "";
               updateTokenStatus();
               showImportToast(true, "API token configured successfully.");
             } else {
               showImportToast(false, "Failed to save token.");
             }
+          }).catch(function () {
+            tokenInput.value = "";
+            showImportToast(false, "Failed to save token.");
           });
         });
 

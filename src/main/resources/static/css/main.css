@@ -1,12 +1,13 @@
 /* ============================================================
    Voxxed Days Brand Colors
-   Navy #1e2246 (logo text)   Accent #40b4e5 (logo cyan line)
+   Navy #1e2246 (logo text)   Accent #40b4e5 (microphone cyan)
    White on Navy  → 13.8:1  (WCAG AAA)
-   Navy on Accent → 6.1:1   (WCAG AA)
+   Navy on Accent → 6.47:1  (WCAG AA)
    ============================================================ */
 :root {
     --vd-navy:  #1e2246;
     --vd-accent: #40b4e5;
+    --vd-accent-dark: #1e7ca8;
     --vd-bg-body: #f4f6f9;
 
     /* Override Bootstrap primary → VD navy (white text gives 13.8:1 contrast) */
@@ -51,32 +52,32 @@ footer {
     color: #fff;
 }
 
-/* ---- Accent button (VD cyan) ----
-   Navy text on cyan → 6.1:1 (WCAG AA)                       */
-.btn-vd-accent {
-    background-color: var(--vd-accent);
-    color: var(--vd-navy);
-    border-color: var(--vd-accent);
-    font-weight: 600;
+/* ---- Primary buttons use the microphone cyan ----
+   Navy text on cyan → 6.47:1; dark cyan border/white hover text → 4.66:1 (WCAG AA) */
+.btn-primary {
+    --bs-btn-color: var(--vd-navy);
+    --bs-btn-bg: var(--vd-accent);
+    --bs-btn-border-color: var(--vd-accent-dark);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--vd-accent-dark);
+    --bs-btn-hover-border-color: var(--vd-accent-dark);
+    --bs-btn-focus-shadow-rgb: 30, 34, 70;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #1567a8;
+    --bs-btn-active-border-color: #1567a8;
+    --bs-btn-disabled-color: var(--vd-navy);
+    --bs-btn-disabled-bg: var(--vd-accent);
+    --bs-btn-disabled-border-color: var(--vd-accent-dark);
 }
 
-.btn-vd-accent:hover,
-.btn-vd-accent:focus {
-    background-color: #1e7ca8;
-    color: #fff;
-    border-color: #1e7ca8;
-}
-
-.btn-outline-vd-accent {
-    background-color: transparent;
-    color: var(--vd-navy);
-    border-color: var(--vd-accent);
-    font-weight: 600;
-}
-
-.btn-outline-vd-accent:hover,
-.btn-outline-vd-accent:focus {
-    background-color: var(--vd-accent);
-    color: var(--vd-navy);
-    border-color: var(--vd-accent);
+.btn-outline-primary {
+    --bs-btn-color: var(--vd-navy);
+    --bs-btn-border-color: var(--vd-accent-dark);
+    --bs-btn-hover-color: var(--vd-navy);
+    --bs-btn-hover-bg: var(--vd-accent);
+    --bs-btn-hover-border-color: var(--vd-accent-dark);
+    --bs-btn-focus-shadow-rgb: 30, 34, 70;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--vd-accent-dark);
+    --bs-btn-active-border-color: var(--vd-accent-dark);
 }

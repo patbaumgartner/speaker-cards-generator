@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Renamed base package from `com.fortytwotalents` to `com.fortytwotalents.speakercardsgenerator` to align namespace with the project name
 - Renamed Maven `artifactId` and `<name>` from `speaker-cards` to `speaker-cards-generator` to match the repository name
+- Matched primary and outline buttons to the microphone cyan accent from the favicon
+- Shown the optional CFP Bearer token as plain text and documented how to obtain it with browser developer tools
+- Updated the footer to “Powered by Voxxed Days Switzerland”
 
 ### Added
 - CI/CD pipeline with GitHub Actions (build, test, CodeQL, release)

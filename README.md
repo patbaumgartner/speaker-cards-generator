@@ -90,6 +90,30 @@ curl -X POST http://localhost:8080/api/import/devoxx
 curl -X POST http://localhost:8080/api/import/devoxx/vdz27
 ```
 
+The public import does not need a token. A token is only used to enrich imported speakers
+with job titles from the authenticated CFP API.
+
+To find it, sign in to your CFP instance, open the browser developer tools (`F12`) and select
+the **Network** tab. Reload the page, choose an authenticated request such as `/api/account`,
+and copy the `Authorization: Bearer …` header value. The application strips the `Bearer`
+prefix for you. Endpoint patterns are:
+
+```text
+https://{eventId}.cfp.dev/api/public/speakers
+https://{eventId}.cfp.dev/api/account
+```
+
+For example:
+
+```shell
+curl --url 'https://vdz27.cfp.dev/api/account' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Bearer <PASTE_YOUR_TOKEN_HERE>'
+```
+
+Treat the token as a credential: never commit it, paste it into issues, or share screenshots
+while it is visible.
+
 ---
 
 ## 🖼️ Generate Banners

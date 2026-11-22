@@ -180,7 +180,10 @@ class BannerControllerIntegrationTest {
 					content().string(org.hamcrest.Matchers.containsString("<main class=\"main-content\" id=\"main\">")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"sortable-btn\"")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("aria-sort=\"none\"")))
-			.andExpect(content().string(org.hamcrest.Matchers.containsString("type=\"password\"")));
+			.andExpect(content().string(
+					org.hamcrest.Matchers.matchesPattern("(?s).*<input\\s+type=\"text\"[^>]*id=\"apiTokenInput\".*")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("api/public/speakers")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("Voxxed Days Switzerland")));
 	}
 
 	private Set<String> zipEntries(String url) throws Exception {
