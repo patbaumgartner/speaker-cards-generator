@@ -1,6 +1,5 @@
 package com.fortytwotalents.speakercardsgenerator.controller;
 
-import com.fortytwotalents.speakercardsgenerator.config.DevoxxApiConfig;
 import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
@@ -23,13 +22,9 @@ public class WebsiteController {
 
 	private final EventConfig eventConfig;
 
-	private final DevoxxApiConfig devoxxApiConfig;
-
-	public WebsiteController(SpeakerRepository speakerRepository, EventConfig eventConfig,
-			DevoxxApiConfig devoxxApiConfig) {
+	public WebsiteController(SpeakerRepository speakerRepository, EventConfig eventConfig) {
 		this.speakerRepository = speakerRepository;
 		this.eventConfig = eventConfig;
-		this.devoxxApiConfig = devoxxApiConfig;
 	}
 
 	/**
@@ -42,7 +37,6 @@ public class WebsiteController {
 		List<Speaker> speakers = speakerRepository.findAllWithTalksBy();
 		model.addAttribute("speakers", speakers);
 		model.addAttribute("event", eventConfig);
-		model.addAttribute("devoxxApiEnabled", devoxxApiConfig.isDevoxxApiEnabled());
 		return "website/index";
 	}
 

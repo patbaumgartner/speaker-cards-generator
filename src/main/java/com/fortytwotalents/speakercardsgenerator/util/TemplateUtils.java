@@ -120,7 +120,7 @@ public final class TemplateUtils {
 
 	/**
 	 * Formats a date string from the stored {@code yyyy-MM-dd} representation into a
-	 * human-readable form such as {@code "January, 22nd, 2026"}.
+	 * human-readable form such as {@code "January, 22nd, 2027"}.
 	 * @param date date string in {@code yyyy-MM-dd} format; may be {@code null}
 	 * @return formatted date string, or the original input if parsing fails
 	 */

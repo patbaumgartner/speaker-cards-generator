@@ -20,7 +20,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * <pre>
  * app.event.name=Voxxed Days Zürich
- * app.event.short-name=VDZ26
+ * app.event.short-name=vdz27
  * app.event.url=https://voxxeddays.com/zurich/
  * app.event.logo-file=event-tile.png
  * </pre>
@@ -31,8 +31,8 @@ public class EventConfig {
 	/** Full display name shown on banners, e.g. "Voxxed Days Zürich". */
 	private String name = "Voxxed Days";
 
-	/** Short / abbreviated name shown on the banner badge, e.g. "VDZ26". */
-	private String shortName = "VDZ26";
+	/** Short / abbreviated name shown on the banner badge, e.g. "vdz27". */
+	private String shortName = "vdz27";
 
 	/** Conference website URL shown in the social banner footer. */
 	private String url = "https://voxxeddays.ch/";
@@ -43,7 +43,7 @@ public class EventConfig {
 	 */
 	private String logoFile = "event-tile.png";
 
-	/** Event date displayed on banners, e.g. "March 25, 2026". */
+	/** Event date displayed on banners, e.g. "March 9, 2027". */
 	private String date = "";
 
 	/** Event location displayed on banners, e.g. "Zürich, Switzerland". */

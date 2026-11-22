@@ -82,24 +82,20 @@ public class DevoxxImportService {
 		List<MediaType> mediaTypes = new ArrayList<>(converter.getSupportedMediaTypes());
 		mediaTypes.add(MediaType.TEXT_HTML);
 		converter.setSupportedMediaTypes(mediaTypes);
-		return builder.messageConverters(converters -> {
-			converters.removeIf(c -> c instanceof AbstractJacksonHttpMessageConverter);
-			converters.add(0, converter);
-		});
+		return builder.configureMessageConverters(converters -> converters.configureMessageConvertersList(list -> {
+			list.removeIf(c -> c instanceof AbstractJacksonHttpMessageConverter);
+			list.add(0, converter);
+		}));
 	}
 
 	@Transactional
 	public int importSpeakers() {
-		if (!devoxxApiConfig.isDevoxxApiEnabled()) {
-			throw new IllegalStateException(
-					"Devoxx CFP API is not configured for this event profile (event-id is none/empty).");
-		}
 		return importSpeakers(devoxxApiConfig.getEventId());
 	}
 
 	/**
 	 * Fetches speakers for the given CFP event ID.
-	 * @param eventId CFP event identifier (e.g. {@code vdz26}); must contain only
+	 * @param eventId CFP event identifier (e.g. {@code vdz27}); must contain only
 	 * alphanumeric characters, hyphens, or underscores (max 50 characters)
 	 * @return number of speakers imported or updated
 	 * @throws IllegalArgumentException if the eventId does not match the safe pattern
@@ -271,7 +267,7 @@ public class DevoxxImportService {
 		speaker.setTwitterAccount(blankToNull(dto.twitterHandle));
 		speaker.setLinkedInAccount(normaliseLinkedIn(dto.linkedInUsername));
 		speaker.setBlueskyAccount(blankToNull(dto.blueskyUsername));
-		speaker.setMastodonAccount(blankToNull(dto.mastodonUsername));
+		speaker.setMastodonAccount(safeHttpsUrl(dto.mastodonUsername));
 		speaker.setBlogURL(blankToNull(dto.blog));
 
 		if (speaker.getBiography() == null) {
@@ -333,6 +329,24 @@ public class DevoxxImportService {
 
 	private static String blankToNull(String value) {
 		return value == null || value.isBlank() ? null : value.trim();
+	}
+
+	/**
+	 * CFP profiles are untrusted, so only absolute HTTPS URLs may become clickable links.
+	 * Package-private for use in tests.
+	 */
+	static String safeHttpsUrl(String value) {
+		String url = blankToNull(value);
+		if (url == null || !url.regionMatches(true, 0, "https://", 0, 8)) {
+			return null;
+		}
+		try {
+			URI uri = URI.create(url);
+			return "https".equalsIgnoreCase(uri.getScheme()) && uri.getHost() != null ? url : null;
+		}
+		catch (IllegalArgumentException ex) {
+			return null;
+		}
 	}
 
 	/**

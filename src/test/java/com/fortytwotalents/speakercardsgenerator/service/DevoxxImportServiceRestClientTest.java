@@ -40,11 +40,11 @@ class DevoxxImportServiceRestClientTest {
 		MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
 		RestClient restClient = builder.build();
 
-		server.expect(requestTo("https://vdz26.cfp.dev/api/public/speakers"))
+		server.expect(requestTo("https://vdz27.cfp.dev/api/public/speakers"))
 			.andRespond(withSuccess(SPEAKERS_JSON, MediaType.TEXT_HTML));
 
 		DevoxxImportService.DevoxxSpeakerDto[] speakers = restClient.get()
-			.uri("https://vdz26.cfp.dev/api/public/speakers")
+			.uri("https://vdz27.cfp.dev/api/public/speakers")
 			.retrieve()
 			.body(DevoxxImportService.DevoxxSpeakerDto[].class);
 
@@ -60,11 +60,11 @@ class DevoxxImportServiceRestClientTest {
 		MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
 		RestClient defaultRestClient = builder.build();
 
-		server.expect(requestTo("https://vdz26.cfp.dev/api/public/speakers"))
+		server.expect(requestTo("https://vdz27.cfp.dev/api/public/speakers"))
 			.andRespond(withSuccess(SPEAKERS_JSON, MediaType.TEXT_HTML));
 
 		assertThatThrownBy(() -> defaultRestClient.get()
-			.uri("https://vdz26.cfp.dev/api/public/speakers")
+			.uri("https://vdz27.cfp.dev/api/public/speakers")
 			.retrieve()
 			.body(DevoxxImportService.DevoxxSpeakerDto[].class)).isInstanceOf(UnknownContentTypeException.class);
 	}

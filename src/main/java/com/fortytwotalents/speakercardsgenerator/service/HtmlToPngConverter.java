@@ -5,6 +5,7 @@ import com.openhtmltopdf.extend.FSStreamFactory;
 import com.openhtmltopdf.extend.FSUriResolver;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.slf4j.Slf4jLogger;
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import com.openhtmltopdf.util.XRLog;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -94,6 +95,7 @@ public class HtmlToPngConverter {
 			builder.withHtmlContent(html, SCHEME + "/");
 			builder.useUriResolver(new AppUriResolver());
 			builder.useProtocolsStreamImplementation(new AppStreamFactory(), "app");
+			builder.useSVGDrawer(new BatikSVGDrawer());
 			// Page size comes from the CSS @page rule in the template itself.
 			builder.toStream(pdfOut);
 			builder.run();

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Speaker Cards Generator** is a Spring Boot 4.1.0 web application that generates speaker cards (PNG banners) for Voxxed Days and similar tech conferences. It imports speaker/session data from the Devoxx CFP API or XLSX files, stores them in PostgreSQL, and renders banners via a Thymeleaf → HTML → OpenHTMLtoPDF → PDFBox → PNG pipeline.
+**Speaker Cards Generator** is a Spring Boot 4.2.0 web application that generates speaker cards (PNG banners) for Voxxed Days Zürich, Voxxed Days Ticino, and Voxxed Days CERN. It imports speaker/session data from the Devoxx CFP API, stores it in PostgreSQL, and renders banners via a Thymeleaf → HTML → OpenHTMLtoPDF → PDFBox → PNG pipeline.
 
 ## Repository Layout
 
@@ -29,17 +29,17 @@ speaker-cards-generator/
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Spring Boot 4.1.0 |
-| Web / Templates | Spring MVC + Thymeleaf |
-| Persistence | Spring Data JPA + PostgreSQL 18 |
-| Banner rendering | OpenHTMLtoPDF 1.1.73 → PDFBox 3.0.8 → PNG |
-| Data import | Apache POI 5.5.1 (XLSX), Devoxx CFP REST API |
-| Frontend | Bootstrap 5.3.8 + Bootstrap Icons 1.13.1 (via WebJars) |
-| Java version | 21 |
-| Tests | JUnit 5 + H2 in-memory (no PostgreSQL required) |
-| Code style | Spring Java Format via spring-javaformat-maven-plugin |
+| Layer            | Technology                                             |
+| ---------------- | ------------------------------------------------------ |
+| Framework        | Spring Boot 4.2.0                                      |
+| Web / Templates  | Spring MVC + Thymeleaf                                 |
+| Persistence      | Spring Data JPA + PostgreSQL 18                        |
+| Banner rendering | OpenHTMLtoPDF 1.1.114 → PDFBox 3.0.8 → PNG              |
+| Data import      | Devoxx CFP REST API                                    |
+| Frontend         | Bootstrap 5.3.8 + Bootstrap Icons 1.13.2 (via WebJars) |
+| Java version     | 21                                                     |
+| Tests            | JUnit 5 + H2 in-memory (no PostgreSQL required)        |
+| Code style       | Spring Java Format via spring-javaformat-maven-plugin  |
 
 ## Build & Quality
 
@@ -54,7 +54,6 @@ JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./mvnw io.spring.javaformat:spring-j
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz    # Voxxed Days Zürich
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdt    # Voxxed Days Ticino
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdcern # Voxxed Days CERN
-./mvnw spring-boot:run -Dspring-boot.run.profiles=baselone # BaselOne
 ```
 
 All Maven commands are run from the repository root.
@@ -74,14 +73,14 @@ All Maven commands are run from the repository root.
 
 ## CI/CD
 
-| Workflow | Trigger | Purpose |
-|---|---|---|
-| `ci.yml` | push / PR to `main`, `develop` | Build, test, JaCoCo, Spring Java Format check |
-| `release.yml` | semantic-version tag push | Build Docker image → GHCR + GitHub Release |
+| Workflow      | Trigger                        | Purpose                                       |
+| ------------- | ------------------------------ | --------------------------------------------- |
+| `ci.yml`      | push / PR to `main`, `develop` | Build, test, JaCoCo, Spring Java Format check |
+| `release.yml` | semantic-version tag push      | Build Docker image → GHCR + GitHub Release    |
 
 ## Key Conventions
 
 - Banner generation entry point: `HtmlToPngConverter` service — Thymeleaf renders the HTML template, OpenHTMLtoPDF converts to PDF, PDFBox rasterises to PNG.
 - `TemplateUtils` is a `@Component` registered as `${utils.*}` in Thymeleaf templates.
-- Devoxx CFP import endpoint: `POST /api/import/devoxx/{eventId}` (e.g. `vdz26`).
+- Devoxx CFP import endpoint: `POST /api/import/devoxx/{eventId}` (e.g. `vdz27`).
 - Event-specific configuration lives in `application-{profile}.properties` files.

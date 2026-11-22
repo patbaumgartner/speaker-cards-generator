@@ -3,10 +3,10 @@
 [![CI](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/patbaumgartner/speaker-cards-generator/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
 
-> Generate professional **speaker and talk banner images** (PNG) for conference events such as
-> **Voxxed Days Zürich**, **Voxxed Days Ticino**, **Voxxed Days CERN**, and **BaselOne**.
+> Generate professional **speaker and talk banner images** (PNG) for **Voxxed Days Zürich**,
+> **Voxxed Days Ticino**, and **Voxxed Days CERN**.
 
 ---
 
@@ -25,7 +25,7 @@
 ## ✨ Features
 
 - 🎨 **Banner generation** – speaker card (16:9), talk card (16:9), and social card (1:1 square)
-- 📥 **Speaker import** – from [Sessionize](https://sessionize.com/) XLSX export or the [Devoxx CFP API](https://m.devoxx.com)
+- 📥 **Speaker import** – from the [Devoxx CFP API](https://cfp.dev)
 - 🎛️ **Multi-event profiles** – switch between events by activating a Spring profile
 - 🌐 **Web UI** – Bootstrap-based speaker directory with one-click download
 - 🐳 **Docker-ready** – `Dockerfile` + `compose.yml` included
@@ -66,14 +66,13 @@ together with the application.
 | `vdz` | Voxxed Days Zürich |
 | `vdt` | Voxxed Days Ticino |
 | `vdcern` | Voxxed Days CERN |
-| `baselone` | BaselOne |
+
+All three profiles use a neon **"lights on"** stage-lighting overlay behind the speaker
+and session content.
 
 ```shell
 # Activate a profile
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdt
-
-# BaselOne profile
-./mvnw spring-boot:run -Dspring-boot.run.profiles=baselone
 ```
 
 Adding support for a new event takes less than a minute –
@@ -84,11 +83,11 @@ create a new `application-{profile}.properties` file with the event-specific bra
 ## 📥 Import Speakers
 
 ```shell
-# From the Devoxx CFP API
-curl -X POST http://localhost:8080/api/import/devoxx/vdz26
+# From the Devoxx CFP API using the configured event
+curl -X POST http://localhost:8080/api/import/devoxx
 
-# From a Sessionize XLSX export
-curl -X POST http://localhost:8080/api/import/csv
+# Or for a specific event ID
+curl -X POST http://localhost:8080/api/import/devoxx/vdz27
 ```
 
 ---

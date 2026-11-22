@@ -42,9 +42,6 @@ src/main/resources/static/images/speaker/
 banners/
 speaker-banners/
 
-# Sessionize XLSX export (provided by the conference, not committed)
-SelectedWithSchedule.xlsx
-
 *.sql_
 
 # Eclipse

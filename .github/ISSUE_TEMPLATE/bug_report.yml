@@ -23,7 +23,7 @@ body:
       label: Steps to Reproduce
       description: Exact steps to reproduce the issue.
       placeholder: |
-        1. Import speakers via `GET /api/import/devoxx/vdz26`
+        1. Import speakers via `POST /api/import/devoxx/vdz27`
         2. Open the speaker list at `http://localhost:8080`
         3. Click the Download button next to a speaker
         4. Observe the downloaded PNG
@@ -72,7 +72,7 @@ body:
     id: spring-boot-version
     attributes:
       label: Spring Boot Version
-      placeholder: "e.g. 4.0.3"
+      placeholder: "e.g. 4.2.0"
     validations:
       required: true
 

@@ -80,6 +80,24 @@ class HtmlToPngConverterTest {
 	}
 
 	@Test
+	void rendersTheInlineSvgLightingOverlay() {
+		String html = """
+				<!DOCTYPE html>
+				<html><head><style>
+				  @page { size: 100px 50px; margin: 0; }
+				  body { margin: 0; background: #2c2c2e; }
+				</style></head>
+				<body>
+				  <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+				    <circle cx="50" cy="25" r="20" fill="#40b4e5" fill-opacity="0.5" />
+				  </svg>
+				</body></html>
+				""";
+
+		assertThat(converter().convertToPng(html)).isNotEmpty();
+	}
+
+	@Test
 	void fallsBackToThePlaceholderWhenASpeakerHasNoPhoto() {
 		assertThat(converter().convertToPng(imageHtml("/speaker-photo/" + UUID.randomUUID()))).isNotEmpty();
 	}

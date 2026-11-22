@@ -106,22 +106,22 @@ class TemplateUtilsTest {
 
 	@Test
 	void formatDateFormatsStandardDate() {
-		assertThat(TemplateUtils.formatDate("2026-01-22")).isEqualTo("January, 22nd, 2026");
+		assertThat(TemplateUtils.formatDate("2027-01-22")).isEqualTo("January, 22nd, 2027");
 	}
 
 	@Test
 	void formatDateHandlesOrdinalSuffixes() {
-		assertThat(TemplateUtils.formatDate("2026-03-01")).isEqualTo("March, 1st, 2026");
-		assertThat(TemplateUtils.formatDate("2026-03-02")).isEqualTo("March, 2nd, 2026");
-		assertThat(TemplateUtils.formatDate("2026-03-03")).isEqualTo("March, 3rd, 2026");
-		assertThat(TemplateUtils.formatDate("2026-03-04")).isEqualTo("March, 4th, 2026");
+		assertThat(TemplateUtils.formatDate("2027-03-01")).isEqualTo("March, 1st, 2027");
+		assertThat(TemplateUtils.formatDate("2027-03-02")).isEqualTo("March, 2nd, 2027");
+		assertThat(TemplateUtils.formatDate("2027-03-03")).isEqualTo("March, 3rd, 2027");
+		assertThat(TemplateUtils.formatDate("2027-03-04")).isEqualTo("March, 4th, 2027");
 	}
 
 	@Test
 	void formatDateHandlesTeenthOrdinals() {
-		assertThat(TemplateUtils.formatDate("2026-06-11")).isEqualTo("June, 11th, 2026");
-		assertThat(TemplateUtils.formatDate("2026-06-12")).isEqualTo("June, 12th, 2026");
-		assertThat(TemplateUtils.formatDate("2026-06-13")).isEqualTo("June, 13th, 2026");
+		assertThat(TemplateUtils.formatDate("2027-06-11")).isEqualTo("June, 11th, 2027");
+		assertThat(TemplateUtils.formatDate("2027-06-12")).isEqualTo("June, 12th, 2027");
+		assertThat(TemplateUtils.formatDate("2027-06-13")).isEqualTo("June, 13th, 2027");
 	}
 
 	@Test

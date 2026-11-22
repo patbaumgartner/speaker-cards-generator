@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+  <!--
+    "Lights on" stage lighting. Kept as inline SVG so the glow follows the event accent
+    colour and needs no extra bitmap assets. All shapes are decorative; banner text and
+    speaker photos sit above this layer.
+  -->
+  <svg th:fragment="wide(accent)" class="lighting" xmlns="http://www.w3.org/2000/svg" width="1280" height="526"
+    viewBox="0 0 1280 526" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="wide-beam" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.30" />
+        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.08" />
+        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
+      </linearGradient>
+      <radialGradient id="wide-glow">
+        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.38" />
+        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.12" />
+        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+
+    <!-- Volumetric beams from the three fixtures above the stage. -->
+    <polygon points="125,22 215,22 500,526 0,526" fill="url(#wide-beam)" />
+    <polygon points="600,22 680,22 810,526 470,526" fill="url(#wide-beam)" opacity="0.6" />
+    <polygon points="1065,22 1155,22 1280,526 780,526" fill="url(#wide-beam)" />
+
+    <!-- Soft pools of light where the beams meet the content. -->
+    <circle cx="170" cy="35" r="190" fill="url(#wide-glow)" opacity="0.55" />
+    <circle cx="640" cy="35" r="165" fill="url(#wide-glow)" opacity="0.38" />
+    <circle cx="1110" cy="35" r="200" fill="url(#wide-glow)" opacity="0.55" />
+    <circle cx="1110" cy="120" r="150" fill="url(#wide-glow)" opacity="0.45" />
+
+    <!-- Stage fixtures with lit lenses. -->
+    <g th:attr="stroke=${accent}" stroke-width="2" stroke-opacity="0.55" fill="#1a1a1c">
+      <rect x="130" y="0" width="80" height="21" rx="6" />
+      <rect x="600" y="0" width="80" height="21" rx="6" />
+      <rect x="1070" y="0" width="80" height="21" rx="6" />
+    </g>
+    <g th:attr="fill=${accent}">
+      <circle cx="170" cy="24" r="7" />
+      <circle cx="640" cy="24" r="7" />
+      <circle cx="1110" cy="24" r="7" />
+    </g>
+    <g fill="url(#wide-glow)">
+      <circle cx="170" cy="24" r="26" />
+      <circle cx="640" cy="24" r="26" />
+      <circle cx="1110" cy="24" r="26" />
+    </g>
+
+    <!-- A bulb switching on: the visual cue for the whole theme. -->
+    <circle cx="1135" cy="108" r="72" fill="url(#wide-glow)" opacity="0.7" />
+    <g th:attr="stroke=${accent}" stroke-width="3" stroke-opacity="0.5" fill="none">
+      <circle cx="1135" cy="100" r="27" />
+      <path d="M1123 123 L1123 137 L1147 137 L1147 123" />
+      <path d="M1125 145 L1145 145 M1128 152 L1142 152" />
+      <line x1="1135" y1="54" x2="1135" y2="40" />
+      <line x1="1089" y1="100" x2="1075" y2="100" />
+      <line x1="1181" y1="100" x2="1195" y2="100" />
+      <line x1="1102" y1="67" x2="1092" y2="57" />
+      <line x1="1168" y1="67" x2="1178" y2="57" />
+    </g>
+
+    <!-- Stage-edge rim light and a few "spark" dots. -->
+    <rect x="0" y="518" width="1280" height="2" th:attr="fill=${accent}" opacity="0.28" />
+    <g th:attr="fill=${accent}">
+      <circle cx="330" cy="92" r="2.5" opacity="0.55" />
+      <circle cx="410" cy="205" r="1.8" opacity="0.4" />
+      <circle cx="880" cy="150" r="2.2" opacity="0.45" />
+      <circle cx="975" cy="250" r="1.6" opacity="0.35" />
+      <circle cx="760" cy="420" r="2" opacity="0.3" />
+    </g>
+  </svg>
+
+  <svg th:fragment="square(accent)" class="lighting" xmlns="http://www.w3.org/2000/svg" width="1080" height="856"
+    viewBox="0 0 1080 856" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="square-beam" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.28" />
+        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.07" />
+        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
+      </linearGradient>
+      <radialGradient id="square-glow">
+        <stop offset="0%" th:attr="stop-color=${accent}" stop-opacity="0.36" />
+        <stop offset="55%" th:attr="stop-color=${accent}" stop-opacity="0.11" />
+        <stop offset="100%" th:attr="stop-color=${accent}" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+
+    <polygon points="110,22 210,22 440,856 0,856" fill="url(#square-beam)" />
+    <polygon points="495,22 585,22 700,856 380,856" fill="url(#square-beam)" opacity="0.55" />
+    <polygon points="870,22 970,22 1080,856 640,856" fill="url(#square-beam)" />
+
+    <circle cx="160" cy="35" r="200" fill="url(#square-glow)" opacity="0.5" />
+    <circle cx="540" cy="35" r="180" fill="url(#square-glow)" opacity="0.35" />
+    <circle cx="920" cy="35" r="210" fill="url(#square-glow)" opacity="0.5" />
+    <circle cx="920" cy="125" r="170" fill="url(#square-glow)" opacity="0.45" />
+
+    <g th:attr="stroke=${accent}" stroke-width="2" stroke-opacity="0.55" fill="#1a1a1c">
+      <rect x="120" y="0" width="80" height="21" rx="6" />
+      <rect x="500" y="0" width="80" height="21" rx="6" />
+      <rect x="880" y="0" width="80" height="21" rx="6" />
+    </g>
+    <g th:attr="fill=${accent}">
+      <circle cx="160" cy="24" r="7" />
+      <circle cx="540" cy="24" r="7" />
+      <circle cx="920" cy="24" r="7" />
+    </g>
+    <g fill="url(#square-glow)">
+      <circle cx="160" cy="24" r="26" />
+      <circle cx="540" cy="24" r="26" />
+      <circle cx="920" cy="24" r="26" />
+    </g>
+
+    <circle cx="950" cy="115" r="80" fill="url(#square-glow)" opacity="0.7" />
+    <g th:attr="stroke=${accent}" stroke-width="3" stroke-opacity="0.5" fill="none">
+      <circle cx="950" cy="105" r="29" />
+      <path d="M937 130 L937 145 L963 145 L963 130" />
+      <path d="M939 153 L961 153 M942 160 L958 160" />
+      <line x1="950" y1="56" x2="950" y2="42" />
+      <line x1="901" y1="105" x2="887" y2="105" />
+      <line x1="999" y1="105" x2="1013" y2="105" />
+      <line x1="915" y1="70" x2="905" y2="60" />
+      <line x1="985" y1="70" x2="995" y2="60" />
+    </g>
+
+    <rect x="0" y="848" width="1080" height="2" th:attr="fill=${accent}" opacity="0.28" />
+    <g th:attr="fill=${accent}">
+      <circle cx="300" cy="110" r="2.5" opacity="0.5" />
+      <circle cx="380" cy="260" r="1.8" opacity="0.35" />
+      <circle cx="770" cy="180" r="2.2" opacity="0.45" />
+      <circle cx="240" cy="610" r="2" opacity="0.3" />
+      <circle cx="830" cy="640" r="1.6" opacity="0.3" />
+    </g>
+  </svg>
+</body>
+
+</html>

@@ -20,8 +20,7 @@ import org.hibernate.validator.constraints.URL;
  * JPA entity representing a conference speaker.
  *
  * <p>
- * Speakers are imported either via the Sessionize XLSX export ({@code /api/import/csv})
- * or directly from the Devoxx CFP API ({@code /api/import/devoxx}).
+ * Speakers are imported from the Devoxx CFP API ({@code /api/import/devoxx}).
  */
 @Entity
 public class Speaker implements Comparable<Speaker> {
@@ -57,6 +56,7 @@ public class Speaker implements Comparable<Speaker> {
 
 	private String blueskyAccount;
 
+	@URL(protocol = "https")
 	private String mastodonAccount;
 
 	private String githubAccount;

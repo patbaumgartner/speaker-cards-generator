@@ -27,12 +27,6 @@ updates:
       update-types:
       - minor
       - patch
-    apache-poi:
-      patterns:
-      - org.apache.poi:*
-      update-types:
-      - minor
-      - patch
     webjars:
       patterns:
       - org.webjars*:*

@@ -4,10 +4,10 @@
 #   ./mvnw spring-boot:run -Dspring-boot.run.profiles=vdz
 #
 # Full-stack Docker deployment (database + application container):
-#   docker compose up -d              # start PostgreSQL + app (default: vdz profile)
-#   docker compose up -d db           # start PostgreSQL only
-#   docker compose logs -f app        # tail application logs
-#   docker compose down -v            # stop and remove volumes
+#   docker compose --profile deploy up -d  # start PostgreSQL + app (vdz profile)
+#   docker compose up -d db                # start PostgreSQL only
+#   docker compose logs -f app             # tail application logs
+#   docker compose down -v                 # stop and remove volumes
 
 services:
 

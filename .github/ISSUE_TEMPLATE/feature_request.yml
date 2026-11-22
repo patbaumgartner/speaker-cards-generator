@@ -37,7 +37,7 @@ body:
       label: Feature Scope
       options:
         - "Banner generation"
-        - "Speaker import (XLSX / Devoxx API)"
+        - "Speaker import (Devoxx API)"
         - "Web UI"
         - "Configuration / profiles"
         - "Docker / deployment"

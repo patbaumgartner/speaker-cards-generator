@@ -67,7 +67,7 @@ class BannerControllerIntegrationTest {
 		Talk talk = new Talk();
 		talk.setId(TALK_ID);
 		talk.setTitle("Building Cloud-Native Event-Driven Microservices with Spring Boot");
-		talk.setDate("2026-03-24");
+		talk.setDate("2027-03-24");
 		talk.setCetTime("14:00");
 		talk.setSpeakers(new ArrayList<>(List.of(speaker, coSpeaker)));
 		this.talkRepository.save(talk);
@@ -113,7 +113,8 @@ class BannerControllerIntegrationTest {
 		this.mockMvc.perform(get("/speaker-banner/{id}", SPEAKER_ID))
 			.andExpect(status().isOk())
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("Jane")))
-			.andExpect(content().string(org.hamcrest.Matchers.containsString("#TC26")));
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("#TC27")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"lighting\"")));
 
 		this.mockMvc.perform(get("/talk-banner/{id}", TALK_ID)).andExpect(status().isOk());
 		this.mockMvc.perform(get("/speaker-social/{id}", SPEAKER_ID)).andExpect(status().isOk());
@@ -174,7 +175,12 @@ class BannerControllerIntegrationTest {
 		this.mockMvc.perform(get("/"))
 			.andExpect(status().isOk())
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("Doe")))
-			.andExpect(content().string(org.hamcrest.Matchers.containsString("Test Conference")));
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("Test Conference")))
+			.andExpect(
+					content().string(org.hamcrest.Matchers.containsString("<main class=\"main-content\" id=\"main\">")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"sortable-btn\"")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("aria-sort=\"none\"")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("type=\"password\"")));
 	}
 
 	private Set<String> zipEntries(String url) throws Exception {
