@@ -27,21 +27,24 @@ public class BannerRenderer {
 	public enum BannerType {
 
 		/** 16:9 speaker card. */
-		SPEAKER("banner/speakerBanner", "speaker"),
+		SPEAKER("banner/speakerBanner", "speaker", "speaker"),
 
 		/** 16:9 talk card. */
-		TALK("banner/talkBanner", "talks"),
+		TALK("banner/talkBanner", "talks", "talk"),
 
 		/** Square social-media card. */
-		SOCIAL("banner/speakerSocial", "social");
+		SOCIAL("banner/speakerSocial", "social", "social");
 
 		private final String view;
 
 		private final String directory;
 
-		BannerType(String view, String directory) {
+		private final String suffix;
+
+		BannerType(String view, String directory, String suffix) {
 			this.view = view;
 			this.directory = directory;
+			this.suffix = suffix;
 		}
 
 		/** Thymeleaf view name for this banner. */
@@ -52,6 +55,11 @@ public class BannerRenderer {
 		/** Directory this banner type is written to inside output folders and ZIPs. */
 		public String directory() {
 			return this.directory;
+		}
+
+		/** Suffix appended to the speaker name in file names, e.g. {@code _speaker}. */
+		public String suffix() {
+			return this.suffix;
 		}
 
 	}
@@ -123,23 +131,24 @@ public class BannerRenderer {
 	}
 
 	/**
-	 * File name used for a speaker banner inside ZIP archives and output directories,
-	 * e.g. {@code speaker/Doe_Jane.png}.
+	 * File name used for a speaker or social banner inside ZIP archives and output
+	 * directories, e.g. {@code social/Doe_Jane_social.png}.
 	 */
 	public static String fileName(BannerType type, Speaker speaker) {
-		return type.directory() + "/" + fileName(speaker) + ".png";
+		return type.directory() + "/" + speakerName(speaker) + "_" + type.suffix() + ".png";
 	}
 
 	/**
-	 * File name used for a talk banner, e.g. {@code talks/Doe_Jane_1234.png}. The first
-	 * speaker's name leads; the talk id keeps the name unique.
+	 * File name used for a talk banner, e.g. {@code talks/Doe_Jane_talk.png}. The first
+	 * speaker's name leads. Talks without speakers fall back to the talk id.
 	 */
 	public static String fileName(Talk talk) {
-		String speakerPart = talk.getSpeakers().isEmpty() ? "" : fileName(talk.getSpeakers().get(0)) + "_";
-		return BannerType.TALK.directory() + "/" + speakerPart + talk.getId() + ".png";
+		String name = talk.getSpeakers().isEmpty() ? String.valueOf(talk.getId())
+				: speakerName(talk.getSpeakers().get(0));
+		return BannerType.TALK.directory() + "/" + name + "_" + BannerType.TALK.suffix() + ".png";
 	}
 
-	private static String fileName(Speaker speaker) {
+	private static String speakerName(Speaker speaker) {
 		return sanitise(speaker.getLastName()) + "_" + sanitise(speaker.getFirstName());
 	}
 

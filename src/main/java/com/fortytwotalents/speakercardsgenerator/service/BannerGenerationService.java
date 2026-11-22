@@ -90,9 +90,9 @@ public class BannerGenerationService {
 	 *
 	 * <pre>
 	 * {outputDirectory}/
-	 *   speaker/   ← {speakerId}.png
-	 *   talks/     ← {talkId}.png
-	 *   social/    ← {lastName}_{firstName}.png
+	 *   speaker/   ← {lastName}_{firstName}_speaker.png
+	 *   talks/     ← {lastName}_{firstName}_talk.png
+	 *   social/    ← {lastName}_{firstName}_social.png
 	 * </pre>
 	 * @param outputDirectory directory the files are written to
 	 * @return aggregated result including the saved file paths
@@ -115,16 +115,17 @@ public class BannerGenerationService {
 		}
 
 		BannerGenerationResult result = new BannerGenerationResult();
+		Set<String> writtenNames = new HashSet<>();
 		for (Speaker speaker : speakers) {
-			generate(result, speaker, BannerType.SPEAKER,
-					root.resolve(BannerType.SPEAKER.directory()).resolve(speaker.getId() + ".png"));
-			generate(result, speaker, BannerType.SOCIAL,
-					root.resolve(BannerRenderer.fileName(BannerType.SOCIAL, speaker)));
+			generate(result, speaker, BannerType.SPEAKER, root.resolve(uniqueEntryName(writtenNames,
+					BannerRenderer.fileName(BannerType.SPEAKER, speaker), speaker.getId())));
+			generate(result, speaker, BannerType.SOCIAL, root.resolve(uniqueEntryName(writtenNames,
+					BannerRenderer.fileName(BannerType.SOCIAL, speaker), speaker.getId())));
 		}
 		for (Talk talk : talks) {
 			try {
 				byte[] png = this.renderer.renderPng(BannerType.TALK, null, talk);
-				Path file = root.resolve(BannerRenderer.fileName(talk));
+				Path file = root.resolve(uniqueEntryName(writtenNames, BannerRenderer.fileName(talk), talk.getId()));
 				Files.write(file, png);
 				result.addSuccess(null, talk.getTitle(), png.length);
 				result.addSavedFile(file.toString());
@@ -166,7 +167,7 @@ public class BannerGenerationService {
 			}
 			if (types.contains(BannerType.TALK)) {
 				for (Talk talk : this.talkRepository.findAllWithSpeakersBy()) {
-					addEntry(zip, BannerRenderer.fileName(talk),
+					addEntry(zip, uniqueEntryName(entryNames, BannerRenderer.fileName(talk), talk.getId()),
 							() -> this.renderer.renderPng(BannerType.TALK, null, talk),
 							"talk banner for '" + talk.getTitle() + "'");
 				}

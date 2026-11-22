@@ -96,16 +96,16 @@
         z-index: 10;
       }
 
-      /* Talk title */
+      /* Talk title: top offset centers a two-line title between the label and the speaker name, above the divider */
       .talk-title {
         position: absolute;
-        top: 280px;
-        height: 520px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        bottom: 560px;
         left: 50px;
         right: 50px;
+        z-index: 10;
+      }
+
+      .talk-title-text {
         font-family: "Space Grotesk", sans-serif;
         font-size: 62px;
         font-weight: 700;
@@ -114,7 +114,6 @@
         text-align: left;
         hyphens: none;
         word-wrap: break-word;
-        z-index: 10;
       }
 
       /* Separator line */
@@ -246,12 +245,13 @@
     <div class="intro-text" th:text="${event.speakingAboutLabel}">I am speaking about</div>
 
     <!-- Talk title -->
-    <div
-      class="talk-title"
-      th:if="${talk != null and talk.title != null}"
-      th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 980, 62, 700)}"
-    >
-      Talk Title Goes Here
+    <div class="talk-title" th:if="${talk != null and talk.title != null}">
+      <div
+        class="talk-title-text"
+        th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 980, 62, 700)}"
+      >
+        Talk Title Goes Here
+      </div>
     </div>
 
     <!-- Separator -->

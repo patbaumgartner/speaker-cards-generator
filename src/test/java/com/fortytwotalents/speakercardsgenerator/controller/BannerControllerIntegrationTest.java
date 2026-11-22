@@ -159,8 +159,8 @@ class BannerControllerIntegrationTest {
 	void downloadAllProducesAZipWithEverySpeakerTalkAndSocialBanner() throws Exception {
 		Set<String> entries = zipEntries("/api/banners/download/all");
 
-		assertThat(entries).containsExactlyInAnyOrder("speaker/Doe_Jane.png", "social/Doe_Jane.png",
-				"speaker/Roe_John.png", "social/Roe_John.png", "talks/Doe_Jane_" + TALK_ID + ".png");
+		assertThat(entries).containsExactlyInAnyOrder("speaker/Doe_Jane_speaker.png", "social/Doe_Jane_social.png",
+				"speaker/Roe_John_speaker.png", "social/Roe_John_social.png", "talks/Doe_Jane_talk.png");
 	}
 
 	@Test
@@ -170,12 +170,12 @@ class BannerControllerIntegrationTest {
 		// before the talk banners are written.
 		this.speakerRepository.save(speaker(UUID.randomUUID(), "Jane", "Doe"));
 
-		assertThat(zipEntries("/api/banners/download/all")).contains("talks/Doe_Jane_" + TALK_ID + ".png");
+		assertThat(zipEntries("/api/banners/download/all")).contains("talks/Doe_Jane_talk.png");
 	}
 
 	@Test
 	void downloadTalksProducesOneEntryPerTalkNotOnePerSpeaker() throws Exception {
-		assertThat(zipEntries("/api/banners/download/talks")).containsExactly("talks/Doe_Jane_" + TALK_ID + ".png");
+		assertThat(zipEntries("/api/banners/download/talks")).containsExactly("talks/Doe_Jane_talk.png");
 	}
 
 	@Test
