@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -85,13 +87,13 @@ public class BannerController {
 	}
 
 	@GetMapping("/speaker-banner/{id}")
-	public String speakerBanner(@PathVariable UUID id, Model model) {
-		return speakerPreview(BannerType.SPEAKER, id, model);
+	public String speakerBanner(@PathVariable UUID id, @RequestParam(required = false) Long talkId, Model model) {
+		return speakerPreview(BannerType.SPEAKER, id, talkId, model);
 	}
 
 	@GetMapping("/speaker-social/{id}")
-	public String speakerSocial(@PathVariable UUID id, Model model) {
-		return speakerPreview(BannerType.SOCIAL, id, model);
+	public String speakerSocial(@PathVariable UUID id, @RequestParam(required = false) Long talkId, Model model) {
+		return speakerPreview(BannerType.SOCIAL, id, talkId, model);
 	}
 
 	@GetMapping("/talk-banner/{id}")
@@ -105,29 +107,54 @@ public class BannerController {
 
 	@GetMapping(value = "/speaker-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
-	public byte[] speakerBannerPng(@PathVariable UUID id) {
-		return renderer.renderSpeakerPng(BannerType.SPEAKER, requireSpeaker(id));
+	public ResponseEntity<byte[]> speakerBannerPng(@PathVariable UUID id, @RequestParam(required = false) Long talkId) {
+		Speaker speaker = requireSpeaker(id);
+		return bannerResponse(BannerType.SPEAKER, speaker, speakerTalk(speaker, talkId));
 	}
 
 	@GetMapping(value = "/speaker-social/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
-	public byte[] speakerSocialPng(@PathVariable UUID id) {
-		return renderer.renderSpeakerPng(BannerType.SOCIAL, requireSpeaker(id));
+	public ResponseEntity<byte[]> speakerSocialPng(@PathVariable UUID id, @RequestParam(required = false) Long talkId) {
+		Speaker speaker = requireSpeaker(id);
+		return bannerResponse(BannerType.SOCIAL, speaker, speakerTalk(speaker, talkId));
 	}
 
 	@GetMapping(value = "/talk-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
-	public byte[] talkBannerPng(@PathVariable Long id) {
-		return renderer.renderPng(BannerType.TALK, null, requireTalk(id));
+	public ResponseEntity<byte[]> talkBannerPng(@PathVariable Long id) {
+		return bannerResponse(BannerType.TALK, null, requireTalk(id));
 	}
 
-	private String speakerPreview(BannerType type, UUID id, Model model) {
+	private ResponseEntity<byte[]> bannerResponse(BannerType type, Speaker speaker, Talk talk) {
+		String disposition = ContentDisposition.attachment()
+			.filename(renderer.downloadFileName(type, speaker, talk))
+			.build()
+			.toString();
+		return ResponseEntity.ok()
+			.contentType(MediaType.IMAGE_PNG)
+			.header(HttpHeaders.CONTENT_DISPOSITION, disposition)
+			.body(renderer.renderPng(type, speaker, talk));
+	}
+
+	private String speakerPreview(BannerType type, UUID id, Long talkId, Model model) {
 		Speaker speaker = requireSpeaker(id);
 		model.addAttribute("speaker", speaker);
-		model.addAttribute("talk", BannerRenderer.firstTalk(speaker));
+		model.addAttribute("talk", speakerTalk(speaker, talkId));
 		model.addAttribute("event", eventConfig);
 		model.addAttribute("utils", templateUtils);
 		return type.view();
+	}
+
+	private static Talk speakerTalk(Speaker speaker, Long talkId) {
+		if (talkId == null) {
+			return BannerRenderer.firstTalk(speaker);
+		}
+		return speaker.getTalks()
+			.stream()
+			.filter(talk -> talkId.equals(talk.getId()))
+			.findFirst()
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Session " + talkId + " does not belong to speaker " + speaker.getId()));
 	}
 
 	@GetMapping("/speaker-photo")
@@ -198,7 +225,7 @@ public class BannerController {
 
 	@GetMapping("/api/banners/download/talks")
 	public void downloadTalkBanners(HttpServletResponse response) throws IOException {
-		streamZip(response, "banners-talks.zip", EnumSet.of(BannerType.TALK));
+		streamZip(response, "banners-sessions.zip", EnumSet.of(BannerType.TALK));
 	}
 
 	@GetMapping("/api/banners/download/social")

@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -50,8 +49,8 @@ public class BannerGenerationService {
 	}
 
 	/**
-	 * Renders a speaker banner for every speaker, without writing anything to disk.
-	 * @return per-speaker successes and failures
+	 * Renders a speaker banner for every speaker/session pair, without writing to disk.
+	 * @return per-banner successes and failures
 	 */
 	@Transactional(readOnly = true)
 	public BannerGenerationResult generateAllSpeakerBanners() {
@@ -66,9 +65,9 @@ public class BannerGenerationService {
 	}
 
 	/**
-	 * Renders speaker banners for the given speaker IDs only.
+	 * Renders all session variants of speaker banners for the given speaker IDs only.
 	 * @param speakerIds speaker UUIDs to process
-	 * @return per-speaker successes and failures
+	 * @return per-banner successes and failures
 	 */
 	@Transactional(readOnly = true)
 	public BannerGenerationResult generateSpeakerBanners(List<UUID> speakerIds) {
@@ -86,14 +85,8 @@ public class BannerGenerationService {
 	 * Renders every banner type and writes each file to the given output directory.
 	 *
 	 * <p>
-	 * Output layout:
-	 *
-	 * <pre>
-	 * {outputDirectory}/
-	 *   speaker/   ← {lastName}_{firstName}_speaker.png
-	 *   talks/     ← {lastName}_{firstName}_talk.png
-	 *   social/    ← {lastName}_{firstName}_social.png
-	 * </pre>
+	 * Files use the same names as individual downloads and ZIP entries, grouped under
+	 * {@code speaker/}, {@code sessions/} and {@code social/}.
 	 * @param outputDirectory directory the files are written to
 	 * @return aggregated result including the saved file paths
 	 */
@@ -115,17 +108,14 @@ public class BannerGenerationService {
 		}
 
 		BannerGenerationResult result = new BannerGenerationResult();
-		Set<String> writtenNames = new HashSet<>();
 		for (Speaker speaker : speakers) {
-			generate(result, speaker, BannerType.SPEAKER, root.resolve(uniqueEntryName(writtenNames,
-					BannerRenderer.fileName(BannerType.SPEAKER, speaker), speaker.getId())));
-			generate(result, speaker, BannerType.SOCIAL, root.resolve(uniqueEntryName(writtenNames,
-					BannerRenderer.fileName(BannerType.SOCIAL, speaker), speaker.getId())));
+			generate(result, speaker, BannerType.SPEAKER, root);
+			generate(result, speaker, BannerType.SOCIAL, root);
 		}
 		for (Talk talk : talks) {
 			try {
 				byte[] png = this.renderer.renderPng(BannerType.TALK, null, talk);
-				Path file = root.resolve(uniqueEntryName(writtenNames, BannerRenderer.fileName(talk), talk.getId()));
+				Path file = root.resolve(this.renderer.fileName(BannerType.TALK, null, talk));
 				Files.write(file, png);
 				result.addSuccess(null, talk.getTitle(), png.length);
 				result.addSavedFile(file.toString());
@@ -154,39 +144,25 @@ public class BannerGenerationService {
 				.stream()
 				.filter(types::contains)
 				.toList();
-			Set<String> entryNames = new HashSet<>();
 			if (!speakerTypes.isEmpty()) {
 				for (Speaker speaker : this.speakerRepository.findAllWithTalksBy()) {
-					for (BannerType type : speakerTypes) {
-						addEntry(zip,
-								uniqueEntryName(entryNames, BannerRenderer.fileName(type, speaker), speaker.getId()),
-								() -> this.renderer.renderSpeakerPng(type, speaker),
-								type + " banner for " + speaker.displayName());
+					for (Talk talk : BannerRenderer.bannerTalks(speaker)) {
+						for (BannerType type : speakerTypes) {
+							addEntry(zip, this.renderer.fileName(type, speaker, talk),
+									() -> this.renderer.renderPng(type, speaker, talk), type + " banner for "
+											+ speaker.displayName() + (talk == null ? "" : " / " + talk.getTitle()));
+						}
 					}
 				}
 			}
 			if (types.contains(BannerType.TALK)) {
 				for (Talk talk : this.talkRepository.findAllWithSpeakersBy()) {
-					addEntry(zip, uniqueEntryName(entryNames, BannerRenderer.fileName(talk), talk.getId()),
+					addEntry(zip, this.renderer.fileName(BannerType.TALK, null, talk),
 							() -> this.renderer.renderPng(BannerType.TALK, null, talk),
 							"talk banner for '" + talk.getTitle() + "'");
 				}
 			}
 		}
-	}
-
-	/**
-	 * Returns {@code name}, or the same name with the id appended when another speaker
-	 * already claimed it. Two people with the same name would otherwise produce a
-	 * duplicate ZIP entry, which aborts the whole archive.
-	 */
-	private static String uniqueEntryName(Set<String> used, String name, Object id) {
-		if (used.add(name)) {
-			return name;
-		}
-		String unique = name.substring(0, name.length() - ".png".length()) + "_" + id + ".png";
-		used.add(unique);
-		return unique;
 	}
 
 	private void addEntry(ZipOutputStream zip, String name, Supplier<byte[]> png, String description)
@@ -204,19 +180,23 @@ public class BannerGenerationService {
 		zip.closeEntry();
 	}
 
-	/** Renders one speaker banner, optionally saving it to {@code file}. */
-	private void generate(BannerGenerationResult result, Speaker speaker, BannerType type, Path file) {
-		try {
-			byte[] png = this.renderer.renderSpeakerPng(type, speaker);
-			if (file != null) {
-				Files.write(file, png);
-				result.addSavedFile(file.toString());
+	/** Renders every session variant, optionally saving them under {@code outputRoot}. */
+	private void generate(BannerGenerationResult result, Speaker speaker, BannerType type, Path outputRoot) {
+		for (Talk talk : BannerRenderer.bannerTalks(speaker)) {
+			String description = speaker.displayName() + (talk == null ? "" : " / " + talk.getTitle());
+			try {
+				byte[] png = this.renderer.renderPng(type, speaker, talk);
+				if (outputRoot != null) {
+					Path file = outputRoot.resolve(this.renderer.fileName(type, speaker, talk));
+					Files.write(file, png);
+					result.addSavedFile(file.toString());
+				}
+				result.addSuccess(speaker.getId(), description, png.length);
 			}
-			result.addSuccess(speaker.getId(), speaker.displayName(), png.length);
-		}
-		catch (Exception ex) {
-			result.addFailure(speaker.getId(), speaker.displayName(), ex.getMessage());
-			log.error("Failed {} banner for {} ({})", type, speaker.displayName(), speaker.getId(), ex);
+			catch (Exception ex) {
+				result.addFailure(speaker.getId(), description, ex.getMessage());
+				log.error("Failed {} banner for {} ({})", type, description, speaker.getId(), ex);
+			}
 		}
 	}
 

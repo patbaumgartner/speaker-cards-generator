@@ -105,8 +105,14 @@ the CFP provides several portrait URLs, the importer compares their pixel dimens
 and stores the highest-resolution download without recompression. The download limit
 is configurable with `app.storage.max-photo-size` (default `5MB`).
 
+The CFP session type (for example **Conference** or **Byte-Size**) appears
+beneath the talk-title divider on banners. Workshop variants are recognized from
+the type's name or slug and displayed as **Workshop**. Reimport existing talks
+to refresh their session types and workshop classification.
+
 The public import works without a token. Adding a token also checks authenticated
-speaker details for job titles and portrait URLs.
+speaker details for job titles and portrait URLs. If a response omits the job title,
+an existing title is preserved; an explicitly blank title clears it.
 
 To find it, sign in to your CFP instance, open the browser developer tools (`F12`) and select
 the **Network** tab. Reload the page, choose an authenticated request such as `/api/account`,
@@ -132,6 +138,34 @@ while it is visible.
 ---
 
 ## 🖼️ Generate Banners
+
+Event profiles set `app.event.date` with the weekday (for example,
+`Tuesday, March 9, 2027`). An optional `app.event.workshop-date` adds a separate
+workshop-day line in the header; Ticino uses `Thursday, February 18, 2027`.
+For workshop sessions, this becomes the main header date instead of the conference
+date, without repeating the workshop-day line. Events without a separate workshop
+date keep their configured event date.
+
+Each session in the speaker directory has its own speaker, session and social
+banner preview and PNG download. Workshop variants use the workshop date.
+Bulk downloads and disk exports include every session variant, not just the first
+session of each speaker. Speakers without sessions still get general speaker and
+social banners.
+
+All PNG downloads, ZIP entries and exported files share the same lowercase,
+path-safe naming scheme:
+
+- Session: `{event}-{category}-{sessionId}-{sessionTitle}-session.png`
+- Speaker/social: `{event}-{category}-{sessionId}-{sessionTitle}-{speakerName}-{speakerUuid}-{speaker|social}.png`
+- Without a session: `{event}-{speakerName}-{speakerUuid}-{speaker|social}.png`
+
+For example: `vdt27-workshop-4243-hands-on-java-session.png`. Stable IDs prevent
+collisions for identical titles or speaker names; long text components are
+shortened. ZIPs and disk exports use `speaker/`, `sessions/` and `social/`
+directories (replacing the old `talks/` directory and `-talk` naming).
+The existing `/talk-banner/` and `/api/banners/download/talks` URLs remain valid.
+Speaker/social preview and PNG URLs accept `?talkId={sessionId}`; without it,
+they retain a default session. PDFs are intermediate rendering files, not downloads.
 
 ```shell
 # Generate all banners and save to ./speaker-banners/

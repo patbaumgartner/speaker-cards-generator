@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -217,6 +218,8 @@ public class DevoxxImportService {
 		}
 		talk.setTitle(title);
 		talk.setDescription(blankToNull(dto.description));
+		talk.setWorkshop(dto.sessionType != null && dto.sessionType.isWorkshop());
+		talk.setSessionType(dto.sessionType == null ? null : blankToNull(dto.sessionType.name));
 
 		// Extract scheduling from timeSlots if available
 		DevoxxTimeSlotDto slot = dto.timeSlots == null || dto.timeSlots.isEmpty() ? null : dto.timeSlots.get(0);
@@ -250,7 +253,7 @@ public class DevoxxImportService {
 				.retrieve()
 				.body(DevoxxSpeakerDto.class);
 			if (detail != null) {
-				if (blankToNull(detail.jobTitle) != null) {
+				if (detail.jobTitle != null) {
 					dto.jobTitle = detail.jobTitle;
 				}
 				if (blankToNull(detail.originalImageUrl) != null) {
@@ -282,7 +285,9 @@ public class DevoxxImportService {
 		speaker.setLastName(blankToNull(dto.lastName));
 		speaker.setBiography(blankToNull(dto.bio));
 		speaker.setCompany(blankToNull(dto.company));
-		speaker.setTitle(blankToNull(dto.jobTitle));
+		if (dto.jobTitle != null) {
+			speaker.setTitle(blankToNull(dto.jobTitle));
+		}
 		speaker.setTwitterAccount(blankToNull(dto.twitterHandle));
 		speaker.setLinkedInAccount(normaliseLinkedIn(dto.linkedInUsername));
 		speaker.setBlueskyAccount(blankToNull(dto.blueskyUsername));
@@ -437,9 +442,25 @@ public class DevoxxImportService {
 
 		public String description;
 
+		public DevoxxSessionTypeDto sessionType;
+
 		public List<DevoxxTalkSpeakerDto> speakers;
 
 		public List<DevoxxTimeSlotDto> timeSlots;
+
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class DevoxxSessionTypeDto {
+
+		public String name;
+
+		public String slug;
+
+		boolean isWorkshop() {
+			return (name != null && name.toLowerCase(Locale.ROOT).contains("workshop"))
+					|| (slug != null && slug.toLowerCase(Locale.ROOT).contains("workshop"));
+		}
 
 	}
 

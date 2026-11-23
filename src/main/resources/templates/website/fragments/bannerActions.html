@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+  <div th:fragment="actions(speaker, talk)" class="session-banner-actions border rounded p-2 mb-2 text-start"
+    role="group"
+    th:attr="aria-label=${speaker.displayName() + ' - ' + (talk != null ? talk.title : 'General speaker banners')}"
+    th:with="sessionId=${talk != null ? talk.id : null}">
+    <div th:if="${talk != null}" class="small mb-2">
+      <span class="badge text-bg-secondary"
+        th:text="${#strings.isEmpty(talk.sessionTypeLabel) ? 'Session' : talk.sessionTypeLabel}">Session</span>
+      <span class="text-muted" th:text="${'#' + talk.id}">#1234</span>
+      <div class="fw-semibold text-break" th:text="${talk.title}">Session title</div>
+    </div>
+    <div th:unless="${talk != null}" class="small fw-semibold mb-2">General speaker banners</div>
+    <div class="d-flex flex-column gap-1">
+      <div class="btn-group btn-group-sm" role="group" aria-label="Speaker banner">
+        <a th:href="@{/speaker-banner/{id}(id=${speaker.id},talkId=${sessionId})}" target="_blank" rel="noopener noreferrer"
+          class="btn btn-outline-primary">
+          <i class="bi bi-eye me-1" aria-hidden="true"></i>Speaker<span class="visually-hidden"> banner preview (new tab)</span>
+        </a>
+        <a th:href="@{/speaker-banner/{id}.png(id=${speaker.id},talkId=${sessionId})}" download
+          class="btn btn-outline-primary">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>PNG<span class="visually-hidden">: download speaker banner</span>
+        </a>
+      </div>
+      <div th:if="${talk != null}" class="btn-group btn-group-sm" role="group" aria-label="Session banner">
+        <a th:href="@{/talk-banner/{id}(id=${talk.id})}" target="_blank" rel="noopener noreferrer"
+          class="btn btn-outline-success">
+          <i class="bi bi-eye me-1" aria-hidden="true"></i>Session<span class="visually-hidden"> banner preview (new tab)</span>
+        </a>
+        <a th:href="@{/talk-banner/{id}.png(id=${talk.id})}" download class="btn btn-outline-success">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>PNG<span class="visually-hidden">: download session banner</span>
+        </a>
+      </div>
+      <div class="btn-group btn-group-sm" role="group" aria-label="Social banner">
+        <a th:href="@{/speaker-social/{id}(id=${speaker.id},talkId=${sessionId})}" target="_blank" rel="noopener noreferrer"
+          class="btn btn-outline-info">
+          <i class="bi bi-eye me-1" aria-hidden="true"></i>Social<span class="visually-hidden"> banner preview (new tab)</span>
+        </a>
+        <a th:href="@{/speaker-social/{id}.png(id=${speaker.id},talkId=${sessionId})}" download
+          class="btn btn-outline-info">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>PNG<span class="visually-hidden">: download social banner</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

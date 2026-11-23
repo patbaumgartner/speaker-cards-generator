@@ -6,5 +6,6 @@
     // format-on-save for Java here and rely on the Maven plugin instead.
     "[java]": {
         "editor.formatOnSave": false
-    }
+    },
+    "java.compile.nullAnalysis.mode": "automatic"
 }

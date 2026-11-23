@@ -1,5 +1,6 @@
 package com.fortytwotalents.speakercardsgenerator.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
@@ -34,6 +36,12 @@ public class Talk implements Comparable<Talk> {
 	@JdbcTypeCode(Types.LONGVARCHAR)
 	@Length(max = 10000)
 	private String description;
+
+	private String sessionType;
+
+	@Column(nullable = false)
+	@ColumnDefault("false")
+	private boolean workshop;
 
 	/** Scheduled date in {@code yyyy-MM-dd} format (CET timezone). */
 	private String date;
@@ -112,6 +120,26 @@ public class Talk implements Comparable<Talk> {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getSessionType() {
+		return sessionType;
+	}
+
+	public void setSessionType(String sessionType) {
+		this.sessionType = sessionType;
+	}
+
+	public String getSessionTypeLabel() {
+		return workshop ? "Workshop" : sessionType;
+	}
+
+	public boolean isWorkshop() {
+		return workshop;
+	}
+
+	public void setWorkshop(boolean workshop) {
+		this.workshop = workshop;
 	}
 
 	public String getDate() {

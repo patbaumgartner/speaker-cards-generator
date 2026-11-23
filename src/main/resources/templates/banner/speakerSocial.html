@@ -128,6 +128,13 @@
         z-index: 10;
       }
 
+      .session-type-label {
+        position: absolute;
+        top: 543px;
+        left: 50px;
+        z-index: 10;
+      }
+
       /* Speaker section */
       .speaker-section {
         position: absolute;
@@ -220,7 +227,6 @@
     <style th:replace="~{banner/fragments/lighting :: signatureStyle}"></style>
     <style>
       .footer-url { top: 29px; }
-      .event-schedule { top: 24px; }
     </style>
   </head>
 
@@ -256,6 +262,7 @@
 
     <!-- Separator -->
     <div class="section-divider"></div>
+    <div th:replace="~{banner/fragments/lighting :: sessionTypeLabel}"></div>
 
     <!-- Speaker section -->
     <div class="speaker-section">

@@ -43,8 +43,11 @@ public class EventConfig {
 	 */
 	private String logoFile = "event-tile.png";
 
-	/** Event date displayed on banners, e.g. "March 9, 2027". */
+	/** Conference date displayed on banners, including its weekday. */
 	private String date = "";
+
+	/** Optional workshop day displayed above the event location. */
+	private String workshopDate = "";
 
 	/** Event location displayed on banners, e.g. "Zürich, Switzerland". */
 	private String location = "";
@@ -106,6 +109,14 @@ public class EventConfig {
 
 	public void setDate(String date) {
 		this.date = date;
+	}
+
+	public String getWorkshopDate() {
+		return workshopDate;
+	}
+
+	public void setWorkshopDate(String workshopDate) {
+		this.workshopDate = workshopDate;
 	}
 
 	public String getLocation() {

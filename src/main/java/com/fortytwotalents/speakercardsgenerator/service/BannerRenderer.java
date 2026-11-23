@@ -4,6 +4,9 @@ import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
 import com.fortytwotalents.speakercardsgenerator.model.Talk;
 import com.fortytwotalents.speakercardsgenerator.util.TemplateUtils;
+import java.text.Normalizer;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
@@ -30,7 +33,7 @@ public class BannerRenderer {
 		SPEAKER("banner/speakerBanner", "speaker", "speaker"),
 
 		/** 16:9 talk card. */
-		TALK("banner/talkBanner", "talks", "talk"),
+		TALK("banner/talkBanner", "sessions", "session"),
 
 		/** Square social-media card. */
 		SOCIAL("banner/speakerSocial", "social", "social");
@@ -57,7 +60,7 @@ public class BannerRenderer {
 			return this.directory;
 		}
 
-		/** Suffix appended to the speaker name in file names, e.g. {@code _speaker}. */
+		/** Banner kind appended to download file names. */
 		public String suffix() {
 			return this.suffix;
 		}
@@ -108,20 +111,7 @@ public class BannerRenderer {
 	}
 
 	/**
-	 * Renders a speaker-centric banner, using the speaker's first talk if there is one.
-	 */
-	public byte[] renderSpeakerPng(BannerType type, Speaker speaker) {
-		return renderPng(type, speaker, firstTalk(speaker));
-	}
-
-	/** Renders a speaker-centric banner as HTML. */
-	public String renderSpeakerHtml(BannerType type, Speaker speaker) {
-		return renderHtml(type, speaker, firstTalk(speaker));
-	}
-
-	/**
-	 * The talk shown alongside a speaker on their card. Speakers with several accepted
-	 * sessions get their first one.
+	 * Default session for legacy speaker URLs without an explicit session selection.
 	 */
 	public static Talk firstTalk(Speaker speaker) {
 		if (speaker == null || speaker.getTalks() == null || speaker.getTalks().isEmpty()) {
@@ -130,38 +120,44 @@ public class BannerRenderer {
 		return speaker.getTalks().get(0);
 	}
 
-	/**
-	 * File name used for a speaker or social banner inside ZIP archives and output
-	 * directories, e.g. {@code social/Doe_Jane_social.png}.
-	 */
-	public static String fileName(BannerType type, Speaker speaker) {
-		return type.directory() + "/" + speakerName(speaker) + "_" + type.suffix() + ".png";
+	/** Speakers without sessions still receive a general speaker/social banner. */
+	static List<Talk> bannerTalks(Speaker speaker) {
+		return speaker.getTalks().isEmpty() ? Collections.singletonList(null)
+				: speaker.getTalks().stream().sorted().toList();
 	}
 
-	/**
-	 * File name used for a talk banner, e.g. {@code talks/Doe_Jane_talk.png}. The first
-	 * speaker's name leads. Talks without speakers fall back to the talk id.
-	 */
-	public static String fileName(Talk talk) {
-		String name = talk.getSpeakers().isEmpty() ? String.valueOf(talk.getId())
-				: speakerName(talk.getSpeakers().get(0));
-		return BannerType.TALK.directory() + "/" + name + "_" + BannerType.TALK.suffix() + ".png";
+	/** Relative path shared by ZIP archives and disk exports. */
+	public String fileName(BannerType type, Speaker speaker, Talk talk) {
+		return type.directory() + "/" + downloadFileName(type, speaker, talk);
 	}
 
-	private static String speakerName(Speaker speaker) {
-		return sanitise(speaker.getLastName()) + "_" + sanitise(speaker.getFirstName());
+	/** Download names include stable IDs so duplicate names and titles cannot collide. */
+	public String downloadFileName(BannerType type, Speaker speaker, Talk talk) {
+		String name = slug(this.eventConfig.getShortName(), 24);
+		if (talk != null) {
+			String category = talk.getSessionTypeLabel();
+			name += "-" + slug(category == null || category.isBlank() ? "session" : category, 24) + "-" + talk.getId()
+					+ "-" + slug(talk.getTitle(), 80);
+		}
+		if (speaker != null) {
+			name += "-" + slug(speaker.displayName(), 48) + "-" + speaker.getId();
+		}
+		return name + "-" + type.suffix() + ".png";
 	}
 
-	/**
-	 * Strips characters that are unsafe in a file name or ZIP entry — including path
-	 * separators, so a speaker name can never escape its directory.
-	 */
-	private static String sanitise(String value) {
+	private static String slug(String value, int maxLength) {
 		if (value == null || value.isBlank()) {
 			return "unknown";
 		}
-		String cleaned = value.trim().replaceAll("[^a-zA-Z0-9._-]", "_");
-		return cleaned.replace("..", "_").toLowerCase(Locale.ROOT).isBlank() ? "unknown" : cleaned.replace("..", "_");
+		String cleaned = Normalizer.normalize(value, Normalizer.Form.NFKD)
+			.replaceAll("\\p{M}+", "")
+			.toLowerCase(Locale.ROOT)
+			.replaceAll("[^a-z0-9]+", "-")
+			.replaceAll("^-|-$", "");
+		if (cleaned.isEmpty()) {
+			return "unknown";
+		}
+		return cleaned.substring(0, Math.min(cleaned.length(), maxLength)).replaceAll("-$", "");
 	}
 
 }

@@ -66,7 +66,7 @@
               <i class="bi bi-person-badge-fill me-2" aria-hidden="true"></i>Speaker Banners
             </a>
             <a th:href="@{/api/banners/download/talks}" class="btn btn-outline-primary">
-              <i class="bi bi-easel-fill me-2" aria-hidden="true"></i>Talk Banners
+              <i class="bi bi-easel-fill me-2" aria-hidden="true"></i>Session Banners
             </a>
             <a th:href="@{/api/banners/download/social}" class="btn btn-outline-primary">
               <i class="bi bi-share-fill me-2" aria-hidden="true"></i>Social Banners
@@ -89,7 +89,7 @@
             <div class="input-group input-group-sm">
               <span class="input-group-text bg-white border-end-0"><i class="bi bi-search" aria-hidden="true"></i></span>
               <input type="text" id="speakerSearch" class="form-control border-start-0"
-                placeholder="Search name, company, talk…" aria-label="Search speakers" />
+                placeholder="Search name, company, session…" aria-label="Search speakers" />
             </div>
           </div>
         </div>
@@ -112,11 +112,11 @@
                         class="bi bi-arrow-down-up text-muted" style="font-size: .75rem;" aria-hidden="true"></i></button>
                   </th>
                   <th scope="col" aria-sort="none">
-                    <button type="button" class="sortable-btn" data-sort-col="4">Talk <i
+                    <button type="button" class="sortable-btn" data-sort-col="4">Sessions <i
                         class="bi bi-arrow-down-up text-muted" style="font-size: .75rem;" aria-hidden="true"></i></button>
                   </th>
                   <th scope="col" class="text-center">Social Links</th>
-                  <th scope="col" class="text-center" style="width: 200px;">Actions</th>
+                  <th scope="col" class="text-center" style="min-width: 240px;">Banner Previews / Downloads</th>
                 </tr>
               </thead>
               <tbody>
@@ -201,43 +201,11 @@
 
                   <!-- Actions -->
                   <td class="align-middle text-center">
-                    <div class="d-flex flex-column gap-1">
-                      <!-- Speaker banner -->
-                      <div class="btn-group btn-group-sm" role="group">
-                        <a th:href="@{/speaker-banner/{id}(id=${speaker.id})}" target="_blank" rel="noopener noreferrer"
-                          class="btn btn-outline-primary" title="Preview Speaker Banner">
-                          <i class="bi bi-eye me-1" aria-hidden="true"></i>View
-                        </a>
-                        <a th:href="@{/speaker-banner/{id}.png(id=${speaker.id})}"
-                          th:attr="download='speaker-' + ${speaker.id} + '.png'" class="btn btn-outline-primary"
-                          title="Download Speaker Banner PNG">
-                          <i class="bi bi-download" aria-hidden="true"></i>
-                        </a>
-                      </div>
-                      <!-- Talk banner (only when speaker has talks) -->
-                      <div class="btn-group btn-group-sm" role="group" th:if="${!#lists.isEmpty(speaker.talks)}">
-                        <a th:href="@{/talk-banner/{id}(id=${speaker.talks[0].id})}" target="_blank" rel="noopener noreferrer"
-                          class="btn btn-outline-success" title="Preview Talk Banner">
-                          <i class="bi bi-eye me-1" aria-hidden="true"></i>View
-                        </a>
-                        <a th:href="@{/talk-banner/{id}.png(id=${speaker.talks[0].id})}"
-                          th:attr="download='talk-' + ${speaker.talks[0].id} + '.png'" class="btn btn-outline-success"
-                          title="Download Talk Banner PNG">
-                          <i class="bi bi-download" aria-hidden="true"></i>
-                        </a>
-                      </div>
-                      <!-- Social banner -->
-                      <div class="btn-group btn-group-sm" role="group">
-                        <a th:href="@{/speaker-social/{id}(id=${speaker.id})}" target="_blank" rel="noopener noreferrer"
-                          class="btn btn-outline-info" title="Preview Social Banner">
-                          <i class="bi bi-eye me-1" aria-hidden="true"></i>View
-                        </a>
-                        <a th:href="@{/speaker-social/{id}.png(id=${speaker.id})}"
-                          th:attr="download='social-' + ${speaker.id} + '.png'" class="btn btn-outline-info"
-                          title="Download Social Banner PNG">
-                          <i class="bi bi-download" aria-hidden="true"></i>
-                        </a>
-                      </div>
+                    <th:block th:each="talk : ${speaker.talks}">
+                      <div th:replace="~{website/fragments/bannerActions :: actions(${speaker}, ${talk})}"></div>
+                    </th:block>
+                    <div th:if="${#lists.isEmpty(speaker.talks)}">
+                      <div th:replace="~{website/fragments/bannerActions :: actions(${speaker}, ${null})}"></div>
                     </div>
                   </td>
 
