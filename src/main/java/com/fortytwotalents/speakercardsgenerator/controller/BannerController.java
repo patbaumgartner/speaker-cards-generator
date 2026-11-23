@@ -2,9 +2,9 @@ package com.fortytwotalents.speakercardsgenerator.controller;
 
 import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
-import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.model.Session;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
-import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.repository.SessionRepository;
 import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationResult;
 import com.fortytwotalents.speakercardsgenerator.service.BannerGenerationService;
 import com.fortytwotalents.speakercardsgenerator.service.BannerRenderer;
@@ -49,8 +49,8 @@ import org.springframework.web.server.ResponseStatusException;
  *   GET  /speaker-banner/{id}        – HTML preview of a speaker banner
  *   GET  /speaker-banner/{id}.png    – PNG download of a speaker banner
  *   GET  /speaker-social/{id}.png    – PNG download of a social-media banner
- *   GET  /talk-banner/{id}           – HTML preview of a talk banner
- *   GET  /talk-banner/{id}.png       – PNG download of a talk banner
+ *   GET  /session-banner/{id}        – HTML preview of a session banner
+ *   GET  /session-banner/{id}.png    – PNG download of a session banner
  *   GET  /speaker-photo              – Branded default speaker avatar
  *   GET  /speaker-photo/{id}         – Speaker profile photo (default avatar if missing)
  *   GET  /api/banners/generate-all   – Bulk-generate all banners (optional ?outputDir=…)
@@ -62,7 +62,7 @@ public class BannerController {
 
 	private final SpeakerRepository speakerRepository;
 
-	private final TalkRepository talkRepository;
+	private final SessionRepository sessionRepository;
 
 	private final BannerGenerationService bannerService;
 
@@ -74,11 +74,11 @@ public class BannerController {
 
 	private final SpeakerPhotoStore photoStore;
 
-	public BannerController(SpeakerRepository speakerRepository, TalkRepository talkRepository,
+	public BannerController(SpeakerRepository speakerRepository, SessionRepository sessionRepository,
 			BannerGenerationService bannerService, BannerRenderer renderer, EventConfig eventConfig,
 			TemplateUtils templateUtils, SpeakerPhotoStore photoStore) {
 		this.speakerRepository = speakerRepository;
-		this.talkRepository = talkRepository;
+		this.sessionRepository = sessionRepository;
 		this.bannerService = bannerService;
 		this.renderer = renderer;
 		this.eventConfig = eventConfig;
@@ -87,74 +87,76 @@ public class BannerController {
 	}
 
 	@GetMapping("/speaker-banner/{id}")
-	public String speakerBanner(@PathVariable UUID id, @RequestParam(required = false) Long talkId, Model model) {
-		return speakerPreview(BannerType.SPEAKER, id, talkId, model);
+	public String speakerBanner(@PathVariable UUID id, @RequestParam(required = false) Long sessionId, Model model) {
+		return speakerPreview(BannerType.SPEAKER, id, sessionId, model);
 	}
 
 	@GetMapping("/speaker-social/{id}")
-	public String speakerSocial(@PathVariable UUID id, @RequestParam(required = false) Long talkId, Model model) {
-		return speakerPreview(BannerType.SOCIAL, id, talkId, model);
+	public String speakerSocial(@PathVariable UUID id, @RequestParam(required = false) Long sessionId, Model model) {
+		return speakerPreview(BannerType.SOCIAL, id, sessionId, model);
 	}
 
-	@GetMapping("/talk-banner/{id}")
-	public String talkBanner(@PathVariable Long id, Model model) {
-		Talk talk = requireTalk(id);
-		model.addAttribute("talk", talk);
+	@GetMapping("/session-banner/{id}")
+	public String sessionBanner(@PathVariable Long id, Model model) {
+		Session session = requireSession(id);
+		model.addAttribute("conferenceSession", session);
 		model.addAttribute("event", eventConfig);
 		model.addAttribute("utils", templateUtils);
-		return BannerType.TALK.view();
+		return BannerType.SESSION.view();
 	}
 
 	@GetMapping(value = "/speaker-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
-	public ResponseEntity<byte[]> speakerBannerPng(@PathVariable UUID id, @RequestParam(required = false) Long talkId) {
+	public ResponseEntity<byte[]> speakerBannerPng(@PathVariable UUID id,
+			@RequestParam(required = false) Long sessionId) {
 		Speaker speaker = requireSpeaker(id);
-		return bannerResponse(BannerType.SPEAKER, speaker, speakerTalk(speaker, talkId));
+		return bannerResponse(BannerType.SPEAKER, speaker, speakerSession(speaker, sessionId));
 	}
 
 	@GetMapping(value = "/speaker-social/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
-	public ResponseEntity<byte[]> speakerSocialPng(@PathVariable UUID id, @RequestParam(required = false) Long talkId) {
+	public ResponseEntity<byte[]> speakerSocialPng(@PathVariable UUID id,
+			@RequestParam(required = false) Long sessionId) {
 		Speaker speaker = requireSpeaker(id);
-		return bannerResponse(BannerType.SOCIAL, speaker, speakerTalk(speaker, talkId));
+		return bannerResponse(BannerType.SOCIAL, speaker, speakerSession(speaker, sessionId));
 	}
 
-	@GetMapping(value = "/talk-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
+	@GetMapping(value = "/session-banner/{id}.png", produces = MediaType.IMAGE_PNG_VALUE)
 	@ResponseBody
-	public ResponseEntity<byte[]> talkBannerPng(@PathVariable Long id) {
-		return bannerResponse(BannerType.TALK, null, requireTalk(id));
+	public ResponseEntity<byte[]> sessionBannerPng(@PathVariable Long id) {
+		return bannerResponse(BannerType.SESSION, null, requireSession(id));
 	}
 
-	private ResponseEntity<byte[]> bannerResponse(BannerType type, Speaker speaker, Talk talk) {
+	private ResponseEntity<byte[]> bannerResponse(BannerType type, Speaker speaker, Session session) {
 		String disposition = ContentDisposition.attachment()
-			.filename(renderer.downloadFileName(type, speaker, talk))
+			.filename(renderer.downloadFileName(type, speaker, session))
 			.build()
 			.toString();
 		return ResponseEntity.ok()
 			.contentType(MediaType.IMAGE_PNG)
 			.header(HttpHeaders.CONTENT_DISPOSITION, disposition)
-			.body(renderer.renderPng(type, speaker, talk));
+			.body(renderer.renderPng(type, speaker, session));
 	}
 
-	private String speakerPreview(BannerType type, UUID id, Long talkId, Model model) {
+	private String speakerPreview(BannerType type, UUID id, Long sessionId, Model model) {
 		Speaker speaker = requireSpeaker(id);
 		model.addAttribute("speaker", speaker);
-		model.addAttribute("talk", speakerTalk(speaker, talkId));
+		model.addAttribute("conferenceSession", speakerSession(speaker, sessionId));
 		model.addAttribute("event", eventConfig);
 		model.addAttribute("utils", templateUtils);
 		return type.view();
 	}
 
-	private static Talk speakerTalk(Speaker speaker, Long talkId) {
-		if (talkId == null) {
-			return BannerRenderer.firstTalk(speaker);
+	private static Session speakerSession(Speaker speaker, Long sessionId) {
+		if (sessionId == null) {
+			return BannerRenderer.firstSession(speaker);
 		}
-		return speaker.getTalks()
+		return speaker.getSessions()
 			.stream()
-			.filter(talk -> talkId.equals(talk.getId()))
+			.filter(session -> sessionId.equals(session.getId()))
 			.findFirst()
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-					"Session " + talkId + " does not belong to speaker " + speaker.getId()));
+					"Session " + sessionId + " does not belong to speaker " + speaker.getId()));
 	}
 
 	@GetMapping("/speaker-photo")
@@ -201,15 +203,15 @@ public class BannerController {
 		return bannerService.generateSpeakerBanners(speakerIds);
 	}
 
-	@PutMapping(value = "/api/talks/{id}/formatted-title", consumes = MediaType.APPLICATION_JSON_VALUE,
+	@PutMapping(value = "/api/sessions/{id}/formatted-title", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public Map<String, String> updateFormattedTitle(@PathVariable Long id, @RequestBody Map<String, String> body) {
-		Talk talk = requireTalk(id);
+		Session session = requireSession(id);
 		String raw = body.get("formattedTitle");
 		String sanitized = TemplateUtils.sanitizeFormattedTitle(raw);
-		talk.setFormattedTitle(sanitized);
-		talkRepository.save(talk);
+		session.setFormattedTitle(sanitized);
+		sessionRepository.save(session);
 		return Map.of("formattedTitle", sanitized != null ? sanitized : "");
 	}
 
@@ -223,9 +225,9 @@ public class BannerController {
 		streamZip(response, "banners-speakers.zip", EnumSet.of(BannerType.SPEAKER));
 	}
 
-	@GetMapping("/api/banners/download/talks")
-	public void downloadTalkBanners(HttpServletResponse response) throws IOException {
-		streamZip(response, "banners-sessions.zip", EnumSet.of(BannerType.TALK));
+	@GetMapping("/api/banners/download/sessions")
+	public void downloadSessionBanners(HttpServletResponse response) throws IOException {
+		streamZip(response, "banners-sessions.zip", EnumSet.of(BannerType.SESSION));
 	}
 
 	@GetMapping("/api/banners/download/social")
@@ -241,13 +243,13 @@ public class BannerController {
 	}
 
 	private Speaker requireSpeaker(UUID id) {
-		return speakerRepository.findWithTalksById(id)
+		return speakerRepository.findWithSessionsById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Speaker not found: " + id));
 	}
 
-	private Talk requireTalk(Long id) {
-		return talkRepository.findWithSpeakersById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Talk not found: " + id));
+	private Session requireSession(Long id) {
+		return sessionRepository.findWithSpeakersById(id)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found: " + id));
 	}
 
 }

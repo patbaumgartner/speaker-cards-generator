@@ -106,14 +106,14 @@
     </style>
   </head>
   <body>
-    <div th:fragment="sessionTypeDetails" th:if="${talk != null and !#strings.isEmpty(talk.sessionTypeLabel)}">
+    <div th:fragment="sessionTypeDetails" th:if="${conferenceSession != null and !#strings.isEmpty(conferenceSession.sessionTypeLabel)}">
       <div class="session-type-divider"></div>
       <div th:replace="~{banner/fragments/lighting :: sessionTypeLabel}"></div>
     </div>
     <div th:fragment="sessionTypeLabel" class="session-type-label"
-      th:if="${talk != null and !#strings.isEmpty(talk.sessionTypeLabel)}" th:text="${talk.sessionTypeLabel}"></div>
+      th:if="${conferenceSession != null and !#strings.isEmpty(conferenceSession.sessionTypeLabel)}" th:text="${conferenceSession.sessionTypeLabel}"></div>
     <div th:fragment="schedule" class="event-schedule"
-      th:with="workshop=${talk != null and talk.workshop and !#strings.isEmpty(event.workshopDate)}">
+      th:with="workshop=${conferenceSession != null and conferenceSession.workshop and !#strings.isEmpty(event.workshopDate)}">
       <div class="event-date" th:if="${workshop or !#strings.isEmpty(event.date)}"
         th:text="${workshop ? event.workshopDate : event.date}"></div>
       <div

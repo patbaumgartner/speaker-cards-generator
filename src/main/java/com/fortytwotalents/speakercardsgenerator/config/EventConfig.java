@@ -65,10 +65,10 @@ public class EventConfig {
 	 */
 	private String colorAccent = "#FF0099";
 
-	/** Label shown above the talk title on the talk banner, e.g. "Session". */
+	/** Label shown above the session title on the session banner, e.g. "Session". */
 	private String sessionLabel = "Session";
 
-	/** Intro text shown above the talk title on the social banner. */
+	/** Intro text shown above the session title on the social banner. */
 	private String speakingAboutLabel = "I am speaking about";
 
 	public String getName() {

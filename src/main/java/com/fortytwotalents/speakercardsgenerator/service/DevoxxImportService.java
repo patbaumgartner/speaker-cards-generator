@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fortytwotalents.speakercardsgenerator.config.DevoxxApiConfig;
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
-import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.model.Session;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
-import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.repository.SessionRepository;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -56,17 +56,17 @@ public class DevoxxImportService {
 
 	private final SpeakerRepository speakerRepository;
 
-	private final TalkRepository talkRepository;
+	private final SessionRepository sessionRepository;
 
 	private final RestClient restClient;
 
 	private final SpeakerPhotoStore photoStore;
 
 	public DevoxxImportService(DevoxxApiConfig devoxxApiConfig, SpeakerRepository speakerRepository,
-			TalkRepository talkRepository, RestClient.Builder restClientBuilder, SpeakerPhotoStore photoStore) {
+			SessionRepository sessionRepository, RestClient.Builder restClientBuilder, SpeakerPhotoStore photoStore) {
 		this.devoxxApiConfig = devoxxApiConfig;
 		this.speakerRepository = speakerRepository;
-		this.talkRepository = talkRepository;
+		this.sessionRepository = sessionRepository;
 		this.restClient = configureBuilder(restClientBuilder).build();
 		this.photoStore = photoStore;
 	}
@@ -187,7 +187,7 @@ public class DevoxxImportService {
 			int talkCount = 0;
 			for (DevoxxTalkDto dto : talks) {
 				try {
-					saveTalk(dto, eventId, cfpIdToUuid);
+					saveSession(dto, eventId, cfpIdToUuid);
 					talkCount++;
 				}
 				catch (Exception e) {
@@ -201,43 +201,43 @@ public class DevoxxImportService {
 		}
 	}
 
-	private void saveTalk(DevoxxTalkDto dto, String eventId, Map<Integer, UUID> cfpIdToUuid) {
+	private void saveSession(DevoxxTalkDto dto, String eventId, Map<Integer, UUID> cfpIdToUuid) {
 		if (dto.id == null) {
 			return;
 		}
 
-		Talk talk = talkRepository.findById(dto.id).orElse(null);
-		if (talk == null) {
-			talk = new Talk();
-			talk.setId(dto.id);
+		Session session = sessionRepository.findById(dto.id).orElse(null);
+		if (session == null) {
+			session = new Session();
+			session.setId(dto.id);
 		}
 
 		String title = blankToNull(dto.title);
-		if (!Objects.equals(title, talk.getTitle())) {
-			talk.setFormattedTitle(null);
+		if (!Objects.equals(title, session.getTitle())) {
+			session.setFormattedTitle(null);
 		}
-		talk.setTitle(title);
-		talk.setDescription(blankToNull(dto.description));
-		talk.setWorkshop(dto.sessionType != null && dto.sessionType.isWorkshop());
-		talk.setSessionType(dto.sessionType == null ? null : blankToNull(dto.sessionType.name));
+		session.setTitle(title);
+		session.setDescription(blankToNull(dto.description));
+		session.setWorkshop(dto.sessionType != null && dto.sessionType.isWorkshop());
+		session.setSessionType(dto.sessionType == null ? null : blankToNull(dto.sessionType.name));
 
 		// Extract scheduling from timeSlots if available
 		DevoxxTimeSlotDto slot = dto.timeSlots == null || dto.timeSlots.isEmpty() ? null : dto.timeSlots.get(0);
-		talk.setDate(slot == null ? null : blankToNull(slot.date));
-		talk.setCetTime(slot == null ? null : blankToNull(slot.startTime));
+		session.setDate(slot == null ? null : blankToNull(slot.date));
+		session.setCetTime(slot == null ? null : blankToNull(slot.startTime));
 
-		List<Speaker> talkSpeakers = new ArrayList<>();
+		List<Speaker> sessionSpeakers = new ArrayList<>();
 		if (dto.speakers != null) {
 			for (DevoxxTalkSpeakerDto speakerRef : dto.speakers) {
 				UUID speakerUuid = cfpIdToUuid.get(speakerRef.id);
 				if (speakerUuid != null) {
-					speakerRepository.findById(speakerUuid).ifPresent(talkSpeakers::add);
+					speakerRepository.findById(speakerUuid).ifPresent(sessionSpeakers::add);
 				}
 			}
 		}
-		talk.setSpeakers(talkSpeakers);
+		session.setSpeakers(sessionSpeakers);
 
-		talkRepository.save(talk);
+		sessionRepository.save(session);
 	}
 
 	/**

@@ -5,20 +5,24 @@
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
 
-> Generate professional **speaker and talk banner images** (PNG) for **Voxxed Days Zürich**,
+> Generate professional **speaker and session banner images** (PNG) for **Voxxed Days Zürich**,
 > **Voxxed Days Ticino**, and **Voxxed Days CERN**.
 
 ---
 
 ## 🖼️ Preview
 
+These examples use the Voxxed Days Ticino profile and Patrick Baumgartner's
+public CFP session. The header includes the conference and workshop dates;
+the footer features the event-colored "on" switch.
+
 **Speaker banner** (1920 × 1080 px)
 
 ![Speaker banner example](docs/images/speaker-banner-example.png)
 
-**Talk banner** (1920 × 1080 px)
+**Session banner** (1920 × 1080 px)
 
-![Talk banner example](docs/images/talk-banner-example.png)
+![Session banner example](docs/images/session-banner-example.png)
 
 **Social banner** (1620 × 1620 px)
 
@@ -28,7 +32,7 @@
 
 ## ✨ Features
 
-- 🎨 **Banner generation** – speaker banner (16:9), talk banner (16:9), and social banner (1:1 square)
+- 🎨 **Banner generation** – speaker banner (16:9), session banner (16:9), and social banner (1:1 square)
 - 📥 **Speaker import** – from the [Devoxx CFP API](https://cfp.dev)
 - 🎛️ **Multi-event profiles** – switch between events by activating a Spring profile
 - 🌐 **Web UI** – Bootstrap-based speaker directory with one-click download
@@ -69,16 +73,17 @@ The development file requires Docker Compose 2.24.4 or later (`!override` suppor
 
 ## 🎯 Conference Profiles
 
-| Profile | Event |
-|---------|-------|
-| `vdz` | Voxxed Days Zürich |
-| `vdt` | Voxxed Days Ticino |
-| `vdcern` | Voxxed Days CERN |
+| Profile | Event | Conference date | Workshop date | Colors |
+|---------|-------|-----------------|---------------|--------|
+| `vdz` | Voxxed Days Zürich | March 9, 2027 | — | Blue, cyan, magenta |
+| `vdt` | Voxxed Days Ticino | February 19, 2027 | February 18, 2027 | Orange, green, gold |
+| `vdcern` | Voxxed Days CERN | March 5, 2027 | — | Blue, cyan, gold |
 
 If no profile is set, Spring activates the `vdz` profile by default.
 
-All three profiles use a neon **"lights on"** stage-lighting overlay behind the speaker
-and session content.
+All three profiles use a neon **"lights on"** stage-lighting overlay, colored to
+match the event. The footer pairs the motto "We turn on the lights." with an
+on-position switch in the event's secondary and accent colors.
 
 ```shell
 # Activate a profile
@@ -100,14 +105,14 @@ curl -X POST http://localhost:8080/api/import/devoxx
 curl -X POST http://localhost:8080/api/import/devoxx/vdz27
 ```
 
-Each import refreshes speaker profiles, talks, and portrait files from the CFP. If
+Each import refreshes speaker profiles, sessions, and portrait files from the CFP. If
 the CFP provides several portrait URLs, the importer compares their pixel dimensions
 and stores the highest-resolution download without recompression. The download limit
 is configurable with `app.storage.max-photo-size` (default `5MB`).
 
 The CFP session type (for example **Conference** or **Byte-Size**) appears
-beneath the talk-title divider on banners. Workshop variants are recognized from
-the type's name or slug and displayed as **Workshop**. Reimport existing talks
+beneath the session-title divider on banners. Workshop variants are recognized from
+the type's name or slug and displayed as **Workshop**. Reimport existing sessions
 to refresh their session types and workshop classification.
 
 The public import works without a token. Adding a token also checks authenticated
@@ -163,9 +168,13 @@ For example: `vdt27-workshop-4243-hands-on-java-session.png`. Stable IDs prevent
 collisions for identical titles or speaker names; long text components are
 shortened. ZIPs and disk exports use `speaker/`, `sessions/` and `social/`
 directories (replacing the old `talks/` directory and `-talk` naming).
-The existing `/talk-banner/` and `/api/banners/download/talks` URLs remain valid.
-Speaker/social preview and PNG URLs accept `?talkId={sessionId}`; without it,
-they retain a default session. PDFs are intermediate rendering files, not downloads.
+Session banners are available at `/session-banner/{sessionId}` and
+`/api/banners/download/sessions`. Speaker/social preview and PNG URLs accept
+`?sessionId={sessionId}`; without it,
+they retain a default session. The title-formatting endpoint is
+`/api/sessions/{sessionId}/formatted-title`. The legacy `/talk-banner/`,
+`/api/banners/download/talks`, `/api/talks/`, and `talkId` routes are no longer
+available. PDFs are intermediate rendering files, not downloads.
 
 ```shell
 # Generate all banners and save to ./speaker-banners/
@@ -194,7 +203,8 @@ speaker-cards-generator/
 │       ├── templates/   – Thymeleaf HTML templates
 │       ├── static/      – Static assets (CSS, fonts, images)
 │       └── application*.properties – App and profile-specific config
-├── compose.yml          – Docker Compose (db auto-start for dev; full-stack with --profile deploy)
+├── compose.dev.yml      – Ephemeral local-development database
+├── compose.yml          – Persistent database and full-stack deployment
 ├── Dockerfile           – Multi-stage Docker build
 ├── pom.xml
 ├── CHANGELOG.md

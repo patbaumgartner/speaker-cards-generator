@@ -35,9 +35,9 @@ import org.springframework.stereotype.Component;
  * In templates use:
  *
  * <pre>
- *   ${utils.formatDate(talk.date)}
- *   ${utils.formatTime(talk.cetTime)}
- *   ${utils.addHour(talk.cetTime)}
+ *   ${utils.formatDate(session.date)}
+ *   ${utils.formatTime(session.cetTime)}
+ *   ${utils.addHour(session.cetTime)}
  *   ${utils.capitalise(speaker.title)}
  * </pre>
  */
@@ -199,8 +199,8 @@ public final class TemplateUtils {
 	}
 
 	/**
-	 * Formats a talk title for banner rendering with typographically correct line breaks.
-	 * Uses the actual banner font metrics to measure text width and applies
+	 * Formats a session title for banner rendering with typographically correct line
+	 * breaks. Uses the actual banner font metrics to measure text width and applies
 	 * minimum-raggedness line breaking with orphan avoidance and clause-separator
 	 * preference.
 	 *
@@ -209,7 +209,7 @@ public final class TemplateUtils {
 	 *  } tags and HTML-escaped text, suitable for use with {@code th:utext}. Callers pass
 	 * the layout constants from the template so the algorithm adapts automatically when
 	 * the design changes.
-	 * @param title the talk title; may be {@code null}
+	 * @param title the session title; may be {@code null}
 	 * @param containerWidthPx available width in pixels for the title
 	 * @param fontSizePx CSS font-size in pixels
 	 * @param fontWeight CSS font-weight (300, 400, 600, or 700)

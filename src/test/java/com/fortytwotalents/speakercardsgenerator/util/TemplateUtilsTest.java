@@ -302,14 +302,14 @@ class TemplateUtilsTest {
 	@Test
 	void formatTitleWorksWithDifferentBannerLayouts() {
 		String title = "From Monolith to Microservices \u2013 A Practical Journey";
-		// talkBanner dimensions
-		String talkResult = TemplateUtils.formatTitle(title, 700, 53, 700);
+		// sessionBanner dimensions
+		String sessionResult = TemplateUtils.formatTitle(title, 700, 53, 700);
 		// speakerBanner dimensions
 		String speakerResult = TemplateUtils.formatTitle(title, 800, 44, 600);
 		// speakerSocial dimensions
 		String socialResult = TemplateUtils.formatTitle(title, 980, 62, 700);
 		// All should produce valid HTML without raw < or >
-		for (String result : List.of(talkResult, speakerResult, socialResult)) {
+		for (String result : List.of(sessionResult, speakerResult, socialResult)) {
 			assertThat(result).doesNotContain("<b>").doesNotContain("<script>");
 		}
 	}

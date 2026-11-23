@@ -34,7 +34,7 @@ public class WebsiteController {
 	 */
 	@GetMapping("/")
 	public String index(Model model) {
-		List<Speaker> speakers = speakerRepository.findAllWithTalksBy();
+		List<Speaker> speakers = speakerRepository.findAllWithSessionsBy();
 		model.addAttribute("speakers", speakers);
 		model.addAttribute("event", eventConfig);
 		return "website/index";

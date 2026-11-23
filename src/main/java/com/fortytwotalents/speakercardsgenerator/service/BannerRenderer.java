@@ -2,7 +2,7 @@ package com.fortytwotalents.speakercardsgenerator.service;
 
 import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
-import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.model.Session;
 import com.fortytwotalents.speakercardsgenerator.util.TemplateUtils;
 import java.text.Normalizer;
 import java.util.Collections;
@@ -32,8 +32,8 @@ public class BannerRenderer {
 		/** 16:9 speaker card. */
 		SPEAKER("banner/speakerBanner", "speaker", "speaker"),
 
-		/** 16:9 talk card. */
-		TALK("banner/talkBanner", "sessions", "session"),
+		/** 16:9 session card. */
+		SESSION("banner/sessionBanner", "sessions", "session"),
 
 		/** Square social-media card. */
 		SOCIAL("banner/speakerSocial", "social", "social");
@@ -86,14 +86,14 @@ public class BannerRenderer {
 	/**
 	 * Renders a banner to HTML.
 	 * @param type which banner to render
-	 * @param speaker the speaker; {@code null} for {@link BannerType#TALK}
-	 * @param talk the talk; may be {@code null} when a speaker has no session
+	 * @param speaker the speaker; {@code null} for {@link BannerType#SESSION}
+	 * @param session the session; may be {@code null} for a general speaker banner
 	 * @return the rendered HTML
 	 */
-	public String renderHtml(BannerType type, Speaker speaker, Talk talk) {
+	public String renderHtml(BannerType type, Speaker speaker, Session session) {
 		Context context = new Context();
 		context.setVariable("speaker", speaker);
-		context.setVariable("talk", talk);
+		context.setVariable("conferenceSession", session);
 		context.setVariable("event", this.eventConfig);
 		context.setVariable("utils", this.templateUtils);
 		return this.templateEngine.process(type.view, context);
@@ -102,42 +102,42 @@ public class BannerRenderer {
 	/**
 	 * Renders a banner to PNG.
 	 * @param type which banner to render
-	 * @param speaker the speaker; {@code null} for {@link BannerType#TALK}
-	 * @param talk the talk; may be {@code null} when a speaker has no session
+	 * @param speaker the speaker; {@code null} for {@link BannerType#SESSION}
+	 * @param session the session; may be {@code null} for a general speaker banner
 	 * @return PNG bytes
 	 */
-	public byte[] renderPng(BannerType type, Speaker speaker, Talk talk) {
-		return this.converter.convertToPng(renderHtml(type, speaker, talk));
+	public byte[] renderPng(BannerType type, Speaker speaker, Session session) {
+		return this.converter.convertToPng(renderHtml(type, speaker, session));
 	}
 
 	/**
 	 * Default session for legacy speaker URLs without an explicit session selection.
 	 */
-	public static Talk firstTalk(Speaker speaker) {
-		if (speaker == null || speaker.getTalks() == null || speaker.getTalks().isEmpty()) {
+	public static Session firstSession(Speaker speaker) {
+		if (speaker == null || speaker.getSessions() == null || speaker.getSessions().isEmpty()) {
 			return null;
 		}
-		return speaker.getTalks().get(0);
+		return speaker.getSessions().get(0);
 	}
 
 	/** Speakers without sessions still receive a general speaker/social banner. */
-	static List<Talk> bannerTalks(Speaker speaker) {
-		return speaker.getTalks().isEmpty() ? Collections.singletonList(null)
-				: speaker.getTalks().stream().sorted().toList();
+	static List<Session> bannerSessions(Speaker speaker) {
+		return speaker.getSessions().isEmpty() ? Collections.singletonList(null)
+				: speaker.getSessions().stream().sorted().toList();
 	}
 
 	/** Relative path shared by ZIP archives and disk exports. */
-	public String fileName(BannerType type, Speaker speaker, Talk talk) {
-		return type.directory() + "/" + downloadFileName(type, speaker, talk);
+	public String fileName(BannerType type, Speaker speaker, Session session) {
+		return type.directory() + "/" + downloadFileName(type, speaker, session);
 	}
 
 	/** Download names include stable IDs so duplicate names and titles cannot collide. */
-	public String downloadFileName(BannerType type, Speaker speaker, Talk talk) {
+	public String downloadFileName(BannerType type, Speaker speaker, Session session) {
 		String name = slug(this.eventConfig.getShortName(), 24);
-		if (talk != null) {
-			String category = talk.getSessionTypeLabel();
-			name += "-" + slug(category == null || category.isBlank() ? "session" : category, 24) + "-" + talk.getId()
-					+ "-" + slug(talk.getTitle(), 80);
+		if (session != null) {
+			String category = session.getSessionTypeLabel();
+			name += "-" + slug(category == null || category.isBlank() ? "session" : category, 24) + "-"
+					+ session.getId() + "-" + slug(session.getTitle(), 80);
 		}
 		if (speaker != null) {
 			name += "-" + slug(speaker.displayName(), 48) + "-" + speaker.getId();

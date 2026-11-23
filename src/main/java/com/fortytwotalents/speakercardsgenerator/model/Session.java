@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,14 +18,16 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 
 /**
- * JPA entity representing a conference talk / session.
+ * JPA entity representing a conference session.
  *
  * <p>
- * Talks are associated with one or more {@link Speaker speakers} through a many-to-many
- * join table ({@code talk_speaker}).
+ * Sessions are associated with one or more {@link Speaker speakers} through the existing
+ * {@code talk_speaker} join table. The table remains named {@code talk} for compatibility
+ * with existing databases.
  */
 @Entity
-public class Talk implements Comparable<Talk> {
+@Table(name = "talk")
+public class Session implements Comparable<Session> {
 
 	/** Primary key – session ID assigned by the CFP tool. */
 	@Id
@@ -74,7 +77,7 @@ public class Talk implements Comparable<Talk> {
 	private List<Speaker> speakers = new ArrayList<>();
 
 	@Override
-	public int compareTo(Talk other) {
+	public int compareTo(Session other) {
 		int byTitle = Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER).compare(this.title, other.title);
 		if (byTitle != 0) {
 			return byTitle;
@@ -87,10 +90,10 @@ public class Talk implements Comparable<Talk> {
 		if (this == candidate) {
 			return true;
 		}
-		if (!(candidate instanceof Talk talk)) {
+		if (!(candidate instanceof Session session)) {
 			return false;
 		}
-		return this.id != null && this.id.equals(talk.id);
+		return this.id != null && this.id.equals(session.id);
 	}
 
 	@Override

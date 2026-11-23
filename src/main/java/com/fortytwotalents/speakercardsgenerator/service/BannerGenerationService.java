@@ -1,9 +1,9 @@
 package com.fortytwotalents.speakercardsgenerator.service;
 
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
-import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.model.Session;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
-import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.repository.SessionRepository;
 import com.fortytwotalents.speakercardsgenerator.service.BannerRenderer.BannerType;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Bulk generation of speaker, talk and social banners.
+ * Bulk generation of speaker, session and social banners.
  *
  * <p>
  * Banners are rendered in-process through {@link BannerRenderer}. A single failing record
@@ -37,14 +37,14 @@ public class BannerGenerationService {
 
 	private final SpeakerRepository speakerRepository;
 
-	private final TalkRepository talkRepository;
+	private final SessionRepository sessionRepository;
 
 	private final BannerRenderer renderer;
 
-	public BannerGenerationService(SpeakerRepository speakerRepository, TalkRepository talkRepository,
+	public BannerGenerationService(SpeakerRepository speakerRepository, SessionRepository sessionRepository,
 			BannerRenderer renderer) {
 		this.speakerRepository = speakerRepository;
-		this.talkRepository = talkRepository;
+		this.sessionRepository = sessionRepository;
 		this.renderer = renderer;
 	}
 
@@ -54,7 +54,7 @@ public class BannerGenerationService {
 	 */
 	@Transactional(readOnly = true)
 	public BannerGenerationResult generateAllSpeakerBanners() {
-		List<Speaker> speakers = this.speakerRepository.findAllWithTalksBy();
+		List<Speaker> speakers = this.speakerRepository.findAllWithSessionsBy();
 		log.info("Generating speaker banners for {} speakers", speakers.size());
 
 		BannerGenerationResult result = new BannerGenerationResult();
@@ -74,7 +74,7 @@ public class BannerGenerationService {
 		log.info("Generating speaker banners for {} selected speakers", speakerIds.size());
 		BannerGenerationResult result = new BannerGenerationResult();
 		for (UUID id : speakerIds) {
-			this.speakerRepository.findWithTalksById(id)
+			this.speakerRepository.findWithSessionsById(id)
 				.ifPresentOrElse(speaker -> generate(result, speaker, BannerType.SPEAKER, null),
 						() -> result.addFailure(id, "Unknown", "Speaker not found"));
 		}
@@ -92,9 +92,9 @@ public class BannerGenerationService {
 	 */
 	@Transactional(readOnly = true)
 	public BannerGenerationResult generateAllBanners(String outputDirectory) {
-		List<Speaker> speakers = this.speakerRepository.findAllWithTalksBy();
-		List<Talk> talks = this.talkRepository.findAllWithSpeakersBy();
-		log.info("Generating banners for {} speakers and {} talks into {}", speakers.size(), talks.size(),
+		List<Speaker> speakers = this.speakerRepository.findAllWithSessionsBy();
+		List<Session> sessions = this.sessionRepository.findAllWithSpeakersBy();
+		log.info("Generating banners for {} speakers and {} sessions into {}", speakers.size(), sessions.size(),
 				outputDirectory);
 
 		Path root = Path.of(outputDirectory);
@@ -112,17 +112,17 @@ public class BannerGenerationService {
 			generate(result, speaker, BannerType.SPEAKER, root);
 			generate(result, speaker, BannerType.SOCIAL, root);
 		}
-		for (Talk talk : talks) {
+		for (Session session : sessions) {
 			try {
-				byte[] png = this.renderer.renderPng(BannerType.TALK, null, talk);
-				Path file = root.resolve(this.renderer.fileName(BannerType.TALK, null, talk));
+				byte[] png = this.renderer.renderPng(BannerType.SESSION, null, session);
+				Path file = root.resolve(this.renderer.fileName(BannerType.SESSION, null, session));
 				Files.write(file, png);
-				result.addSuccess(null, talk.getTitle(), png.length);
+				result.addSuccess(null, session.getTitle(), png.length);
 				result.addSavedFile(file.toString());
 			}
 			catch (Exception ex) {
-				result.addFailure(null, talk.getTitle(), ex.getMessage());
-				log.error("Failed talk banner for '{}' ({})", talk.getTitle(), talk.getId(), ex);
+				result.addFailure(null, session.getTitle(), ex.getMessage());
+				log.error("Failed session banner for '{}' ({})", session.getTitle(), session.getId(), ex);
 			}
 		}
 
@@ -145,21 +145,22 @@ public class BannerGenerationService {
 				.filter(types::contains)
 				.toList();
 			if (!speakerTypes.isEmpty()) {
-				for (Speaker speaker : this.speakerRepository.findAllWithTalksBy()) {
-					for (Talk talk : BannerRenderer.bannerTalks(speaker)) {
+				for (Speaker speaker : this.speakerRepository.findAllWithSessionsBy()) {
+					for (Session session : BannerRenderer.bannerSessions(speaker)) {
 						for (BannerType type : speakerTypes) {
-							addEntry(zip, this.renderer.fileName(type, speaker, talk),
-									() -> this.renderer.renderPng(type, speaker, talk), type + " banner for "
-											+ speaker.displayName() + (talk == null ? "" : " / " + talk.getTitle()));
+							addEntry(zip, this.renderer.fileName(type, speaker, session),
+									() -> this.renderer.renderPng(type, speaker, session),
+									type + " banner for " + speaker.displayName()
+											+ (session == null ? "" : " / " + session.getTitle()));
 						}
 					}
 				}
 			}
-			if (types.contains(BannerType.TALK)) {
-				for (Talk talk : this.talkRepository.findAllWithSpeakersBy()) {
-					addEntry(zip, this.renderer.fileName(BannerType.TALK, null, talk),
-							() -> this.renderer.renderPng(BannerType.TALK, null, talk),
-							"talk banner for '" + talk.getTitle() + "'");
+			if (types.contains(BannerType.SESSION)) {
+				for (Session session : this.sessionRepository.findAllWithSpeakersBy()) {
+					addEntry(zip, this.renderer.fileName(BannerType.SESSION, null, session),
+							() -> this.renderer.renderPng(BannerType.SESSION, null, session),
+							"session banner for '" + session.getTitle() + "'");
 				}
 			}
 		}
@@ -182,12 +183,12 @@ public class BannerGenerationService {
 
 	/** Renders every session variant, optionally saving them under {@code outputRoot}. */
 	private void generate(BannerGenerationResult result, Speaker speaker, BannerType type, Path outputRoot) {
-		for (Talk talk : BannerRenderer.bannerTalks(speaker)) {
-			String description = speaker.displayName() + (talk == null ? "" : " / " + talk.getTitle());
+		for (Session session : BannerRenderer.bannerSessions(speaker)) {
+			String description = speaker.displayName() + (session == null ? "" : " / " + session.getTitle());
 			try {
-				byte[] png = this.renderer.renderPng(type, speaker, talk);
+				byte[] png = this.renderer.renderPng(type, speaker, session);
 				if (outputRoot != null) {
-					Path file = outputRoot.resolve(this.renderer.fileName(type, speaker, talk));
+					Path file = outputRoot.resolve(this.renderer.fileName(type, speaker, session));
 					Files.write(file, png);
 					result.addSavedFile(file.toString());
 				}

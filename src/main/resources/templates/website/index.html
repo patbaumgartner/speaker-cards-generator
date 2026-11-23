@@ -65,7 +65,7 @@
             <a th:href="@{/api/banners/download/speakers}" class="btn btn-outline-primary">
               <i class="bi bi-person-badge-fill me-2" aria-hidden="true"></i>Speaker Banners
             </a>
-            <a th:href="@{/api/banners/download/talks}" class="btn btn-outline-primary">
+            <a th:href="@{/api/banners/download/sessions}" class="btn btn-outline-primary">
               <i class="bi bi-easel-fill me-2" aria-hidden="true"></i>Session Banners
             </a>
             <a th:href="@{/api/banners/download/social}" class="btn btn-outline-primary">
@@ -150,14 +150,14 @@
                       th:text="${speaker.company}"></span>
                   </td>
 
-                  <!-- Talk -->
+                  <!-- Sessions -->
                   <td class="align-middle">
-                    <span th:if="${!#lists.isEmpty(speaker.talks)}" th:each="talk, iterStat : ${speaker.talks}">
+                    <span th:if="${!#lists.isEmpty(speaker.sessions)}" th:each="conferenceSession, iterStat : ${speaker.sessions}">
                       <span class="d-inline-flex align-items-center gap-1">
-                        <span th:text="${talk.title}"></span>
+                        <span th:text="${conferenceSession.title}"></span>
                         <button type="button" class="btn btn-sm btn-link p-0 text-muted title-edit-btn"
-                          th:data-talk-id="${talk.id}" th:data-talk-title="${talk.title}"
-                          th:data-formatted-title="${talk.formattedTitle}" title="Edit title formatting">
+                          th:data-session-id="${conferenceSession.id}" th:data-session-title="${conferenceSession.title}"
+                          th:data-formatted-title="${conferenceSession.formattedTitle}" title="Edit title formatting">
                           <i class="bi bi-pencil" style="font-size: .75rem;" aria-hidden="true"></i>
                         </button>
                       </span>
@@ -201,10 +201,10 @@
 
                   <!-- Actions -->
                   <td class="align-middle text-center">
-                    <th:block th:each="talk : ${speaker.talks}">
-                      <div th:replace="~{website/fragments/bannerActions :: actions(${speaker}, ${talk})}"></div>
+                    <th:block th:each="conferenceSession : ${speaker.sessions}">
+                      <div th:replace="~{website/fragments/bannerActions :: actions(${speaker}, ${conferenceSession})}"></div>
                     </th:block>
-                    <div th:if="${#lists.isEmpty(speaker.talks)}">
+                    <div th:if="${#lists.isEmpty(speaker.sessions)}">
                       <div th:replace="~{website/fragments/bannerActions :: actions(${speaker}, ${null})}"></div>
                     </div>
                   </td>
@@ -335,7 +335,7 @@
         var term = searchInput.value.trim().toLowerCase();
         var rows = tbody.querySelectorAll('tr');
         rows.forEach(function (row) {
-          /* Search in First Name (1), Last Name (2), Company (3), Talk (4) */
+          /* Search in First Name (1), Last Name (2), Company (3), Session (4) */
           var text = cellText(row, 1) + ' ' + cellText(row, 2) + ' ' + cellText(row, 3) + ' ' + cellText(row, 4);
           row.style.display = text.indexOf(term) !== -1 ? '' : 'none';
         });
@@ -386,7 +386,7 @@
       updateVisibleCount();
 
       /* ---- Title Editor ---- */
-      var currentTalkId = null;
+      var currentSessionId = null;
       var titleEditorModal = document.getElementById('titleEditorModal');
       var titleEditor = document.getElementById('titleEditor');
       var originalTitle = document.getElementById('originalTitle');
@@ -394,8 +394,8 @@
 
       document.querySelectorAll('.title-edit-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          currentTalkId = btn.dataset.talkId;
-          var title = btn.dataset.talkTitle || '';
+          currentSessionId = btn.dataset.sessionId;
+          var title = btn.dataset.sessionTitle || '';
           var formatted = btn.dataset.formattedTitle || '';
           originalTitle.textContent = title;
           titleEditor.innerHTML = formatted || escapeHtml(title);
@@ -412,9 +412,9 @@
       }
 
       document.getElementById('btnSaveTitle').addEventListener('click', function () {
-        if (!currentTalkId) return;
+        if (!currentSessionId) return;
         var html = titleEditor.innerHTML;
-        fetch(API_BASE + '/talks/' + currentTalkId + '/formatted-title', {
+        fetch(API_BASE + '/sessions/' + currentSessionId + '/formatted-title', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ formattedTitle: html })
@@ -422,7 +422,7 @@
           if (r.ok) {
             return r.json().then(function (data) {
               /* Update the button data attribute so re-opening shows the new value */
-              var btn = document.querySelector('.title-edit-btn[data-talk-id="' + currentTalkId + '"]');
+              var btn = document.querySelector('.title-edit-btn[data-session-id="' + currentSessionId + '"]');
               if (btn) {
                 btn.dataset.formattedTitle = data.formattedTitle || '';
               }
@@ -440,17 +440,17 @@
       });
 
       document.getElementById('btnResetTitle').addEventListener('click', function () {
-        if (!currentTalkId) return;
-        fetch(API_BASE + '/talks/' + currentTalkId + '/formatted-title', {
+        if (!currentSessionId) return;
+        fetch(API_BASE + '/sessions/' + currentSessionId + '/formatted-title', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ formattedTitle: '' })
         }).then(function (r) {
           if (r.ok) {
-            var btn = document.querySelector('.title-edit-btn[data-talk-id="' + currentTalkId + '"]');
+            var btn = document.querySelector('.title-edit-btn[data-session-id="' + currentSessionId + '"]');
             if (btn) {
               btn.dataset.formattedTitle = '';
-              titleEditor.innerHTML = escapeHtml(btn.dataset.talkTitle || '');
+              titleEditor.innerHTML = escapeHtml(btn.dataset.sessionTitle || '');
             }
             titleEditorStatus.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Reset to original.</span>';
           }

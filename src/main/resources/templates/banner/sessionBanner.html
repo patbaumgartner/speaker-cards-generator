@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <title th:text="${talk.title} + ' — Talk Banner'">Talk Banner</title>
+    <title th:text="${conferenceSession.title} + ' — Session Banner'">Session Banner</title>
     <style th:inline="text">
       @page {
         size: 1280px 720px;
@@ -95,8 +95,8 @@
         z-index: 10;
       }
 
-      /* Talk title: left side, large */
-      .talk-heading {
+      /* Session title: left side, large */
+      .session-heading {
         position: absolute;
         left: 50px;
         top: 377px;
@@ -105,7 +105,7 @@
         z-index: 10;
       }
 
-      #talk-title {
+      #session-title {
         font-family: "Space Grotesk", sans-serif;
         font-size: 53px;
         font-weight: 700;
@@ -226,7 +226,7 @@
   </head>
 
   <body
-    th:classappend="${talk != null and talk.speakers != null and #lists.size(talk.speakers) == 1 ? 'single-speaker' : ''}"
+    th:classappend="${conferenceSession != null and conferenceSession.speakers != null and #lists.size(conferenceSession.speakers) == 1 ? 'single-speaker' : ''}"
   >
     <!-- Event-color header -->
     <div class="header">
@@ -247,20 +247,20 @@
     <!-- Session label -->
     <div class="session-label" th:text="${event.sessionLabel}">Session</div>
 
-    <!-- Talk title -->
-    <div class="talk-heading" th:if="${talk != null and talk.title != null}">
+    <!-- Session title -->
+    <div class="session-heading" th:if="${conferenceSession != null and conferenceSession.title != null}">
       <div
-        id="talk-title"
-        th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 700, 53, 700)}"
+        id="session-title"
+        th:utext="${conferenceSession.formattedTitle != null ? conferenceSession.formattedTitle : utils.formatTitle(conferenceSession.title, 700, 53, 700)}"
       >
-        Talk Title Goes Here
+        Session Title Goes Here
       </div>
       <div th:replace="~{banner/fragments/lighting :: sessionTypeDetails}"></div>
     </div>
 
     <!-- Speakers list -->
-    <div id="speakers-container" th:if="${talk != null and talk.speakers != null}">
-      <div class="speaker-item" th:each="speaker : ${talk.speakers}">
+    <div id="speakers-container" th:if="${conferenceSession != null and conferenceSession.speakers != null}">
+      <div class="speaker-item" th:each="speaker : ${conferenceSession.speakers}">
         <div class="speaker-photo-wrapper">
           <div
             class="speaker-photo-inner"

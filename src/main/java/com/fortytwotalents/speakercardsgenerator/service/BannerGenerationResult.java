@@ -8,8 +8,8 @@ import java.util.UUID;
  * Holds the result of a bulk banner generation run.
  *
  * <p>
- * Tracks which speakers/talks were processed successfully, which failed, and the list of
- * files saved to the output directory (if requested).
+ * Tracks which speakers/sessions were processed successfully, which failed, and the list
+ * of files saved to the output directory (if requested).
  */
 public class BannerGenerationResult {
 
@@ -21,8 +21,8 @@ public class BannerGenerationResult {
 
 	/**
 	 * Records a successful banner generation.
-	 * @param speakerId speaker UUID (may be {@code null} for talk-only banners)
-	 * @param displayName human-readable name of the speaker or talk
+	 * @param speakerId speaker UUID (may be {@code null} for session-only banners)
+	 * @param displayName human-readable name of the speaker or session
 	 * @param bannerSize size of the generated PNG in bytes
 	 */
 	public void addSuccess(UUID speakerId, String displayName, int bannerSize) {

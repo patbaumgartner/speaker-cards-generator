@@ -153,7 +153,7 @@
         margin-bottom: 20px;
       }
 
-      #talk-title {
+      #session-title {
         font-family: "Space Grotesk", sans-serif;
         font-size: 44px;
         font-weight: 700;
@@ -226,11 +226,11 @@
       <div class="separator"></div>
 
       <div
-        id="talk-title"
-        th:if="${talk != null and talk.title != null}"
-        th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 800, 44, 700)}"
+        id="session-title"
+        th:if="${conferenceSession != null and conferenceSession.title != null}"
+        th:utext="${conferenceSession.formattedTitle != null ? conferenceSession.formattedTitle : utils.formatTitle(conferenceSession.title, 800, 44, 700)}"
       >
-        Talk Title
+        Session Title
       </div>
       <div th:replace="~{banner/fragments/lighting :: sessionTypeDetails}"></div>
     </div>

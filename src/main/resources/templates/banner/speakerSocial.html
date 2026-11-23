@@ -96,8 +96,8 @@
         z-index: 10;
       }
 
-      /* Talk title: top offset centers a two-line title between the label and the speaker name, above the divider */
-      .talk-title {
+      /* Session title: top offset centers a two-line title between the label and the speaker name, above the divider */
+      .session-title {
         position: absolute;
         bottom: 560px;
         left: 50px;
@@ -105,7 +105,7 @@
         z-index: 10;
       }
 
-      .talk-title-text {
+      .session-title-text {
         font-family: "Space Grotesk", sans-serif;
         font-size: 62px;
         font-weight: 700;
@@ -250,13 +250,13 @@
     <!-- Intro text -->
     <div class="intro-text" th:text="${event.speakingAboutLabel}">I am speaking about</div>
 
-    <!-- Talk title -->
-    <div class="talk-title" th:if="${talk != null and talk.title != null}">
+    <!-- Session title -->
+    <div class="session-title" th:if="${conferenceSession != null and conferenceSession.title != null}">
       <div
-        class="talk-title-text"
-        th:utext="${talk.formattedTitle != null ? talk.formattedTitle : utils.formatTitle(talk.title, 980, 62, 700)}"
+        class="session-title-text"
+        th:utext="${conferenceSession.formattedTitle != null ? conferenceSession.formattedTitle : utils.formatTitle(conferenceSession.title, 980, 62, 700)}"
       >
-        Talk Title Goes Here
+        Session Title Goes Here
       </div>
     </div>
 

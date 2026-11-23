@@ -2,9 +2,9 @@ package com.fortytwotalents.speakercardsgenerator.service;
 
 import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
-import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.model.Session;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
-import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.repository.SessionRepository;
 import com.fortytwotalents.speakercardsgenerator.service.BannerRenderer.BannerType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,11 +37,11 @@ class BannerGenerationServiceTest {
 
 	private final SpeakerRepository speakers = mock(SpeakerRepository.class);
 
-	private final TalkRepository talks = mock(TalkRepository.class);
+	private final SessionRepository sessions = mock(SessionRepository.class);
 
 	private final BannerRenderer renderer = spy(new BannerRenderer(null, new EventConfig(), null, null));
 
-	private final BannerGenerationService service = new BannerGenerationService(this.speakers, this.talks,
+	private final BannerGenerationService service = new BannerGenerationService(this.speakers, this.sessions,
 			this.renderer);
 
 	private final Speaker speaker = speaker();
@@ -50,22 +50,23 @@ class BannerGenerationServiceTest {
 
 	private final Speaker withoutSession = speaker();
 
-	private final Talk conference = talk(1L);
+	private final Session conference = session(1L);
 
-	private final Talk workshop = talk(2L);
+	private final Session workshop = session(2L);
 
 	@BeforeEach
 	void setUp() {
 		this.workshop.setWorkshop(true);
-		this.speaker.setTalks(List.of(this.conference, this.workshop));
-		this.namesake.setTalks(List.of(this.conference));
+		this.speaker.setSessions(List.of(this.conference, this.workshop));
+		this.namesake.setSessions(List.of(this.conference));
 		this.conference.setSpeakers(List.of(this.namesake, this.speaker));
 		this.workshop.setSpeakers(List.of(this.speaker));
-		when(this.speakers.findAllWithTalksBy()).thenReturn(List.of(this.speaker, this.namesake, this.withoutSession));
-		when(this.speakers.findWithTalksById(this.speaker.getId())).thenReturn(Optional.of(this.speaker));
-		when(this.talks.findAllWithSpeakersBy()).thenReturn(List.of(this.workshop, this.conference));
+		when(this.speakers.findAllWithSessionsBy())
+			.thenReturn(List.of(this.speaker, this.namesake, this.withoutSession));
+		when(this.speakers.findWithSessionsById(this.speaker.getId())).thenReturn(Optional.of(this.speaker));
+		when(this.sessions.findAllWithSpeakersBy()).thenReturn(List.of(this.workshop, this.conference));
 		doReturn(new byte[] { 1, 2, 3 }).when(this.renderer)
-			.renderPng(any(BannerType.class), nullable(Speaker.class), nullable(Talk.class));
+			.renderPng(any(BannerType.class), nullable(Speaker.class), nullable(Session.class));
 	}
 
 	@Test
@@ -82,14 +83,14 @@ class BannerGenerationServiceTest {
 		}
 		assertThat(zipNames).hasSize(10);
 		for (BannerType type : List.of(BannerType.SPEAKER, BannerType.SOCIAL)) {
-			for (Talk talk : List.of(this.conference, this.workshop)) {
-				verify(this.renderer).renderPng(type, this.speaker, talk);
+			for (Session session : List.of(this.conference, this.workshop)) {
+				verify(this.renderer).renderPng(type, this.speaker, session);
 			}
 			verify(this.renderer).renderPng(type, this.namesake, this.conference);
 			verify(this.renderer).renderPng(type, this.withoutSession, null);
 		}
-		verify(this.renderer).renderPng(BannerType.TALK, null, this.conference);
-		verify(this.renderer).renderPng(BannerType.TALK, null, this.workshop);
+		verify(this.renderer).renderPng(BannerType.SESSION, null, this.conference);
+		verify(this.renderer).renderPng(BannerType.SESSION, null, this.workshop);
 
 		BannerGenerationResult result = this.service.generateAllBanners(output.toString());
 		assertThat(result.getFailureCount()).isZero();
@@ -117,12 +118,12 @@ class BannerGenerationServiceTest {
 		verify(this.renderer, times(2)).renderPng(BannerType.SPEAKER, this.speaker, this.workshop);
 	}
 
-	private static Talk talk(long id) {
-		Talk talk = new Talk();
-		talk.setId(id);
-		talk.setTitle("Same title");
-		talk.setSessionType("Conference");
-		return talk;
+	private static Session session(long id) {
+		Session session = new Session();
+		session.setId(id);
+		session.setTitle("Same title");
+		session.setSessionType("Conference");
+		return session;
 	}
 
 	private static Speaker speaker() {
@@ -130,7 +131,7 @@ class BannerGenerationServiceTest {
 		speaker.setId(UUID.randomUUID());
 		speaker.setFirstName("Jane");
 		speaker.setLastName("Doe");
-		speaker.setTalks(new ArrayList<>());
+		speaker.setSessions(new ArrayList<>());
 		return speaker;
 	}
 

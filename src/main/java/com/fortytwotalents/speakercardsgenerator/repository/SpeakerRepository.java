@@ -12,10 +12,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpeakerRepository extends JpaRepository<Speaker, UUID> {
 
-	@EntityGraph(attributePaths = "talks")
-	Optional<Speaker> findWithTalksById(UUID id);
+	@EntityGraph(attributePaths = "sessions")
+	Optional<Speaker> findWithSessionsById(UUID id);
 
-	@EntityGraph(attributePaths = "talks")
-	List<Speaker> findAllWithTalksBy();
+	@EntityGraph(attributePaths = "sessions")
+	List<Speaker> findAllWithSessionsBy();
 
 }

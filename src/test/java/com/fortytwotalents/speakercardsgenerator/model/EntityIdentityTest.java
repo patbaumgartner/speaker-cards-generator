@@ -38,19 +38,19 @@ class EntityIdentityTest {
 	}
 
 	@Test
-	void talksWithTheSamePersistentIdAreEqual() {
-		Talk first = talk(7L, "First title");
-		Talk reloaded = talk(7L, "Changed title");
+	void sessionsWithTheSamePersistentIdAreEqual() {
+		Session first = session(7L, "First title");
+		Session reloaded = session(7L, "Changed title");
 
 		assertThat(first).isEqualTo(reloaded);
 		assertThat(new HashSet<>(java.util.List.of(first, reloaded))).hasSize(1);
 	}
 
 	@Test
-	void talkOrderingHandlesNullTitlesAndUsesIdAsATieBreaker() {
-		Talk untitled = talk(3L, null);
-		Talk first = talk(1L, "Same");
-		Talk second = talk(2L, "same");
+	void sessionOrderingHandlesNullTitlesAndUsesIdAsATieBreaker() {
+		Session untitled = session(3L, null);
+		Session first = session(1L, "Same");
+		Session second = session(2L, "same");
 
 		assertThat(new TreeSet<>(java.util.List.of(untitled, first, second))).containsExactly(first, second, untitled);
 	}
@@ -63,11 +63,11 @@ class EntityIdentityTest {
 		return speaker;
 	}
 
-	private static Talk talk(Long id, String title) {
-		Talk talk = new Talk();
-		talk.setId(id);
-		talk.setTitle(title);
-		return talk;
+	private static Session session(Long id, String title) {
+		Session session = new Session();
+		session.setId(id);
+		session.setTitle(title);
+		return session;
 	}
 
 }

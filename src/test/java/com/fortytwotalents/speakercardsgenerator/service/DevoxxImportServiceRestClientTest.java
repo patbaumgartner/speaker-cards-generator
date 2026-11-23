@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 
 import com.fortytwotalents.speakercardsgenerator.config.DevoxxApiConfig;
 import com.fortytwotalents.speakercardsgenerator.model.Speaker;
-import com.fortytwotalents.speakercardsgenerator.model.Talk;
+import com.fortytwotalents.speakercardsgenerator.model.Session;
 import com.fortytwotalents.speakercardsgenerator.repository.SpeakerRepository;
-import com.fortytwotalents.speakercardsgenerator.repository.TalkRepository;
+import com.fortytwotalents.speakercardsgenerator.repository.SessionRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,25 +54,25 @@ class DevoxxImportServiceRestClientTest {
 		var builder = RestClient.builder();
 		var server = MockRestServiceServer.bindTo(builder).build();
 		var speakers = mock(SpeakerRepository.class);
-		var talks = mock(TalkRepository.class);
+		var sessions = mock(SessionRepository.class);
 		var photos = mock(SpeakerPhotoStore.class);
-		var importer = new DevoxxImportService(new DevoxxApiConfig(), speakers, talks, builder, photos);
+		var importer = new DevoxxImportService(new DevoxxApiConfig(), speakers, sessions, builder, photos);
 		var id = UUID.fromString("11111111-1111-1111-1111-111111111111");
 		var speaker = new Speaker();
 		speaker.setId(id);
 		speaker.setCompany("Old employer");
 		speaker.setTitle("Staff Engineer");
-		var talk = new Talk();
-		talk.setId(42L);
-		talk.setTitle("Previous title");
-		talk.setFormattedTitle("Previous<br/>title");
-		talk.setDate("2026-01-01");
-		talk.setCetTime("12:00");
-		talk.setWorkshop(true);
-		talk.setSessionType("Workshop");
-		talk.setSpeakers(List.of(speaker));
+		var session = new Session();
+		session.setId(42L);
+		session.setTitle("Previous title");
+		session.setFormattedTitle("Previous<br/>title");
+		session.setDate("2026-01-01");
+		session.setCetTime("12:00");
+		session.setWorkshop(true);
+		session.setSessionType("Workshop");
+		session.setSpeakers(List.of(speaker));
 		when(speakers.findById(id)).thenReturn(Optional.of(speaker));
-		when(talks.findById(42L)).thenReturn(Optional.of(talk));
+		when(sessions.findById(42L)).thenReturn(Optional.of(session));
 		String api = "https://vdz27.cfp.dev/api/public";
 		server.expect(requestTo(api + "/speakers?page=0&size=1000"))
 			.andRespond(withSuccess(SPEAKERS_JSON, MediaType.APPLICATION_JSON));
@@ -83,16 +83,16 @@ class DevoxxImportServiceRestClientTest {
 		assertThat(importer.importSpeakers()).isEqualTo(1);
 		assertThat(speaker.getCompany()).isEqualTo("Acme Corp");
 		assertThat(speaker.getTitle()).isEqualTo("Staff Engineer");
-		assertThat(talk.getTitle()).isEqualTo("New title");
-		assertThat(talk.getFormattedTitle()).isNull();
-		assertThat(talk.getDate()).isNull();
-		assertThat(talk.getCetTime()).isNull();
-		assertThat(talk.isWorkshop()).isFalse();
-		assertThat(talk.getSessionType()).isNull();
-		assertThat(talk.getSpeakers()).isEmpty();
+		assertThat(session.getTitle()).isEqualTo("New title");
+		assertThat(session.getFormattedTitle()).isNull();
+		assertThat(session.getDate()).isNull();
+		assertThat(session.getCetTime()).isNull();
+		assertThat(session.isWorkshop()).isFalse();
+		assertThat(session.getSessionType()).isNull();
+		assertThat(session.getSpeakers()).isEmpty();
 		verify(photos).download(id, null, null, "https://example.com/jane.jpg");
 		verify(speakers).save(speaker);
-		verify(talks).save(talk);
+		verify(sessions).save(session);
 		server.verify();
 	}
 
@@ -102,7 +102,7 @@ class DevoxxImportServiceRestClientTest {
 		var builder = RestClient.builder();
 		var server = MockRestServiceServer.bindTo(builder).build();
 		var speakers = mock(SpeakerRepository.class);
-		var importer = new DevoxxImportService(new DevoxxApiConfig(), speakers, mock(TalkRepository.class), builder,
+		var importer = new DevoxxImportService(new DevoxxApiConfig(), speakers, mock(SessionRepository.class), builder,
 				mock(SpeakerPhotoStore.class));
 		var speaker = new Speaker();
 		var id = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -131,7 +131,7 @@ class DevoxxImportServiceRestClientTest {
 		var speakers = mock(SpeakerRepository.class);
 		var config = new DevoxxApiConfig();
 		config.setApiToken("test-token");
-		var importer = new DevoxxImportService(config, speakers, mock(TalkRepository.class), builder,
+		var importer = new DevoxxImportService(config, speakers, mock(SessionRepository.class), builder,
 				mock(SpeakerPhotoStore.class));
 		var speaker = new Speaker();
 		var id = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -165,14 +165,14 @@ class DevoxxImportServiceRestClientTest {
 	void importsSessionTypeAndWorkshopClassification(String sessionType, boolean workshop, String label) {
 		var builder = RestClient.builder();
 		var server = MockRestServiceServer.bindTo(builder).build();
-		var talks = mock(TalkRepository.class);
-		var importer = new DevoxxImportService(new DevoxxApiConfig(), mock(SpeakerRepository.class), talks, builder,
+		var sessions = mock(SessionRepository.class);
+		var importer = new DevoxxImportService(new DevoxxApiConfig(), mock(SpeakerRepository.class), sessions, builder,
 				mock(SpeakerPhotoStore.class));
-		var existing = new Talk();
+		var existing = new Session();
 		existing.setId(42L);
 		existing.setWorkshop(true);
 		existing.setSessionType("Workshop");
-		when(talks.findById(42L)).thenReturn(Optional.of(existing));
+		when(sessions.findById(42L)).thenReturn(Optional.of(existing));
 		String api = "https://vdz27.cfp.dev/api/public";
 		server.expect(requestTo(api + "/speakers?page=0&size=1000"))
 			.andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
@@ -182,8 +182,8 @@ class DevoxxImportServiceRestClientTest {
 
 		importer.importSpeakers();
 
-		var saved = ArgumentCaptor.forClass(Talk.class);
-		verify(talks).save(saved.capture());
+		var saved = ArgumentCaptor.forClass(Session.class);
+		verify(sessions).save(saved.capture());
 		assertThat(saved.getValue().isWorkshop()).isEqualTo(workshop);
 		assertThat(saved.getValue().getSessionTypeLabel()).isEqualTo(label);
 		server.verify();

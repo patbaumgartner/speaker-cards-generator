@@ -73,7 +73,7 @@ public class Speaker implements Comparable<Speaker> {
 	private boolean star;
 
 	@ManyToMany(mappedBy = "speakers")
-	private List<Talk> talks = new ArrayList<>();
+	private List<Session> sessions = new ArrayList<>();
 
 	private String phone;
 
@@ -137,14 +137,14 @@ public class Speaker implements Comparable<Speaker> {
 	}
 
 	/**
-	 * Returns a newline-separated string with all talk titles formatted for use in a
+	 * Returns a newline-separated string with all session titles formatted for use in a
 	 * Twitter/X post.
-	 * @return formatted talk titles prefixed with a microphone emoji
+	 * @return formatted session titles prefixed with a microphone emoji
 	 */
-	public String getTalksForTwitter() {
+	public String getSessionsForTwitter() {
 		StringBuilder sb = new StringBuilder();
-		for (Talk talk : talks) {
-			sb.append("🎙️«").append(talk.getTitle()).append("»\n");
+		for (Session session : sessions) {
+			sb.append("🎙️«").append(session.getTitle()).append("»\n");
 		}
 		return sb.toString();
 	}
@@ -277,12 +277,12 @@ public class Speaker implements Comparable<Speaker> {
 		this.star = star;
 	}
 
-	public List<Talk> getTalks() {
-		return talks;
+	public List<Session> getSessions() {
+		return sessions;
 	}
 
-	public void setTalks(List<Talk> talks) {
-		this.talks = talks;
+	public void setSessions(List<Session> sessions) {
+		this.sessions = sessions;
 	}
 
 	public String getPhone() {
