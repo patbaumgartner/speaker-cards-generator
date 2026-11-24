@@ -54,9 +54,11 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="importDropdown">
                 <li>
-                  <button class="dropdown-item" data-import-type="devoxx">
+                  <button class="dropdown-item" data-import-type="devoxx" aria-describedby="importTokenHintNav">
                     <i class="bi bi-cloud-arrow-down me-2 text-primary" aria-hidden="true"></i>Import from CFP.dev API
                   </button>
+                  <span id="importTokenHintNav" data-import-token-hint
+                    class="dropdown-item-text small text-muted">Checking API token status…</span>
                 </li>
                 <li>
                   <hr class="dropdown-divider" />
@@ -90,8 +92,9 @@
           <form id="apiTokenForm" aria-labelledby="apiTokenModalLabel">
             <div class="modal-body">
               <p class="text-muted small">
-                The public import works without a token. Add one to check authenticated CFP.dev profiles for job titles
-                and additional portrait URLs. The token is kept in memory for this server process only.
+                Imports require a token because the public API omits fields needed for complete banners. The token lets
+                the importer read authenticated CFP.dev profiles for job titles and additional portrait URLs. The token
+                is kept in memory for this server process only.
               </p>
               <div class="mb-3">
                 <label for="apiTokenInput" class="form-label">Bearer Token</label>
@@ -193,9 +196,16 @@
     <script th:inline="javascript">
       var API_BASE = /*[[@{/api}]]*/ '/api';
       var RELOAD_DELAY_MS = 2000;
+      var TOKEN_REQUIRED_MESSAGE = "Configure a CFP.dev API token via Authorize before importing.";
+      var TOKEN_READY_MESSAGE = "API token configured — imports are ready.";
+      var TOKEN_STATUS_UNAVAILABLE_MESSAGE = "Token status unavailable. Import will report any issue.";
 
       function triggerImport(type, btn) {
         if (type !== "devoxx") {
+          return;
+        }
+        if (btn.getAttribute("aria-disabled") === "true") {
+          showImportToast(false, TOKEN_REQUIRED_MESSAGE);
           return;
         }
         if (btn.disabled || btn.classList.contains("disabled")) {
@@ -240,6 +250,45 @@
       }
 
       document.addEventListener("DOMContentLoaded", function () {
+        var importButtons = document.querySelectorAll('[data-import-type="devoxx"]');
+        var importTokenHints = document.querySelectorAll("[data-import-token-hint]");
+
+        function updateImportAvailability(configured) {
+          var unavailable = configured === false;
+          importButtons.forEach(function (btn) {
+            if (unavailable) {
+              btn.setAttribute("aria-disabled", "true");
+            } else {
+              btn.removeAttribute("aria-disabled");
+            }
+          });
+          importTokenHints.forEach(function (hint) {
+            if (configured === null) {
+              hint.textContent = TOKEN_STATUS_UNAVAILABLE_MESSAGE;
+            } else {
+              hint.textContent = unavailable ? TOKEN_REQUIRED_MESSAGE : TOKEN_READY_MESSAGE;
+            }
+          });
+        }
+
+        function loadTokenStatus() {
+          fetch(API_BASE + "/config/api-token/status")
+            .then(function (r) {
+              if (!r.ok) {
+                throw new Error("Token status request failed");
+              }
+              return r.json();
+            })
+            .then(function (data) {
+              updateTokenStatus(data);
+              updateImportAvailability(data.configured === true);
+            })
+            .catch(function () {
+              tokenStatus.innerHTML = "";
+              updateImportAvailability(null);
+            });
+        }
+
         document.querySelectorAll("[data-import-type]").forEach(function (btn) {
           btn.addEventListener("click", function () {
             triggerImport(btn.dataset.importType, btn);
@@ -251,30 +300,21 @@
         var tokenStatus = document.getElementById("tokenStatus");
         var authIcon = document.getElementById("authIcon");
 
-        function updateTokenStatus() {
-          fetch(API_BASE + "/config/api-token/status")
-            .then(function (r) {
-              return r.json();
-            })
-            .then(function (data) {
-              if (data.configured) {
-                tokenStatus.innerHTML =
-                  '<span class="text-success"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Token is configured.</span>';
-                authIcon.classList.add("text-success");
-              } else {
-                tokenStatus.innerHTML =
-                  '<span class="text-muted"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>No token configured.</span>';
-                authIcon.classList.remove("text-success");
-              }
-            })
-            .catch(function () {
-              tokenStatus.innerHTML = "";
-            });
+        function updateTokenStatus(data) {
+          if (data.configured) {
+            tokenStatus.innerHTML =
+              '<span class="text-success"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Token is configured.</span>';
+            authIcon.classList.add("text-success");
+          } else {
+            tokenStatus.innerHTML =
+              '<span class="text-muted"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>No token configured. Imports require a token.</span>';
+            authIcon.classList.remove("text-success");
+          }
         }
 
         document.getElementById("apiTokenModal").addEventListener("show.bs.modal", function () {
           tokenInput.value = "";
-          updateTokenStatus();
+          loadTokenStatus();
         });
 
         tokenInput.addEventListener("input", function () {
@@ -298,7 +338,7 @@
           }).then(function (r) {
             tokenInput.value = "";
             if (r.ok) {
-              updateTokenStatus();
+              loadTokenStatus();
               showImportToast(true, "API token configured successfully.");
             } else {
               showImportToast(false, "Failed to save token.");
@@ -313,13 +353,13 @@
           fetch(API_BASE + "/config/api-token", { method: "DELETE" }).then(function (r) {
             if (r.ok) {
               tokenInput.value = "";
-              updateTokenStatus();
+              loadTokenStatus();
               showImportToast(true, "API token cleared.");
             }
           });
         });
 
-        updateTokenStatus();
+        loadTokenStatus();
       });
     </script>
   </body>

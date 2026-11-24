@@ -98,6 +98,10 @@ create a new `application-{profile}.properties` file with the event-specific bra
 
 ## 📥 Import Speakers
 
+A CFP.dev API token is required before importing. Configure it in the **Authorize** dialog
+or with `POST /api/config/api-token`; imports without a token are rejected because the
+public API omits fields that banners need.
+
 ```shell
 # From the Devoxx CFP API using the configured event
 curl -X POST http://localhost:8080/api/import/devoxx
@@ -116,9 +120,9 @@ beneath the session-title divider on banners. Workshop variants are recognized f
 the type's name or slug and displayed as **Workshop**. Reimport existing sessions
 to refresh their session types and workshop classification.
 
-The public import works without a token. Adding a token also checks authenticated
-speaker details for job titles and portrait URLs. If a response omits the job title,
-an existing title is preserved; an explicitly blank title clears it.
+The token lets the importer check authenticated speaker details for job titles and
+portrait URLs that the public endpoint does not return. If a response omits the job
+title, an existing title is preserved; an explicitly blank title clears it.
 
 To find it, sign in to your CFP instance, open the browser developer tools (`F12`) and select
 the **Network** tab. Reload the page, choose an authenticated request such as `/api/account`,

@@ -30,9 +30,9 @@ public class DevoxxApiConfig {
 	private String eventId = "vdz27";
 
 	/**
-	 * Optional Bearer token for the authenticated CFP API. When set, the import fetches
-	 * speaker details from {@code /api/speakers/{id}} which includes the {@code jobTitle}
-	 * field not available on the public endpoint.
+	 * Bearer token for the authenticated CFP API. Required for imports so the importer
+	 * can fetch speaker details from {@code /api/speakers/{id}}, which includes the
+	 * {@code jobTitle} field not available on the public endpoint.
 	 */
 	private volatile String apiToken;
 

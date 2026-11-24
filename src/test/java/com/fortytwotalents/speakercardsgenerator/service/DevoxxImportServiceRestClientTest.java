@@ -7,6 +7,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fortytwotalents.speakercardsgenerator.config.DevoxxApiConfig;
@@ -49,6 +50,27 @@ class DevoxxImportServiceRestClientTest {
 			]
 			""";
 
+	private static DevoxxApiConfig configWithToken() {
+		var config = new DevoxxApiConfig();
+		config.setApiToken("test-token");
+		return config;
+	}
+
+	@Test
+	void importRequiresConfiguredApiToken() {
+		var builder = RestClient.builder();
+		var server = MockRestServiceServer.bindTo(builder).build();
+		var speakers = mock(SpeakerRepository.class);
+		var sessions = mock(SessionRepository.class);
+		var photos = mock(SpeakerPhotoStore.class);
+		var importer = new DevoxxImportService(new DevoxxApiConfig(), speakers, sessions, builder, photos);
+
+		assertThatThrownBy(importer::importSpeakers).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("API token is required");
+		server.verify();
+		verifyNoInteractions(speakers, sessions, photos);
+	}
+
 	@Test
 	void reimportRefreshesExistingRecordsAndClearsWithdrawnScheduleAndSpeakers() {
 		var builder = RestClient.builder();
@@ -56,7 +78,7 @@ class DevoxxImportServiceRestClientTest {
 		var speakers = mock(SpeakerRepository.class);
 		var sessions = mock(SessionRepository.class);
 		var photos = mock(SpeakerPhotoStore.class);
-		var importer = new DevoxxImportService(new DevoxxApiConfig(), speakers, sessions, builder, photos);
+		var importer = new DevoxxImportService(configWithToken(), speakers, sessions, builder, photos);
 		var id = UUID.fromString("11111111-1111-1111-1111-111111111111");
 		var speaker = new Speaker();
 		speaker.setId(id);
@@ -102,7 +124,7 @@ class DevoxxImportServiceRestClientTest {
 		var builder = RestClient.builder();
 		var server = MockRestServiceServer.bindTo(builder).build();
 		var speakers = mock(SpeakerRepository.class);
-		var importer = new DevoxxImportService(new DevoxxApiConfig(), speakers, mock(SessionRepository.class), builder,
+		var importer = new DevoxxImportService(configWithToken(), speakers, mock(SessionRepository.class), builder,
 				mock(SpeakerPhotoStore.class));
 		var speaker = new Speaker();
 		var id = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -129,9 +151,7 @@ class DevoxxImportServiceRestClientTest {
 		var builder = RestClient.builder();
 		var server = MockRestServiceServer.bindTo(builder).build();
 		var speakers = mock(SpeakerRepository.class);
-		var config = new DevoxxApiConfig();
-		config.setApiToken("test-token");
-		var importer = new DevoxxImportService(config, speakers, mock(SessionRepository.class), builder,
+		var importer = new DevoxxImportService(configWithToken(), speakers, mock(SessionRepository.class), builder,
 				mock(SpeakerPhotoStore.class));
 		var speaker = new Speaker();
 		var id = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -166,7 +186,7 @@ class DevoxxImportServiceRestClientTest {
 		var builder = RestClient.builder();
 		var server = MockRestServiceServer.bindTo(builder).build();
 		var sessions = mock(SessionRepository.class);
-		var importer = new DevoxxImportService(new DevoxxApiConfig(), mock(SpeakerRepository.class), sessions, builder,
+		var importer = new DevoxxImportService(configWithToken(), mock(SpeakerRepository.class), sessions, builder,
 				mock(SpeakerPhotoStore.class));
 		var existing = new Session();
 		existing.setId(42L);

@@ -28,7 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 /**
- * Imports speakers from the Voxxed Days / CFP public API.
+ * Imports speakers and sessions from the Voxxed Days / CFP API. A configured API token is
+ * required so speaker details are complete.
  *
  * <p>
  * The API endpoint format is:
@@ -51,6 +52,9 @@ public class DevoxxImportService {
 	 * chars).
 	 */
 	private static final Pattern SAFE_EVENT_ID = Pattern.compile("^[a-zA-Z0-9_-]{1,50}$");
+
+	private static final String API_TOKEN_REQUIRED_MESSAGE = "CFP.dev API token is required for imports. "
+			+ "Configure it via the Authorize dialog or POST /api/config/api-token.";
 
 	private final DevoxxApiConfig devoxxApiConfig;
 
@@ -101,13 +105,19 @@ public class DevoxxImportService {
 	 * @param eventId CFP event identifier (e.g. {@code vdz27}); must contain only
 	 * alphanumeric characters, hyphens, or underscores (max 50 characters)
 	 * @return number of speakers imported or updated
-	 * @throws IllegalArgumentException if the eventId does not match the safe pattern
+	 * @throws IllegalArgumentException if the eventId does not match the safe pattern, or
+	 * no API token is configured
 	 */
 	@Transactional
 	public int importSpeakers(String eventId) {
 		if (eventId == null || !SAFE_EVENT_ID.matcher(eventId).matches()) {
 			throw new IllegalArgumentException(
 					"Invalid event ID – must be alphanumeric/hyphen/underscore, max 50 chars: " + eventId);
+		}
+
+		String apiToken = devoxxApiConfig.getApiToken();
+		if (apiToken == null || apiToken.isBlank()) {
+			throw new IllegalArgumentException(API_TOKEN_REQUIRED_MESSAGE);
 		}
 
 		String baseUrl = "https://" + eventId + ".cfp.dev/api/public";
@@ -117,17 +127,12 @@ public class DevoxxImportService {
 		try {
 			List<DevoxxSpeakerDto> speakers = fetchSpeakers(baseUrl);
 
-			// When an API token is configured, enrich each speaker with data
-			// from the authenticated endpoint (which includes jobTitle)
-			String apiToken = devoxxApiConfig.getApiToken();
-			boolean useAuthApi = apiToken != null && !apiToken.isBlank();
-
 			// Save speakers and build a map of CFP integer ID → Speaker UUID
 			Map<Integer, UUID> cfpIdToUuid = new HashMap<>();
 			int count = 0;
 			for (DevoxxSpeakerDto dto : speakers) {
 				try {
-					if (useAuthApi && dto.id != null) {
+					if (dto.id != null) {
 						enrichSpeakerFromAuthApi(dto, eventId, apiToken);
 					}
 					if (saveSpeaker(dto, eventId)) {

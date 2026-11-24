@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,8 +70,14 @@ class BannerControllerIntegrationTest {
 
 	private MockMvc mockMvc;
 
+	private String originalEventDate;
+
+	private String originalWorkshopDate;
+
 	@BeforeEach
 	void setUp() {
+		this.originalEventDate = this.eventConfig.getDate();
+		this.originalWorkshopDate = this.eventConfig.getWorkshopDate();
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
 		this.sessionRepository.deleteAll();
 		this.speakerRepository.deleteAll();
@@ -86,6 +93,12 @@ class BannerControllerIntegrationTest {
 		session.setCetTime("14:00");
 		session.setSpeakers(new ArrayList<>(List.of(speaker, coSpeaker)));
 		this.sessionRepository.save(session);
+	}
+
+	@AfterEach
+	void restoreEventDates() {
+		this.eventConfig.setDate(this.originalEventDate);
+		this.eventConfig.setWorkshopDate(this.originalWorkshopDate);
 	}
 
 	@Test
@@ -182,6 +195,29 @@ class BannerControllerIntegrationTest {
 			else {
 				assertThat(html).as(url).doesNotContain("Monday, March 8, 2027", "class=\"event-secondary-date\"");
 			}
+		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = { true, false })
+	void identicalWorkshopAndConferenceDatesRenderOnlyOneDateLine(boolean workshop) throws Exception {
+		String sameDate = "Tuesday, March 9, 2027";
+		this.eventConfig.setDate(sameDate);
+		this.eventConfig.setWorkshopDate(sameDate);
+		Session session = this.sessionRepository.findById(SESSION_ID).orElseThrow();
+		session.setWorkshop(workshop);
+		this.sessionRepository.save(session);
+
+		for (String url : List.of("/speaker-banner/" + SPEAKER_ID, "/speaker-social/" + SPEAKER_ID,
+				"/session-banner/" + SESSION_ID)) {
+			String html = this.mockMvc.perform(get(url))
+				.andExpect(status().isOk())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+			assertThat(html).as(url)
+				.containsPattern("class=\"event-date\"[^>]*>" + sameDate + "</div>")
+				.doesNotContain("class=\"event-secondary-date\"", "Conference Day:", "Workshop Day:");
 		}
 	}
 

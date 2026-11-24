@@ -132,3 +132,13 @@ footer {
 .btn-outline-primary:focus {
     box-shadow: 0 0 0 0.18rem var(--vd-navy), 0 0 0 0.36rem var(--vd-accent-dark);
 }
+
+/* Import stays focusable when unavailable so its hint is discoverable by keyboard and AT. */
+[data-import-type][aria-disabled="true"],
+[data-import-type][aria-disabled="true"] > i.bi {
+    color: var(--bs-secondary-color);
+}
+
+[data-import-type][aria-disabled="true"] {
+    cursor: not-allowed;
+}

@@ -119,6 +119,19 @@ public class EventConfig {
 		this.workshopDate = workshopDate;
 	}
 
+	/**
+	 * Whether a workshop date is configured and differs from the conference date.
+	 */
+	public boolean hasDistinctWorkshopDate() {
+		if (workshopDate == null || workshopDate.isBlank()) {
+			return false;
+		}
+		if (date == null) {
+			return true;
+		}
+		return !workshopDate.trim().equalsIgnoreCase(date.trim());
+	}
+
 	public String getLocation() {
 		return location;
 	}

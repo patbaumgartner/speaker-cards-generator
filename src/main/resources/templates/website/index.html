@@ -32,7 +32,8 @@
           </p>
           <div class="d-flex flex-wrap gap-3 align-items-center">
             <div class="btn-group" role="group">
-              <button type="button" class="btn btn-primary" id="btnImportDevoxx" data-import-type="devoxx">
+              <button type="button" class="btn btn-primary" id="btnImportDevoxx" data-import-type="devoxx"
+                aria-describedby="importTokenHint">
                 <i class="bi bi-cloud-arrow-down-fill" aria-hidden="true"></i>Import from CFP.dev API
               </button>
               <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
@@ -40,6 +41,9 @@
                 <i class="bi bi-key-fill me-1" aria-hidden="true"></i>Authorize
               </button>
             </div>
+            <p id="importTokenHint" data-import-token-hint class="text-muted small mt-3 mb-0">
+              Checking API token status…
+            </p>
           </div>
         </div>
       </div>

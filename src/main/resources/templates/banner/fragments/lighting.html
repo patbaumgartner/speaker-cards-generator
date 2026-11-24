@@ -116,10 +116,11 @@
       th:with="workshop=${conferenceSession != null and conferenceSession.workshop and !#strings.isEmpty(event.workshopDate)}">
       <div class="event-date" th:if="${workshop or !#strings.isEmpty(event.date)}"
         th:text="${workshop ? event.workshopDate : event.date}"></div>
-      <div class="event-secondary-date" th:if="${workshop and !#strings.isEmpty(event.date)}"
+      <div class="event-secondary-date"
+        th:if="${workshop and event.hasDistinctWorkshopDate() and !#strings.isEmpty(event.date)}"
         th:text="'Conference Day: ' + ${event.date}"></div>
       <div class="event-secondary-date"
-        th:if="${!workshop and conferenceSession == null and !#strings.isEmpty(event.workshopDate)}"
+        th:if="${!workshop and conferenceSession == null and event.hasDistinctWorkshopDate() and !#strings.isEmpty(event.workshopDate)}"
         th:text="'Workshop Day: ' + ${event.workshopDate}"></div>
       <div class="event-location" th:if="${!#strings.isEmpty(event.location)}" th:text="${event.location}"></div>
     </div>
