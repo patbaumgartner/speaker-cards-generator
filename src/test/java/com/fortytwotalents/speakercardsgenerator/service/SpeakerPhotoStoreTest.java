@@ -177,6 +177,14 @@ class SpeakerPhotoStoreTest {
 	}
 
 	@Test
+	void findChoosesTheLargestStoredPortraitRegardlessOfExtensionOrder() throws IOException {
+		Files.write(this.photoDir.resolve(SPEAKER_ID + ".jpg"), pngBytes(4));
+		Files.write(this.photoDir.resolve(SPEAKER_ID + ".png"), pngBytes(64));
+
+		assertThat(store().find(SPEAKER_ID).orElseThrow().content()).isEqualTo(pngBytes(64));
+	}
+
+	@Test
 	void downloadIgnoresMissingInput() {
 		assertThat(store().download(null, "http://example.com/a.png")).isFalse();
 		assertThat(store().download(SPEAKER_ID, (String) null)).isFalse();

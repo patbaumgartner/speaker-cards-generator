@@ -21,7 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,13 +43,15 @@ import org.springframework.stereotype.Component;
  * reads them back for the web UI and the banner renderer.
  *
  * <p>
- * Photos are looked up in two places, in order:
+ * Photos are looked up in two places:
  * <ol>
  * <li>the configured runtime directory ({@code app.storage.photo-dir}) — where imports
  * write;</li>
  * <li>the classpath under {@code /static/images/speaker/} — so photos bundled into the
  * image or checked in by hand keep working.</li>
  * </ol>
+ * The highest-resolution candidate wins; ties go to the byte-rich file, then to the
+ * runtime copy.
  *
  * <p>
  * Rendering and display use {@link #findOrPlaceholder(UUID)}, which falls back to a
@@ -134,11 +138,12 @@ public class SpeakerPhotoStore {
 		if (speakerId == null) {
 			return Optional.empty();
 		}
+		List<Candidate> candidates = new ArrayList<>();
 		for (String extension : EXTENSIONS) {
 			Path file = photoDirectory().resolve(speakerId + "." + extension);
 			if (Files.isRegularFile(file)) {
 				try {
-					return Optional.of(new Photo(Files.readAllBytes(file), contentType(extension)));
+					candidates.add(toCandidate(Files.readAllBytes(file), extension));
 				}
 				catch (IOException ex) {
 					log.warn("Could not read profile picture {}", file, ex);
@@ -149,14 +154,34 @@ public class SpeakerPhotoStore {
 			String resource = CLASSPATH_PREFIX + speakerId + "." + extension;
 			try (InputStream in = getClass().getResourceAsStream(resource)) {
 				if (in != null) {
-					return Optional.of(new Photo(in.readAllBytes(), contentType(extension)));
+					candidates.add(toCandidate(in.readAllBytes(), extension));
 				}
 			}
 			catch (IOException ex) {
 				log.warn("Could not read bundled profile picture {}", resource, ex);
 			}
 		}
-		return Optional.empty();
+		return candidates.stream()
+			.max(Comparator.comparingLong(Candidate::pixels)
+				.thenComparingInt(candidate -> candidate.photo().content().length))
+			.map(Candidate::photo);
+	}
+
+	private static Candidate toCandidate(byte[] content, String extension) {
+		return new Candidate(new Photo(content, contentType(extension)), pixelCountOrZero(content));
+	}
+
+	private static long pixelCountOrZero(byte[] content) {
+		try {
+			return pixelCount(content);
+		}
+		catch (IOException ex) {
+			log.warn("Could not determine image dimensions", ex);
+			return 0;
+		}
+	}
+
+	private record Candidate(Photo photo, long pixels) {
 	}
 
 	/**
@@ -195,7 +220,7 @@ public class SpeakerPhotoStore {
 	 * Refreshes a profile picture with the bytes supplied by the CFP. Never throws: a
 	 * failed photo download must not abort an otherwise successful speaker import.
 	 * @param speakerId speaker UUID, used as the file name
-	 * @param sourceUrls available portrait URLs, in preference order for equal dimensions
+	 * @param sourceUrls available portrait URLs, compared by resolution then file size
 	 * @return whether a portrait was stored
 	 */
 	public boolean download(UUID speakerId, String... sourceUrls) {
@@ -210,7 +235,7 @@ public class SpeakerPhotoStore {
 			.toList()) {
 			try {
 				Portrait candidate = fetch(url);
-				if (best == null || candidate.pixels() > best.pixels()) {
+				if (best == null || isBetter(candidate, best)) {
 					best = candidate;
 				}
 			}
@@ -236,6 +261,11 @@ public class SpeakerPhotoStore {
 	}
 
 	private record Portrait(String extension, byte[] content, long pixels) {
+	}
+
+	private static boolean isBetter(Portrait candidate, Portrait current) {
+		int byPixels = Long.compare(candidate.pixels(), current.pixels());
+		return byPixels > 0 || (byPixels == 0 && candidate.content().length > current.content().length);
 	}
 
 	private static long pixelCount(byte[] content) throws IOException {

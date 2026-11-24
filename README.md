@@ -112,8 +112,9 @@ curl -X POST http://localhost:8080/api/import/devoxx/vdz27
 
 Each import refreshes speaker profiles, sessions, and portrait files from the CFP. If
 the CFP provides several portrait URLs, the importer compares their pixel dimensions
-and stores the highest-resolution download without recompression. The download limit
-is configurable with `app.storage.max-photo-size` (default `5MB`).
+and stores the highest-resolution download without recompression. The same comparison
+applies when loading a portrait, so the best available stored file is used. The download
+limit is configurable with `app.storage.max-photo-size` (default `5MB`).
 
 The CFP session type (for example **Conference** or **Byte-Size**) appears
 beneath the session-title divider on banners. Workshop variants are recognized from

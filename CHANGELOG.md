@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Load the highest-resolution stored portrait when several image variants are available
 - Import CFP photos served as `binary/octet-stream` by detecting the image format from the response bytes
 - Always render a real speaker image by replacing the Duke fallback with a branded local avatar
 - Default to the `vdz` Voxxed Days Zürich Spring profile when no profile is active
