@@ -145,14 +145,15 @@ while it is visible.
 ## 🖼️ Generate Banners
 
 Event profiles set `app.event.date` with the weekday (for example,
-`Tuesday, March 9, 2027`). An optional `app.event.workshop-date` adds a separate
-workshop-day line in the header; Ticino uses `Thursday, February 18, 2027`.
-For workshop sessions, this becomes the main header date instead of the conference
-date, without repeating the workshop-day line. Events without a separate workshop
-date keep their configured event date.
+`Tuesday, March 9, 2027`). An optional `app.event.workshop-date` adds the workshop
+date; Ticino uses `Thursday, February 18, 2027`. Workshop sessions show the workshop
+date prominently, with the conference date in a smaller "Conference Day" line.
+Conference and Byte-Size sessions show only the conference date. General speaker and
+social banners without a session retain a separate workshop-day line. Events without
+a separate workshop date keep their configured event date.
 
 Each session in the speaker directory has its own speaker, session and social
-banner preview and PNG download. Workshop variants use the workshop date.
+banner preview and PNG download.
 Bulk downloads and disk exports include every session variant, not just the first
 session of each speaker. Speakers without sessions still get general speaker and
 social banners.

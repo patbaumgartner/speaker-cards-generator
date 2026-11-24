@@ -13,7 +13,7 @@
         src: url("/fonts/SpaceGrotesk-Bold.ttf") format("truetype");
       }
       .event-date,
-      .event-workshop-date,
+      .event-secondary-date,
       .footer-url,
       .campaign-tag,
       .campaign-motto {
@@ -42,7 +42,7 @@
         letter-spacing: -0.5px;
         white-space: nowrap;
       }
-      .event-workshop-date {
+      .event-secondary-date {
         font-size: 14px;
         font-weight: 400;
         line-height: 1.2;
@@ -116,11 +116,11 @@
       th:with="workshop=${conferenceSession != null and conferenceSession.workshop and !#strings.isEmpty(event.workshopDate)}">
       <div class="event-date" th:if="${workshop or !#strings.isEmpty(event.date)}"
         th:text="${workshop ? event.workshopDate : event.date}"></div>
-      <div
-        class="event-workshop-date"
-        th:if="${!workshop and !#strings.isEmpty(event.workshopDate)}"
-        th:text="'Workshop Day: ' + ${event.workshopDate}"
-      ></div>
+      <div class="event-secondary-date" th:if="${workshop and !#strings.isEmpty(event.date)}"
+        th:text="'Conference Day: ' + ${event.date}"></div>
+      <div class="event-secondary-date"
+        th:if="${!workshop and conferenceSession == null and !#strings.isEmpty(event.workshopDate)}"
+        th:text="'Workshop Day: ' + ${event.workshopDate}"></div>
       <div class="event-location" th:if="${!#strings.isEmpty(event.location)}" th:text="${event.location}"></div>
     </div>
     <div

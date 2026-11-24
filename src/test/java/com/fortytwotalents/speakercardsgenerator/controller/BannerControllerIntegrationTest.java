@@ -142,7 +142,6 @@ class BannerControllerIntegrationTest {
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("Staff Engineer")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("#TC27")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("Tuesday, March 9, 2027")))
-			.andExpect(content().string(org.hamcrest.Matchers.containsString("Workshop Day: Monday, March 8, 2027")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"lighting\"")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("background-image: url(/speaker-photo/")));
 
@@ -157,7 +156,7 @@ class BannerControllerIntegrationTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void workshopLabelsAppearOnlyForWorkshopsOnEveryBanner(boolean workshop) throws Exception {
+	void workshopAndConferenceBannersShowExpectedDatesOnEveryBanner(boolean workshop) throws Exception {
 		Session session = this.sessionRepository.findById(SESSION_ID).orElseThrow();
 		session.setWorkshop(workshop);
 		this.sessionRepository.save(session);
@@ -173,11 +172,36 @@ class BannerControllerIntegrationTest {
 			String date = workshop ? "Monday, March 8, 2027" : "Tuesday, March 9, 2027";
 			assertThat(html).as(url).containsPattern("class=\"event-date\"[^>]*>" + date + "</div>");
 			if (workshop) {
-				assertThat(html).doesNotContain("Tuesday, March 9, 2027", "Workshop Day:");
+				assertThat(html).as(url)
+					.contains("class=\"event-secondary-date\">Conference Day: Tuesday, March 9, 2027</div>")
+					.doesNotContain("Workshop Day:");
 				this.mockMvc.perform(get(url + ".png"))
 					.andExpect(status().isOk())
 					.andExpect(content().contentType(MediaType.IMAGE_PNG));
 			}
+			else {
+				assertThat(html).as(url).doesNotContain("Monday, March 8, 2027", "class=\"event-secondary-date\"");
+			}
+		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "Conference", "Byte-Size" })
+	void conferenceAndByteSizeBannersShowOnlyConferenceDate(String sessionType) throws Exception {
+		Session session = this.sessionRepository.findById(SESSION_ID).orElseThrow();
+		session.setSessionType(sessionType);
+		this.sessionRepository.save(session);
+
+		for (String url : List.of("/speaker-banner/" + SPEAKER_ID, "/speaker-social/" + SPEAKER_ID,
+				"/session-banner/" + SESSION_ID)) {
+			String html = this.mockMvc.perform(get(url))
+				.andExpect(status().isOk())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+			assertThat(html).as(url)
+				.containsPattern("class=\"event-date\"[^>]*>Tuesday, March 9, 2027</div>")
+				.doesNotContain("Monday, March 8, 2027", "class=\"event-secondary-date\"");
 		}
 	}
 
@@ -327,8 +351,10 @@ class BannerControllerIntegrationTest {
 				.andReturn()
 				.getResponse()
 				.getContentAsString();
-			assertThat(html).contains("Hands-on Java", "Monday, March 8, 2027", "Workshop", "Staff Engineer")
-				.doesNotContain("Building Cloud-Native", "Tuesday, March 9, 2027");
+			assertThat(html)
+				.contains("Hands-on Java", "Monday, March 8, 2027", "Conference Day: Tuesday, March 9, 2027",
+						"Workshop", "Staff Engineer")
+				.doesNotContain("Building Cloud-Native");
 		}
 
 		Speaker speaker = this.speakerRepository.findById(SPEAKER_ID).orElseThrow();
