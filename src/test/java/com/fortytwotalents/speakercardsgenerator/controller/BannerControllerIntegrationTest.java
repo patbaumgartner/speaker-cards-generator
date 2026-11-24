@@ -113,7 +113,7 @@ class BannerControllerIntegrationTest {
 	}
 
 	@Test
-	void speakerBannerPngIsAFullSizeImage() throws Exception {
+	void speakerBannerPngUsesSocialFriendlyDimensions() throws Exception {
 		byte[] png = this.mockMvc.perform(get("/speaker-banner/{id}.png", SPEAKER_ID))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.IMAGE_PNG))
@@ -122,8 +122,8 @@ class BannerControllerIntegrationTest {
 			.getContentAsByteArray();
 
 		BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
-		assertThat(image.getWidth()).isEqualTo(1920);
-		assertThat(image.getHeight()).isEqualTo(1080);
+		assertThat(image.getWidth()).isEqualTo(1280);
+		assertThat(image.getHeight()).isEqualTo(720);
 	}
 
 	@Test

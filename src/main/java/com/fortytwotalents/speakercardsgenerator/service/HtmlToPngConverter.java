@@ -57,11 +57,11 @@ public class HtmlToPngConverter {
 	private static final String SPEAKER_PHOTO_PREFIX = SPEAKER_PHOTO_PATH + "/";
 
 	/**
-	 * The templates declare a 1280×720 CSS-pixel page, which at 96 CSS DPI is a 960×540
-	 * pt PDF page. Rasterising that at 144 DPI scales by 144/96 = 1.5, giving the
-	 * documented 1920×1080 PNG: crisp circles and sharp text for social media.
+	 * The templates declare 1280×720 and 1080×1080 CSS-pixel pages. Rasterising at the
+	 * same 96 DPI used for CSS layout keeps one CSS pixel equal to one output pixel, so
+	 * banners stay light enough for social uploads without losing legible detail.
 	 */
-	private static final int RENDER_DPI = 144;
+	private static final int RENDER_DPI = 96;
 
 	static {
 		// Route the renderer's own logging into SLF4J once, rather than silencing it on

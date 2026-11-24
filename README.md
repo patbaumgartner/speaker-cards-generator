@@ -15,17 +15,18 @@
 These examples use the Voxxed Days Ticino profile and Patrick Baumgartner's
 public CFP session. Session banners show the conference date; general speaker
 and social banners without a session also list the workshop day. The footer
-features the event-colored "on" switch.
+features the event-colored "on" switch. Exports are sized for social uploads:
+1280 × 720 px landscape and 1080 × 1080 px square.
 
-**Speaker banner** (1920 × 1080 px)
+**Speaker banner** (1280 × 720 px)
 
 ![Speaker banner example](docs/images/speaker-banner-example.png)
 
-**Session banner** (1920 × 1080 px)
+**Session banner** (1280 × 720 px)
 
 ![Session banner example](docs/images/session-banner-example.png)
 
-**Social banner** (1620 × 1620 px)
+**Social banner** (1080 × 1080 px)
 
 ![Social banner example](docs/images/social-banner-example.png)
 

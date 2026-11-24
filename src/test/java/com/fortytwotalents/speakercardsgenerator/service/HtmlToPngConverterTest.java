@@ -36,7 +36,7 @@ class HtmlToPngConverterTest {
 	Path photoDir;
 
 	@Test
-	void rendersHtmlToAPngAtOneAndAHalfTimesTheCssPixelResolution() throws Exception {
+	void rendersHtmlToAPngAtCssPixelResolution() throws Exception {
 		byte[] png = converter().convertToPng(HTML);
 
 		assertThat(png).isNotEmpty();
@@ -44,11 +44,10 @@ class HtmlToPngConverterTest {
 		assertThat(png).startsWith((byte) 0x89, (byte) 'P', (byte) 'N', (byte) 'G');
 
 		BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
-		// The page is laid out at 96 CSS DPI and rasterised at 144 DPI, so the PNG comes
-		// out at 144/96 = 1.5x the CSS pixel size. That is what turns the 1280x720
-		// banner templates into the documented 1920x1080 output.
-		assertThat(image.getWidth()).isEqualTo(150);
-		assertThat(image.getHeight()).isEqualTo(75);
+		// CSS layout and rasterisation both use 96 DPI, so the PNG keeps the CSS pixel
+		// dimensions. That gives 1280x720 banners and 1080x1080 social cards.
+		assertThat(image.getWidth()).isEqualTo(100);
+		assertThat(image.getHeight()).isEqualTo(50);
 	}
 
 	@Test
