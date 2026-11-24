@@ -13,8 +13,9 @@
 ## 🖼️ Preview
 
 These examples use the Voxxed Days Ticino profile and Patrick Baumgartner's
-public CFP session. The header includes the conference and workshop dates;
-the footer features the event-colored "on" switch.
+public CFP session. Session banners show the conference date; general speaker
+and social banners without a session also list the workshop day. The footer
+features the event-colored "on" switch.
 
 **Speaker banner** (1920 × 1080 px)
 
