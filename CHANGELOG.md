@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused demo images that were not referenced by any template or configuration
 
 ### Changed
+- Normalise displayed portraits with a light accent-color wash using the active event theme, without requiring a re-import
 - Scale banner exports to social-friendly 1280×720 and 1080×1080 PNGs
 - Refreshed the VDZ, VDT, and VDCern logos from the official voxxeddays.ch logo library
 - Renamed base package from `com.fortytwotalents` to `com.fortytwotalents.speakercardsgenerator` to align namespace with the project name

@@ -1,9 +1,12 @@
 package com.fortytwotalents.speakercardsgenerator.service;
 
+import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.config.StorageConfig;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -49,7 +52,7 @@ class SpeakerPhotoStoreTest {
 		this.config.setPhotoDir(this.photoDir.toString());
 		// The stub server is on loopback, which the SSRF guard blocks by design.
 		this.config.setAllowPrivateNetworkPhotoUrls(true);
-		this.store = new SpeakerPhotoStore(this.config);
+		this.store = new SpeakerPhotoStore(this.config, theme("#123456", "#78ABCD", "#000000"));
 		this.server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
 		this.server.start();
 	}
@@ -185,6 +188,46 @@ class SpeakerPhotoStoreTest {
 	}
 
 	@Test
+	void findOrPlaceholderAddsALightAccentWash() throws IOException {
+		Files.write(this.photoDir.resolve(SPEAKER_ID + ".png"), solidPng(64, Color.WHITE));
+
+		BufferedImage rendered = ImageIO
+			.read(new ByteArrayInputStream(store().findOrPlaceholder(SPEAKER_ID).content()));
+
+		assertThat(rendered.getWidth()).isEqualTo(600);
+		assertThat(rendered.getHeight()).isEqualTo(600);
+		// A 25% black wash takes white down to 191 without changing its tonal detail.
+		assertThat(new Color(rendered.getRGB(300, 300))).isEqualTo(new Color(191, 191, 191));
+	}
+
+	@Test
+	void findOrPlaceholderAppliesThemeChangesToCachedPortraits() throws IOException {
+		Files.write(this.photoDir.resolve(SPEAKER_ID + ".png"), solidPng(64, Color.WHITE));
+		EventConfig theme = theme("#000000", "#000000", "#000000");
+		SpeakerPhotoStore themedStore = new SpeakerPhotoStore(this.config, theme);
+		byte[] dark = themedStore.findOrPlaceholder(SPEAKER_ID).content();
+
+		theme.setColorPrimary("#FFFFFF");
+		theme.setColorSecondary("#FFFFFF");
+		theme.setColorAccent("#FFFFFF");
+		byte[] light = themedStore.findOrPlaceholder(SPEAKER_ID).content();
+
+		assertThat(light).isNotEqualTo(dark);
+	}
+
+	@Test
+	void findOrPlaceholderReusesTheStylisedPortraitUntilTheSourceChanges() throws IOException {
+		Path file = this.photoDir.resolve(SPEAKER_ID + ".png");
+		Files.write(file, solidPng(64, Color.WHITE));
+		byte[] first = store().findOrPlaceholder(SPEAKER_ID).content();
+
+		assertThat(store().findOrPlaceholder(SPEAKER_ID).content()).isSameAs(first);
+
+		Files.write(file, solidPng(64, Color.BLACK));
+		assertThat(store().findOrPlaceholder(SPEAKER_ID).content()).isNotSameAs(first);
+	}
+
+	@Test
 	void downloadIgnoresMissingInput() {
 		assertThat(store().download(null, "http://example.com/a.png")).isFalse();
 		assertThat(store().download(SPEAKER_ID, (String) null)).isFalse();
@@ -228,6 +271,14 @@ class SpeakerPhotoStoreTest {
 		return this.store;
 	}
 
+	private static EventConfig theme(String primary, String secondary, String accent) {
+		EventConfig theme = new EventConfig();
+		theme.setColorPrimary(primary);
+		theme.setColorSecondary(secondary);
+		theme.setColorAccent(accent);
+		return theme;
+	}
+
 	private String url(String path) {
 		return "http://127.0.0.1:" + this.server.getAddress().getPort() + path;
 	}
@@ -265,8 +316,21 @@ class SpeakerPhotoStoreTest {
 	}
 
 	private static byte[] pngBytes(int size) {
+		return solidPng(size, new Color(0, 0, 0, 0));
+	}
+
+	private static byte[] solidPng(int size, Color color) {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-			ImageIO.write(new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB), "PNG", out);
+			BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+			Graphics2D graphics = image.createGraphics();
+			try {
+				graphics.setColor(color);
+				graphics.fillRect(0, 0, size, size);
+			}
+			finally {
+				graphics.dispose();
+			}
+			ImageIO.write(image, "PNG", out);
 			return out.toByteArray();
 		}
 		catch (IOException ex) {

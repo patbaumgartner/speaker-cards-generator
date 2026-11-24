@@ -1,5 +1,6 @@
 package com.fortytwotalents.speakercardsgenerator.service;
 
+import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.config.StorageConfig;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -147,7 +148,7 @@ class HtmlToPngConverterTest {
 	private HtmlToPngConverter converter() {
 		StorageConfig config = new StorageConfig();
 		config.setPhotoDir(this.photoDir.toString());
-		return new HtmlToPngConverter(new SpeakerPhotoStore(config));
+		return new HtmlToPngConverter(new SpeakerPhotoStore(config, new EventConfig()));
 	}
 
 }

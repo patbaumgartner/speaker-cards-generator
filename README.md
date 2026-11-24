@@ -113,9 +113,14 @@ curl -X POST http://localhost:8080/api/import/devoxx/vdz27
 
 Each import refreshes speaker profiles, sessions, and portrait files from the CFP. If
 the CFP provides several portrait URLs, the importer compares their pixel dimensions
-and stores the highest-resolution download without recompression. The same comparison
-applies when loading a portrait, so the best available stored file is used. The download
-limit is configurable with `app.storage.max-photo-size` (default `5MB`).
+and picks the highest-resolution download. When a portrait is displayed or rendered,
+it is cropped to a square, resized to 600 × 600, and given a light 25% wash of the
+active event's accent color. Original tones stay intact, while photos from different
+speakers read as one consistent, theme-matched set. The treatment is applied on the fly
+and cached, so existing photos change immediately without a re-import, and switching
+event profiles changes the tint.
+The same quality comparison applies when loading a portrait. The download limit is
+configurable with `app.storage.max-photo-size` (default `5MB`).
 
 The CFP session type (for example **Conference** or **Byte-Size**) appears
 beneath the session-title divider on banners. Workshop variants are recognized from

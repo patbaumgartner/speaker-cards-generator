@@ -1,5 +1,6 @@
 package com.fortytwotalents.speakercardsgenerator.service;
 
+import com.fortytwotalents.speakercardsgenerator.config.EventConfig;
 import com.fortytwotalents.speakercardsgenerator.config.StorageConfig;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -20,16 +21,20 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.MemoryCacheImageInputStream;
@@ -51,7 +56,9 @@ import org.springframework.stereotype.Component;
  * image or checked in by hand keep working.</li>
  * </ol>
  * The highest-resolution candidate wins; ties go to the byte-rich file, then to the
- * runtime copy.
+ * runtime copy. Photos are normalised on display and rendering: cropped to a uniform
+ * square and given a light wash of the active event's accent colour, so mixed source
+ * photos read as one set without needing a re-import.
  *
  * <p>
  * Rendering and display use {@link #findOrPlaceholder(UUID)}, which falls back to a
@@ -112,12 +119,24 @@ public class SpeakerPhotoStore {
 
 	private static final byte[] DEFAULT_PHOTO = createDefaultPhoto();
 
+	/** Uniform size for displayed portraits, independent of the source resolution. */
+	private static final int PORTRAIT_SIZE = 600;
+
+	/** How much of the event accent colour is mixed into the grayscale portrait. */
+	private static final float TINT_STRENGTH = 0.25f;
+
+	/** Stylised portraits, keyed by the source bytes and the active theme colours. */
+	private final Map<String, Photo> stylizedPhotos = new ConcurrentHashMap<>();
+
 	private final StorageConfig config;
+
+	private final EventConfig event;
 
 	private final HttpClient httpClient;
 
-	public SpeakerPhotoStore(StorageConfig config) {
+	public SpeakerPhotoStore(StorageConfig config, EventConfig event) {
 		this.config = config;
+		this.event = event;
 		this.httpClient = HttpClient.newBuilder()
 			.connectTimeout(TIMEOUT)
 			// Redirects are followed manually so that every hop can be re-validated.
@@ -192,7 +211,34 @@ public class SpeakerPhotoStore {
 	 * @return a real photo when available, otherwise the default avatar
 	 */
 	public Photo findOrPlaceholder(UUID speakerId) {
-		return find(speakerId).orElseGet(SpeakerPhotoStore::defaultPhoto);
+		return find(speakerId)
+			.map(photo -> this.stylizedPhotos.computeIfAbsent(fingerprint(photo.content(), this.event),
+					key -> stylizePhoto(photo)))
+			.orElseGet(SpeakerPhotoStore::defaultPhoto);
+	}
+
+	private Photo stylizePhoto(Photo photo) {
+		try {
+			return new Photo(stylize(photo.content(), this.event), MediaType.IMAGE_PNG);
+		}
+		catch (IOException ex) {
+			log.warn("Could not stylise portrait; keeping the original", ex);
+			return photo;
+		}
+	}
+
+	private static String fingerprint(byte[] content, EventConfig event) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			digest.update(content);
+			digest.update(String.valueOf(event.getColorPrimary()).getBytes(StandardCharsets.UTF_8));
+			digest.update(String.valueOf(event.getColorSecondary()).getBytes(StandardCharsets.UTF_8));
+			digest.update(String.valueOf(event.getColorAccent()).getBytes(StandardCharsets.UTF_8));
+			return HexFormat.of().formatHex(digest.digest());
+		}
+		catch (NoSuchAlgorithmException ex) {
+			throw new IllegalStateException("SHA-256 is required to cache portrait styles", ex);
+		}
 	}
 
 	/** Returns the locally generated avatar used when a speaker has no photo. */
@@ -258,6 +304,76 @@ public class SpeakerPhotoStore {
 			log.warn("Could not store portrait for speaker {}", speakerId, ex);
 			return false;
 		}
+	}
+
+	/**
+	 * Crops a portrait to a square, scales it to {@link #PORTRAIT_SIZE}, and adds a light
+	 * wash of the event's accent colour. No contrast stretching or smoothing: the source
+	 * tones stay as they are, just squared, resized and lightly tinted.
+	 */
+	static byte[] stylize(byte[] content, EventConfig event) throws IOException {
+		BufferedImage source = ImageIO.read(new ByteArrayInputStream(content));
+		if (source == null) {
+			throw new IOException("unsupported image format");
+		}
+		return png(tintImage(squareCrop(source), accentColor(event)));
+	}
+
+	private static BufferedImage squareCrop(BufferedImage source) {
+		int side = Math.min(source.getWidth(), source.getHeight());
+		int x = (source.getWidth() - side) / 2;
+		// Bias the crop above centre so faces survive wide or full-body source photos.
+		int y = (int) ((source.getHeight() - side) * 0.35);
+		BufferedImage square = new BufferedImage(PORTRAIT_SIZE, PORTRAIT_SIZE, BufferedImage.TYPE_INT_RGB);
+		Graphics2D graphics = square.createGraphics();
+		try {
+			graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			graphics.drawImage(source, 0, 0, PORTRAIT_SIZE, PORTRAIT_SIZE, x, y, x + side, y + side, null);
+		}
+		finally {
+			graphics.dispose();
+		}
+		return square;
+	}
+
+	private static int accentColor(EventConfig event) {
+		String hex = event.getColorAccent();
+		if (hex == null || hex.length() != 7) {
+			return 0xFF0099;
+		}
+		try {
+			return Color.decode(hex).getRGB() & 0xFFFFFF;
+		}
+		catch (IllegalArgumentException ex) {
+			return 0xFF0099;
+		}
+	}
+
+	private static BufferedImage tintImage(BufferedImage image, int accent) {
+		BufferedImage result = new BufferedImage(PORTRAIT_SIZE, PORTRAIT_SIZE, BufferedImage.TYPE_INT_RGB);
+		for (int y = 0; y < PORTRAIT_SIZE; y++) {
+			for (int x = 0; x < PORTRAIT_SIZE; x++) {
+				int rgb = image.getRGB(x, y);
+				int gray = (299 * ((rgb >> 16) & 0xFF) + 587 * ((rgb >> 8) & 0xFF) + 114 * (rgb & 0xFF)) / 1000;
+				int red = mix(gray, accent >> 16);
+				int green = mix(gray, accent >> 8);
+				int blue = mix(gray, accent);
+				result.setRGB(x, y, (red << 16) | (green << 8) | blue);
+			}
+		}
+		return result;
+	}
+
+	private static int mix(int gray, int accentChannel) {
+		return Math.round(gray + ((accentChannel & 0xFF) - gray) * TINT_STRENGTH);
+	}
+
+	private static byte[] png(BufferedImage image) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		if (!ImageIO.write(image, "png", out)) {
+			throw new IOException("no PNG writer is available");
+		}
+		return out.toByteArray();
 	}
 
 	private record Portrait(String extension, byte[] content, long pixels) {
